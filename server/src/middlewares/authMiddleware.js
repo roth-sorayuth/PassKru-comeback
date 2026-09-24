@@ -28,6 +28,13 @@ export const protect = async (req, res, next) => {
       });
     }
 
+    if (!user.isEmailVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Email address not verified",
+      });
+    }
+
     req.user = user;
     req.auth = {
       userId: user.userId,

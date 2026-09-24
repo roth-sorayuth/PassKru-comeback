@@ -6,18 +6,17 @@ import {
   updatePaper,
   deletePaper,
 } from "../controllers/paperController.js";
-// NOTE (manage-upload branch): auth removed for adminDashboard test dashboard.
-// Restore protect + admin middleware before merging to main.
 import { protect, admin } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
+// Reads require a signed-in user: responses carry (signed) links to the PDFs.
 router.route("/")
-  .get(getPapers)
+  .get(protect, getPapers)
   .post(protect, admin, createPaper);
 
 router.route("/:id")
-  .get(getPaperById)
+  .get(protect, getPaperById)
   .put(protect, admin, updatePaper)
   .delete(protect, admin, deletePaper);
 

@@ -15,6 +15,8 @@ import {
   decideWeeklyUpdate,
 } from "../controllers/studyPlanController.js";
 import { protect } from "../middlewares/authMiddleware.js";
+import { aiLimiter } from "../middlewares/rateLimit.js";
+import { signFileUrlsInResponses } from "../services/storageService.js";
 
 const router = Router();
 
@@ -24,9 +26,11 @@ router.get("/subject-options", getSubjectOptions);
 
 // All user-specific study plan routes require authentication
 router.use(protect);
+// Plans embed paper fileUrls; hand them out as short-lived signed links.
+router.use(signFileUrlsInResponses);
 
 router.get("/", getActivePlan);
-router.post("/generate", generatePlan);
+router.post("/generate", aiLimiter, generatePlan);
 router.get("/history", getPlanHistory);
 router.get("/plans", getMyPlans);
 router.post("/plans/:planId/activate", activatePlan);

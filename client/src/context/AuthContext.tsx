@@ -38,14 +38,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const fetchUser = async () => {
     setLoading(true);
     try {
-      // 1. Check if token was passed in URL (e.g., Google OAuth redirect on mobile)
+      // 1. Google OAuth redirect carries a single-use code (never the token
+      //    itself); trade it for the session token, then clean the address bar.
       const urlParams = new URLSearchParams(window.location.search);
-      const urlToken = urlParams.get('token');
-      if (urlToken) {
-        localStorage.setItem('token', urlToken);
-        // Clean token parameter from address bar
+      const authCode = urlParams.get('authCode');
+      if (authCode) {
         const cleanUrl = window.location.pathname + window.location.hash;
         window.history.replaceState({}, document.title, cleanUrl);
+        try {
+          const exchange = await fetch(`${API_BASE_URL}/auth/google/exchange`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ code: authCode }),
+          });
+          const data = await exchange.json();
+          if (exchange.ok && data.token) {
+            localStorage.setItem('token', data.token);
+          }
+        } catch (err) {
+          console.error('Google sign-in code exchange failed:', err);
+        }
       }
 
       const token = localStorage.getItem('token');

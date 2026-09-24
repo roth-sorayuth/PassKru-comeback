@@ -18,7 +18,7 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
     const user = await authService.getUserById(decoded.userId);
 
     if (!user) {
@@ -58,7 +58,7 @@ export const optionalProtect = async (req, res, next) => {
       return next();
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
     const user = await authService.getUserById(decoded.userId);
 
     req.user = user || null;

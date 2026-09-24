@@ -124,7 +124,11 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
         setShowOtpStep(true);
         setOtpDigits(['', '', '', '', '', '']);
         setResendCooldown(60);
-        setSuccess(lang === 'km' ? 'លេខកូដផ្ទៀងផ្ទាត់ត្រូវបានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក!' : 'Verification code sent to your email!');
+        setSuccess(
+          mode === 'register'
+            ? (lang === 'km' ? 'សូមពិនិត្យប្រអប់អ៊ីមែលរបស់អ្នក' : 'Check your email inbox')
+            : (lang === 'km' ? 'លេខកូដផ្ទៀងផ្ទាត់ត្រូវបានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក!' : 'Verification code sent to your email!')
+        );
         setLoading(false);
         return;
       }
@@ -406,6 +410,28 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                   )}
                 </button>
               </form>
+
+              {/* After sign-up the API answers the same whether or not the email
+                  already has an account (so it can't be used to probe emails);
+                  existing owners get a "sign in instead" email, not a code. */}
+              {mode === 'register' && (
+                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-blue-50 border border-blue-100 text-slate-600 text-xs text-left">
+                  <Mail className="w-4 h-4 text-[#133363] shrink-0 mt-0.5" />
+                  <span>
+                    {lang === 'km'
+                      ? 'មិនឃើញលេខកូដទេ? សូមពិនិត្យថត Spam។ បើអ៊ីមែលនេះមានគណនីរួចហើយ យើងបានផ្ញើអ៊ីមែលប្រាប់អ្នកជំនួសលេខកូដ — សូម '
+                      : "No code? Check your Spam folder. If this email already has an account, we sent you an email saying so instead of a code — please "}
+                    <button
+                      type="button"
+                      onClick={() => handleModeSwitch('login')}
+                      className="text-[#133363] font-semibold hover:underline cursor-pointer"
+                    >
+                      {lang === 'km' ? 'ចូលប្រព័ន្ធជំនួសវិញ' : 'sign in instead'}
+                    </button>
+                    {lang === 'km' ? ' ឬប្រើ Google។' : ' or use Google.'}
+                  </span>
+                </div>
+              )}
 
               <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
                 <button

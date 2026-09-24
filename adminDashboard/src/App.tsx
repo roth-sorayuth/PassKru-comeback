@@ -119,13 +119,19 @@ export default function App() {
   useEffect(() => {
     async function checkRole() {
       try {
-        // Extract token from URL query params (e.g. from OAuth redirect)
+        // Google OAuth redirect carries a single-use code (never the token
+        // itself); trade it for the session token, then clean the address bar.
         const urlParams = new URLSearchParams(window.location.search);
-        const urlToken = urlParams.get('token');
-        if (urlToken) {
-          localStorage.setItem('token', urlToken);
+        const authCode = urlParams.get('authCode');
+        if (authCode) {
           const cleanUrl = window.location.pathname + window.location.hash;
           window.history.replaceState({}, document.title, cleanUrl);
+          try {
+            const exchange = await api.post<{ token?: string }>('/auth/google/exchange', { code: authCode });
+            if (exchange?.token) localStorage.setItem('token', exchange.token);
+          } catch (err) {
+            console.error('Google sign-in code exchange failed:', err);
+          }
         }
 
         const res = await api.get<{ user: { role: string } }>('/auth/me');

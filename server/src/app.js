@@ -14,54 +14,90 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 
-// Middleware
+// Behind Railway's proxy: take the client IP from X-Forwarded-For (one hop),
+// otherwise the auth rate limits would see every request as the proxy's IP.
+app.set("trust proxy", 1);
+
+const isProduction = process.env.NODE_ENV === "production";
+// "Any origin" is opt-in: an unset NODE_ENV must never mean wide-open CORS.
+const allowAnyOrigin = process.env.NODE_ENV === "development";
+
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   ...(process.env.CORS_ORIGINS || "").split(","),
-  "http://localhost:3000",
-  "http://localhost:3001",
+  ...(isProduction ? [] : ["http://localhost:3000", "http://localhost:3001"]),
 ]
   .map((origin) => origin?.trim().replace(/[\r\n]+/g, "").replace(/\/+$/, ""))
   .filter(Boolean);
 
-const isProduction = process.env.NODE_ENV === "production";
+const isAllowedOrigin = (origin) => allowAnyOrigin || allowedOrigins.includes(origin);
+
+app.disable("x-powered-by");
+
+// Security headers (API only serves JSON, so the CSP can be locked down).
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+  if (isProduction) {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  if (!req.path.startsWith("/api-docs")) {
+    res.setHeader("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");
+  }
+  next();
+});
+
+// CSRF guard. Auth cookies are SameSite=None (Vercel → Railway), so a page on
+// any other site could otherwise fire credentialed state-changing requests at
+// the API. Browsers always send Origin on cross-site non-GET requests; reject
+// the ones that aren't ours. (No Origin = non-browser client, which carries no
+// victim cookies.)
+app.use((req, res, next) => {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+  const origin = req.headers.origin;
+  if (origin && !isAllowedOrigin(origin)) {
+    return res.status(403).json({ success: false, message: "Origin not allowed" });
+  }
+  next();
+});
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. server-to-server, mobile tools, curl)
+      // No Origin: server-to-server, curl, same-origin navigation.
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, origin);
-      }
-      if (!isProduction) {
-        // In development allow any origin for convenience
-        return callback(null, origin);
-      }
-      return callback(new Error(`CORS: origin "${origin}" is not allowed`));
+      // Disallowed origins get no CORS headers (browser blocks the read); the
+      // CSRF guard above has already refused any state-changing request.
+      return callback(null, isAllowedOrigin(origin) ? origin : false);
     },
     credentials: true,
   })
 );
 
+// JSON only. No urlencoded parser: HTML forms are the classic CSRF vehicle
+// (no CORS preflight), and no client of this API sends form bodies.
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(passport.initialize());
 
-// OpenAPI Spec & Swagger UI Documentation
-app.get("/openapi.json", (req, res) => {
-  res.json(openApiSpec);
-});
+// OpenAPI Spec & Swagger UI Documentation — off in production unless
+// explicitly enabled; it maps the whole attack surface.
+if (!isProduction || process.env.ENABLE_API_DOCS === "true") {
+  app.get("/openapi.json", (req, res) => {
+    res.json(openApiSpec);
+  });
 
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(openApiSpec, {
-    customSiteTitle: "PassKru API Documentation",
-    customCss: ".swagger-ui .topbar { display: block; }",
-  })
-);
+  app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(openApiSpec, {
+      customSiteTitle: "PassKru API Documentation",
+      customCss: ".swagger-ui .topbar { display: block; }",
+    })
+  );
+}
 
 // Health check
 app.get("/health", (req, res) => {

@@ -1,7 +1,8 @@
 
 import { Router } from "express";
 import authRoutes from "./authRoutes.js";
-import { protect } from "../middlewares/authMiddleware.js"; 
+import { protect } from "../middlewares/authMiddleware.js";
+import { toPublicUser } from "../utils/publicUser.js";
 import announcementRoutes from "./announcementRoutes.js";
 import notificationRoutes from "./notificationRoutes.js";
 import examRoutes from "./examRoutes.js";
@@ -47,7 +48,7 @@ router.use("/questions", questionRoutes);
 router.get("/users/me", protect, (req, res) => {
   res.json({
     success: true,
-    user: req.user,
+    user: toPublicUser(req.user),
   });
 });
 

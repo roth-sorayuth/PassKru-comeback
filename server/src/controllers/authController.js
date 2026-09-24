@@ -3,26 +3,54 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { prisma } from "../config/prisma.js";
 import * as authService from "../services/authService.js";
-import { sendVerificationOtpEmail } from "../services/emailService.js";
+import { sendVerificationOtpEmail, sendAccountExistsEmail } from "../services/emailService.js";
+import { toPublicUser } from "../utils/publicUser.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const MAX_OTP_PER_DAY = 4;
+
+// Auth failures share one message per endpoint so responses never reveal
+// whether an email is registered, or which sign-in provider it uses.
+const INVALID_CREDENTIALS = "Invalid email or password.";
+const INVALID_OTP = "Invalid or expired verification code. Please check and try again.";
+const RESEND_ACCEPTED = "If this account is awaiting verification, a new code has been sent to your email.";
+const REGISTER_EMAIL_FAILED =
+  "Failed to send verification code email within time limit. Please check your email address and try again.";
+
+const registerAccepted = (email) => ({
+  success: true,
+  requiresVerification: true,
+  email,
+  message: "Registration received. Please enter the 6-digit verification code sent to your email. If you already have an account, sign in instead.",
+});
+
+// Compared against when the email is unknown, so a missing account takes as
+// long to reject as a wrong password (no timing oracle for enumeration).
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString("hex"), 10);
 
 function generate6DigitOtp() {
   return crypto.randomInt(100000, 1000000).toString();
 }
 
+function otpMatches(expected, submitted) {
+  const a = Buffer.from(String(expected));
+  const b = Buffer.from(String(submitted));
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 /**
- * Sends OTP email with strict execution time limit (6 seconds max)
+ * Runs an email send with a strict execution time limit (6 seconds max)
  */
-async function sendOtpWithTimeout(params, timeoutMs = 6000) {
+async function sendWithTimeout(sendPromise, timeoutMs = 6000) {
   return Promise.race([
-    sendVerificationOtpEmail(params),
+    sendPromise,
     new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`Email OTP sending timed out after ${timeoutMs / 1000}s`)), timeoutMs)
+      setTimeout(() => reject(new Error(`Email sending timed out after ${timeoutMs / 1000}s`)), timeoutMs)
     ),
   ]);
 }
+
+const sendOtpWithTimeout = (params, timeoutMs) => sendWithTimeout(sendVerificationOtpEmail(params), timeoutMs);
 
 /**
  * Checks if a user has exceeded the maximum OTP request limit (4 per 24 hours).
@@ -65,7 +93,10 @@ export const register = async (req, res, next) => {
   try {
     const { firstName, lastName, email, password, phoneNumber } = req.body;
 
-    if (!firstName || !lastName || !email || !password) {
+    if (
+      [firstName, lastName, email, password].some((v) => typeof v !== "string" || !v.trim()) ||
+      (phoneNumber != null && typeof phoneNumber !== "string")
+    ) {
       return res.status(400).json({
         success: false,
         message: "First name, last name, email, and password are required.",
@@ -85,10 +116,15 @@ export const register = async (req, res, next) => {
     });
 
     if (existingUser && existingUser.isEmailVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "An account with this email address already exists. Please sign in.",
-      });
+      // Answer exactly like a fresh signup so the response doesn't reveal the
+      // email is registered; the owner gets a "you already have an account" email.
+      try {
+        await sendWithTimeout(sendAccountExistsEmail({ email: normalizedEmail }), 6000);
+      } catch (emailError) {
+        console.error("[AUTH_REGISTER] Account-exists email error/timeout:", emailError?.message || emailError);
+        return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
+      }
+      return res.status(201).json(registerAccepted(normalizedEmail));
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -145,18 +181,10 @@ export const register = async (req, res, next) => {
       if (isNewUser && user?.userId) {
         await prisma.user.delete({ where: { userId: user.userId } }).catch(() => {});
       }
-      return res.status(500).json({
-        success: false,
-        message: "Failed to send verification code email within time limit. Please check your email address and try again.",
-      });
+      return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
     }
 
-    return res.status(201).json({
-      success: true,
-      requiresVerification: true,
-      email: normalizedEmail,
-      message: "Registration successful. Please enter the 6-digit verification code sent to your email.",
-    });
+    return res.status(201).json(registerAccepted(normalizedEmail));
   } catch (error) {
     next(error);
   }
@@ -167,7 +195,7 @@ export const verifyOtp = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
 
-    if (!email || !otp) {
+    if (typeof email !== "string" || typeof otp !== "string" || !email.trim() || !otp.trim()) {
       return res.status(400).json({
         success: false,
         message: "Email and OTP code are required.",
@@ -175,59 +203,30 @@ export const verifyOtp = async (req, res, next) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
+    const submittedOtp = otp.trim();
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User account not found.",
-      });
+    // A token is only ever issued below, after a successful OTP match. Unknown
+    // and already-verified accounts get the same failure as a wrong code —
+    // verified users sign in with /login, never through this endpoint.
+    const otpExpiresTime = user?.otpExpiresAt ? new Date(user.otpExpiresAt).getTime() : 0;
+    const isValid =
+      user &&
+      !user.isEmailVerified &&
+      user.verificationOtp &&
+      otpExpiresTime > Date.now() &&
+      otpMatches(user.verificationOtp, submittedOtp);
+
+    if (!isValid) {
+      return res.status(400).json({ success: false, message: INVALID_OTP });
     }
 
-    if (user.isEmailVerified) {
-      // User is already verified, proceed to generate token
-      const token = jwt.sign(
-        { userId: user.userId, email: user.email },
-        JWT_SECRET,
-        { expiresIn: "7d" }
-      );
-
-      const isProduction = process.env.NODE_ENV === "production";
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: isProduction ? "none" : "lax", // "none" required for cross-origin (Vercel → Railway)
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-      const userWithExam = await authService.getUserWithExam(user.userId);
-      return res.status(200).json({
-        success: true,
-        message: "Email already verified.",
-        token,
-        user: userWithExam || user,
-      });
-    }
-
-    if (!user.verificationOtp || user.verificationOtp !== otp.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid verification code. Please check and try again.",
-      });
-    }
-
-    const otpExpiresTime = user.otpExpiresAt ? new Date(user.otpExpiresAt).getTime() : 0;
-    if (!otpExpiresTime || Date.now() > otpExpiresTime) {
-      return res.status(400).json({
-        success: false,
-        message: "Verification code has expired. Please request a new code.",
-      });
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { userId: user.userId },
+    // Conditional on the code still being the one we matched, so two
+    // concurrent requests can't both redeem it (single use).
+    const { count } = await prisma.user.updateMany({
+      where: { userId: user.userId, isEmailVerified: false, verificationOtp: user.verificationOtp },
       data: {
         isEmailVerified: true,
         verificationOtp: null,
@@ -236,9 +235,12 @@ export const verifyOtp = async (req, res, next) => {
         otpLastSentAt: null,
       },
     });
+    if (count !== 1) {
+      return res.status(400).json({ success: false, message: INVALID_OTP });
+    }
 
     const token = jwt.sign(
-      { userId: updatedUser.userId, email: updatedUser.email },
+      { userId: user.userId, email: user.email },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -251,13 +253,13 @@ export const verifyOtp = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    const userWithExam = await authService.getUserWithExam(updatedUser.userId);
+    const userWithExam = await authService.getUserWithExam(user.userId);
 
     return res.status(200).json({
       success: true,
       message: "Email verified successfully!",
       token,
-      user: userWithExam || updatedUser,
+      user: userWithExam || toPublicUser({ ...user, isEmailVerified: true }),
     });
   } catch (error) {
     next(error);
@@ -269,7 +271,7 @@ export const resendOtp = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
+    if (typeof email !== "string" || !email.trim()) {
       return res.status(400).json({
         success: false,
         message: "Email is required.",
@@ -281,18 +283,9 @@ export const resendOtp = async (req, res, next) => {
       where: { email: normalizedEmail },
     });
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User account not found.",
-      });
-    }
-
-    if (user.isEmailVerified) {
-      return res.status(400).json({
-        success: false,
-        message: "Your email is already verified. You can log in directly.",
-      });
+    // Same answer for unknown, already-verified and pending accounts.
+    if (!user || user.isEmailVerified) {
+      return res.status(200).json({ success: true, message: RESEND_ACCEPTED });
     }
 
     const limitCheck = checkOtpDailyLimit(user);
@@ -333,10 +326,7 @@ export const resendOtp = async (req, res, next) => {
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      message: `A new verification code has been sent to your email. (${limitCheck.newCount}/${MAX_OTP_PER_DAY} daily attempts used)`,
-    });
+    return res.status(200).json({ success: true, message: RESEND_ACCEPTED });
   } catch (error) {
     next(error);
   }
@@ -347,7 +337,7 @@ export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
       return res.status(400).json({
         success: false,
         message: "Email and password are required.",
@@ -359,30 +349,16 @@ export const login = async (req, res, next) => {
       where: { email: normalizedEmail },
     });
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password.",
-      });
-    }
+    // Unknown email, Google/Clerk-only account and wrong password all look the
+    // same (status, message and timing) — no account or provider disclosure.
+    const hasPassword =
+      user?.passwordHash &&
+      !user.passwordHash.startsWith("managed-by-") &&
+      !user.passwordHash.startsWith("managed_");
+    const isMatch = await bcrypt.compare(password, hasPassword ? user.passwordHash : DUMMY_PASSWORD_HASH);
 
-    if (
-      !user.passwordHash ||
-      user.passwordHash.startsWith("managed-by-") ||
-      user.passwordHash.startsWith("managed_")
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "This account uses Google or Clerk authentication. Please sign in using Google.",
-      });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password.",
-      });
+    if (!hasPassword || !isMatch) {
+      return res.status(401).json({ success: false, message: INVALID_CREDENTIALS });
     }
 
     if (!user.isEmailVerified) {
@@ -450,7 +426,7 @@ export const login = async (req, res, next) => {
       success: true,
       message: "Logged in successfully",
       token,
-      user: userWithExam || user,
+      user: userWithExam || toPublicUser(user),
     });
   } catch (error) {
     next(error);
@@ -464,7 +440,7 @@ export const getMe = async (req, res, next) => {
     const user = await authService.getUserWithExam(req.user.userId);
     return res.status(200).json({
       success: true,
-      user: user || req.user,
+      user: user || toPublicUser(req.user),
     });
   } catch (error) {
     next(error);

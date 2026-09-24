@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { normalizeSubjectSelection } from "../config/examSubjects.js";
+import { toPublicUser } from "../utils/publicUser.js";
 
 export const getUserByClerkId = async (clerkId) => {
   return prisma.user.findUnique({
@@ -121,7 +122,8 @@ export const getUserWithExam = async (userId) => {
   const targetCode = user.targetExam?.targetCode?.toLowerCase() || null;
   const selection = targetCode ? normalizeSubjectSelection(targetCode, user.targetSubjects) : null;
 
-  return {
+  // Response-only shape: toPublicUser drops passwordHash, OTP state and provider ids.
+  return toPublicUser({
     ...user,
     knowledgeLevel: KNOWLEDGE_LEVELS.includes(user.knowledgeLevel) ? user.knowledgeLevel : null,
     examCategory: targetCode ? EXAM_CATEGORY_NAMES[targetCode] : undefined,
@@ -129,7 +131,7 @@ export const getUserWithExam = async (userId) => {
     // converted on read and rewritten the next time the candidate saves.
     selectedSubjects: selection?.ok ? selection.keys : [],
     hasCompletedExamSelection: Boolean(selection?.ok),
-  };
+  });
 };
 
 export const KNOWLEDGE_LEVELS = ["beginner", "intermediate", "advanced"];

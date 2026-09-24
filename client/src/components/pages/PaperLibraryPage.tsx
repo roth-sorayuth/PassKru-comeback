@@ -115,7 +115,10 @@ const paperMatchesExam = (p: PastPaper, filterExam: string | null) => {
   );
 };
 
-const paperCache = new Map<string, PastPaper[]>();
+// fileUrl values are signed links that expire after 1 hour, so cached lists
+// are dropped well before that and re-fetched with fresh links.
+const PAPER_CACHE_TTL_MS = 45 * 60 * 1000;
+const paperCache = new Map<string, { papers: PastPaper[]; fetchedAt: number }>();
 let cachedExams: Exam[] | null = null;
 const cachedSubjectsByMode = new Map<string, Subject[]>();
 
@@ -223,8 +226,9 @@ export const PaperLibraryPage: React.FC<PaperLibraryPageProps> = ({ mode, title 
     const qTrim = query.trim();
     const cacheKey = `${paperTypeParam}:${filterExam || 'all'}:${selectedSubject}:${qTrim}`;
 
-    if (paperCache.has(cacheKey)) {
-      setPapers(paperCache.get(cacheKey)!);
+    const cached = paperCache.get(cacheKey);
+    if (cached && Date.now() - cached.fetchedAt < PAPER_CACHE_TTL_MS) {
+      setPapers(cached.papers);
       setLoadingPapers(false);
       return;
     }
@@ -240,7 +244,7 @@ export const PaperLibraryPage: React.FC<PaperLibraryPageProps> = ({ mode, title 
     api(`/papers?${params.toString()}`)
       .then((res) => {
         const fetchedPapers = res?.papers || [];
-        paperCache.set(cacheKey, fetchedPapers);
+        paperCache.set(cacheKey, { papers: fetchedPapers, fetchedAt: Date.now() });
         if (isMounted) {
           setPapers(fetchedPapers);
         }

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /profile
+Disallow: /study-plan
+Disallow: /weakness
+Disallow: /notifications
+
+Sitemap: https://pass-kru.vercel.app/sitemap.xml

@@ -1,0 +1,812 @@
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuthContext } from './AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { UserProfile, ExamTarget, AppNotification, Announcement, Quiz, MockExam, SubjectScore, PracticeViewMode } from '../types';
+import { api } from '../utils/api';
+import { getNotifications, markAllNotificationsRead, markNotificationRead } from '../services/notificationService';
+import { ExamSelectionFlow } from '../components/exam-selection/ExamSelectionFlow';
+import { getCategoryConfig } from '../data/examSelectionData';
+
+export type ActivePage =
+  | 'landing'
+  | 'login'
+  | 'register'
+  | 'announcements'
+  | 'dashboard'
+  | 'announcement-detail'
+  | 'requirements'
+  | 'exam-info'
+  | 'past-papers'
+  | 'prepare-papers'
+  | 'learning'
+  | 'practice'
+  | 'quiz'
+  | 'mock-exam'
+  | 'flashcards'
+  | 'study-plan'
+  | 'weakness'
+  | 'mentors'
+  | 'notifications'
+  | 'profile';
+
+const pageToPathMap: Record<ActivePage, string> = {
+  landing: '/',
+  login: '/login',
+  register: '/register',
+  announcements: '/announcements',
+  dashboard: '/dashboard',
+  // The detail page's real address carries the id: /announcements/:id
+  'announcement-detail': '/announcements',
+  requirements: '/announcements',
+  'exam-info': '/announcements',
+  'past-papers': '/past-papers',
+  'prepare-papers': '/prepare-papers',
+  learning: '/prepare-papers',
+  practice: '/practice',
+  quiz: '/quiz',
+  'mock-exam': '/mock-exam',
+  flashcards: '/flashcards',
+  'study-plan': '/study-plan',
+  weakness: '/weakness',
+  mentors: '/mentors',
+  notifications: '/notifications',
+  profile: '/profile',
+};
+
+const pathToPageMap: Record<string, ActivePage> = {
+  '/': 'landing',
+  '/login': 'login',
+  '/register': 'register',
+  '/announcements': 'announcements',
+  '/dashboard': 'dashboard',
+  '/past-papers': 'past-papers',
+  '/prepare-papers': 'prepare-papers',
+  '/practice': 'practice',
+  '/quiz': 'quiz',
+  '/mock-exam': 'mock-exam',
+  '/flashcards': 'flashcards',
+  '/study-plan': 'study-plan',
+  '/weakness': 'weakness',
+  '/mentors': 'mentors',
+  '/notifications': 'notifications',
+  '/profile': 'profile',
+};
+
+/** Old or duplicate addresses, forwarded to where that page lives now. */
+const PATH_ALIASES: Record<string, string> = {
+  '/auth': '/register',
+  '/requirements': '/announcements',
+  '/exam-info': '/announcements',
+  '/learning': '/prepare-papers',
+  '/announcements/detail': '/announcements',
+};
+
+/** Pages that are shown under another page's name and address. */
+const PAGE_ALIASES: Partial<Record<ActivePage, ActivePage>> = {
+  requirements: 'announcements',
+  'exam-info': 'announcements',
+  learning: 'prepare-papers',
+};
+
+const ANNOUNCEMENT_PATH = /^\/announcements\/([^/]+)$/;
+
+/** The address a raw pathname should show (no trailing slash, aliases forwarded), or null when no page lives there. */
+const canonicalPath = (pathname: string): string | null => {
+  const trimmed = pathname.length > 1 ? pathname.replace(/\/+$/, '') || '/' : pathname;
+  const path = PATH_ALIASES[trimmed] ?? trimmed;
+  return pathToPageMap[path] || ANNOUNCEMENT_PATH.test(path) ? path : null;
+};
+
+const pageForPath = (path: string): ActivePage | undefined =>
+  pathToPageMap[path] || (ANNOUNCEMENT_PATH.test(path) ? 'announcement-detail' : undefined);
+
+/** The announcement id in /announcements/:id, or null on any other address. */
+export const announcementIdFromPath = (pathname: string): string | null =>
+  pathname.replace(/\/+$/, '').match(ANNOUNCEMENT_PATH)?.[1] ?? null;
+
+const announcementKey = (announcement: any): string | number | null =>
+  announcement?.announcementId ?? announcement?.id ?? null;
+
+interface AppContextType {
+  currentPage: ActivePage;
+  /** `replace` swaps the current history entry instead of adding one (for redirects). */
+  setCurrentPage: (page: ActivePage, options?: { replace?: boolean }) => void;
+  /** Shows one announcement at its own address, /announcements/:id. */
+  openAnnouncement: (announcement: any) => void;
+  isLoggedIn: boolean;
+  setIsLoggedIn: (loggedIn: boolean) => void;
+  userProfile: UserProfile;
+  setUserProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
+  notifications: AppNotification[];
+  markNotificationAsRead: (id: string | number) => void;
+  markAllNotificationsAsRead: () => void;
+  unreadNotificationsCount: number;
+  selectedAnnouncement: Announcement | null;
+  setSelectedAnnouncement: (announcement: Announcement | null) => void;
+  activeQuiz: Quiz | null;
+  setActiveQuiz: (quiz: Quiz | null) => void;
+  activeMockExam: MockExam | null;
+  setActiveMockExam: (exam: MockExam | null) => void;
+  selectedPracticeSubject: string | null;
+  setSelectedPracticeSubject: (subject: string | null) => void;
+  selectedPracticeSubjectId: string | null;
+  setSelectedPracticeSubjectId: (id: string | null) => void;
+  practiceViewMode: PracticeViewMode;
+  setPracticeViewMode: (mode: PracticeViewMode) => void;
+  subjectScores: Record<string, SubjectScore>;
+  activeMockSetNumber: number | null;
+  setActiveMockSetNumber: (setNum: number | null) => void;
+  saveSubjectScore: (params: {
+    subjectId?: string;
+    subjectName?: string;
+    quizId?: string | number;
+    mockSetNumber?: number;
+    category: 'quiz' | 'mock-exam';
+    targetExam?: ExamTarget;
+    round?: 1 | 2;
+    score: number;
+  }) => void;
+  // Real database ids for the backend-backed quiz/mock-exam flow. Null means
+  // "no specific one selected" — the page then shows its picker instead.
+  activeQuizId: number | null;
+  setActiveQuizId: (quizId: number | null) => void;
+  activeMockExamId: number | null;
+  setActiveMockExamId: (mockExamId: number | null) => void;
+  bookmarkedQuestionIds: string[];
+  toggleBookmarkQuestion: (questionId: string) => void;
+  // Set right before navigating to the study-plan page so it can scroll to
+  // and highlight the specific task that was promised (e.g. Dashboard's
+  // "Continue course" card) instead of just landing on the page in general.
+  highlightTaskId: string | null;
+  setHighlightTaskId: (taskId: string | null) => void;
+  startQuizById: (quizId: number | string) => void;
+  startMockExamById: (examId: number | string) => void;
+  /** Page that opened the current quiz, mock exam or flashcard deck (study plan, dashboard …); leaving returns there. */
+  quizReturnPage: ActivePage | null;
+  /** Opens a quiz set as a timed mock exam (a study plan's ការប្រឡងសាកល្បង day). */
+  startMockQuizById: (quizId: number) => void;
+  /** Opens one flashcard deck of a subject (a study plan task). */
+  startFlashcardDeck: (deck: { deckId: number; subjectName: string }) => void;
+  /** Deck the flashcards page should open straight away. */
+  activeFlashcardDeckId: number | null;
+  setActiveFlashcardDeckId: (deckId: number | null) => void;
+  logoutUser: () => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  isExamSelectionOpen: boolean;
+  openExamSelection: () => void;
+  closeExamSelection: () => void;
+  saveExamSelection: (selection: {
+    examCategory: string;
+    selectedSubjects: string[];
+    targetExam?: ExamTarget;
+  }) => Promise<void>;
+  /** Set when the candidate saves a track/subject choice in this session. */
+  selectionConfirmedAt: number | null;
+  /** Mirrors a selection the server already saved (e.g. after continuing a paused plan). */
+  applyExamSelection: (selection: { targetExam: ExamTarget; selectedSubjects: string[] }) => void;
+}
+
+const defaultUserProfile: UserProfile = {
+  name: 'Candidate User',
+  email: '',
+  avatar: '',
+  targetExam: 'nie',
+  targetSubject: 'វប្បធម៌ទូទៅ (General Culture)',
+  targetSubjects: [],
+  dailyGoalMinutes: 30,
+  streakDays: 0,
+  completedQuestions: 0,
+  averageScore: 0,
+  studyHoursTotal: 0,
+  examCategory: undefined,
+  selectedSubjects: [],
+  hasCompletedExamSelection: false,
+};
+
+/**
+ * Exam ids are assigned per environment (this database uses 4-7, not 1-3),
+ * so the track is read from the exam's own targetCode. The old numeric
+ * mapping silently reported every candidate as "nie".
+ */
+const resolveExamTarget = (backendUser: any): ExamTarget => {
+  const code = backendUser?.targetExam?.targetCode;
+  if (code === 'nie' || code === 'rttc' || code === 'pttc' || code === 'kindergarten') {
+    return code as ExamTarget;
+  }
+  return defaultUserProfile.targetExam;
+};
+
+const mapBackendUserToProfile = (backendUser: any): UserProfile => {
+  return {
+    name: `${backendUser.firstName || ''} ${backendUser.lastName || ''}`.trim() || 'User',
+    email: backendUser.email || '',
+    avatar: backendUser.avatarUrl || '',
+    targetExam: resolveExamTarget(backendUser),
+    targetSubject: backendUser.targetSubject || 'វប្បធម៌ទូទៅ (General Culture)',
+    targetSubjects: Array.isArray(backendUser.targetSubjects) ? backendUser.targetSubjects : [],
+    dailyGoalMinutes: backendUser.dailyGoalMinutes || 30,
+    streakDays: Number(backendUser.streakDays ?? 0),
+    completedQuestions: Number(backendUser.completedQuestions ?? 0),
+    averageScore: Number(backendUser.averageScore ?? 0),
+    studyHoursTotal: Number(backendUser.studyHoursTotal ?? 0),
+  };
+};
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user: authUser, loading: authLoading, logout: logoutAuthContext } = useAuthContext();
+  const isSignedIn = Boolean(authUser);
+  const isAuthLoaded = !authLoading;
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [currentPage, setCurrentPageState] = useState<ActivePage>(() => {
+    return pageForPath(canonicalPath(location.pathname) ?? '/') || 'landing';
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => Boolean(localStorage.getItem('passkru_cached_user_profile')));
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<UserProfile>(() => {
+    try {
+      const saved = localStorage.getItem('passkru_cached_user_profile');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return { ...defaultUserProfile, ...parsed };
+      }
+    } catch {}
+    return defaultUserProfile;
+  });
+  // Loaded from the API after sign-in; never seeded with sample data.
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  // Filled when an announcement is opened, or loaded from /announcements/:id on refresh.
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
+  const [activeMockExam, setActiveMockExam] = useState<MockExam | null>(null);
+  const [activeQuizId, setActiveQuizId] = useState<number | null>(null);
+  const [quizReturnPage, setQuizReturnPage] = useState<ActivePage | null>(null);
+  const [activeFlashcardDeckId, setActiveFlashcardDeckId] = useState<number | null>(null);
+  const [activeMockExamId, setActiveMockExamId] = useState<number | null>(null);
+  const [selectedPracticeSubject, setSelectedPracticeSubject] = useState<string | null>(null);
+  const [selectedPracticeSubjectId, setSelectedPracticeSubjectId] = useState<string | null>(null);
+  const [practiceViewMode, setPracticeViewMode] = useState<PracticeViewMode>('hub');
+  const [subjectScores, setSubjectScores] = useState<Record<string, SubjectScore>>(() => {
+    try {
+      const saved = localStorage.getItem('passkru_subject_scores');
+      if (!saved) return {};
+      const parsed = JSON.parse(saved);
+      // Clean up legacy unscoped keys that lack category prefix (e.g. "ភាសាអង់គ្លេស", "pttc-english")
+      // so categories stay strictly isolated and card percentages don't bleed across cards
+      const scopedOnly: Record<string, SubjectScore> = {};
+      for (const [k, v] of Object.entries(parsed)) {
+        if (k.includes('::')) {
+          scopedOnly[k] = v as SubjectScore;
+        }
+      }
+      return scopedOnly;
+    } catch {
+      return {};
+    }
+  });
+
+  const [activeMockSetNumber, setActiveMockSetNumberState] = useState<number | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('passkru_active_mock_set');
+      return saved ? parseInt(saved, 10) : 1;
+    } catch {
+      return 1;
+    }
+  });
+
+  const setActiveMockSetNumber = useCallback((setNum: number | null) => {
+    setActiveMockSetNumberState(setNum);
+    try {
+      if (setNum) sessionStorage.setItem('passkru_active_mock_set', String(setNum));
+      else sessionStorage.removeItem('passkru_active_mock_set');
+    } catch { }
+  }, []);
+
+  const saveSubjectScore = useCallback(({
+    subjectId,
+    subjectName,
+    quizId,
+    mockSetNumber,
+    category,
+    targetExam,
+    round,
+    score,
+  }: {
+    subjectId?: string;
+    subjectName?: string;
+    quizId?: string | number;
+    mockSetNumber?: number;
+    category: 'quiz' | 'mock-exam';
+    targetExam?: ExamTarget;
+    round?: 1 | 2;
+    score: number;
+  }) => {
+    setSubjectScores((prev) => {
+      const nextScores = { ...prev };
+      const currentTarget = targetExam || userProfile.targetExam || 'nie';
+      const effectiveSetNum = mockSetNumber || activeMockSetNumber || 1;
+
+      const baseKeys: string[] = [];
+      if (category === 'quiz') {
+        if (subjectId) baseKeys.push(`quiz::${subjectId}`);
+        if (subjectName) baseKeys.push(`quiz::${subjectName}`);
+        if (quizId) baseKeys.push(`quiz::${quizId}`);
+        if (quizId) baseKeys.push(String(quizId));
+        if (subjectId) baseKeys.push(subjectId);
+        if (subjectName) baseKeys.push(subjectName);
+      } else if (category === 'mock-exam') {
+        const setPrefix = `set-${effectiveSetNum}::`;
+        if (subjectId) baseKeys.push(`${setPrefix}${subjectId}`);
+        if (subjectName) baseKeys.push(`${setPrefix}${subjectName}`);
+        if (quizId) baseKeys.push(`quiz::${quizId}`);
+        if (quizId) baseKeys.push(String(quizId));
+      }
+
+      const keys = baseKeys.map((k) => `${currentTarget}::${k}`);
+      for (const key of keys) {
+        const existing = nextScores[key] || {};
+        const updated: SubjectScore = { ...existing, lastUpdated: new Date().toISOString() };
+        if (category === 'quiz') {
+          updated.quizScore = score;
+        } else if (category === 'mock-exam') {
+          updated.mockExamScore = score;
+          if (round === 2) {
+            updated.mockExamR2Score = score;
+          } else {
+            updated.mockExamR1Score = score;
+          }
+        }
+        nextScores[key] = updated;
+      }
+      try {
+        localStorage.setItem('passkru_subject_scores', JSON.stringify(nextScores));
+      } catch (err) {
+        console.error('Failed to save subject scores to localStorage', err);
+      }
+      return nextScores;
+    });
+  }, [userProfile.targetExam, activeMockSetNumber]);
+
+  const [bookmarkedQuestionIds, setBookmarkedQuestionIds] = useState<string[]>(['q-ped-01']);
+  const [highlightTaskId, setHighlightTaskId] = useState<string | null>(null);
+
+  const [isExamSelectionOpen, setIsExamSelectionOpen] = useState<boolean>(false);
+  const openExamSelection = useCallback(() => setIsExamSelectionOpen(true), []);
+  const closeExamSelection = useCallback(() => setIsExamSelectionOpen(false), []);
+  // Lets the study plan skip its own level/subject step right after the
+  // candidate chose them elsewhere (onboarding, the profile modal).
+  const [selectionConfirmedAt, setSelectionConfirmedAt] = useState<number | null>(null);
+
+  const applyExamSelection = useCallback(({ targetExam, selectedSubjects }: { targetExam: ExamTarget; selectedSubjects: string[] }) => {
+    setUserProfile((prev) => ({
+      ...prev,
+      targetExam,
+      examCategory: getCategoryConfig(targetExam)?.titleKm ?? prev.examCategory,
+      selectedSubjects,
+      targetSubjects: selectedSubjects,
+      targetSubject: selectedSubjects[0] || prev.targetSubject,
+      hasCompletedExamSelection: true,
+    }));
+    setSelectionConfirmedAt(Date.now());
+  }, []);
+
+  const saveExamSelection = useCallback(
+    async ({
+      examCategory,
+      selectedSubjects,
+      targetExam,
+    }: {
+      examCategory: string;
+      selectedSubjects: string[];
+      targetExam?: ExamTarget;
+    }) => {
+      // "អនុវិទ្យាល័យ" contains "វិទ្យាល័យ", so the lower-secondary check must run first.
+      const resolvedTarget: ExamTarget =
+        targetExam ||
+        (examCategory.includes('មត្តេយ្យ')
+          ? 'kindergarten'
+          : examCategory.includes('មូលដ្ឋាន') || examCategory.includes('អនុវិទ្យាល័យ')
+          ? 'rttc'
+          : examCategory.includes('ឧត្តម') || examCategory.includes('វិទ្យាល័យ')
+          ? 'nie'
+          : 'pttc');
+
+      // The server enforces the track rule (NIE: one subject, RTTC: a
+      // pairing, PTTC / kindergarten: ["generalist"]) and returns the keys it
+      // stored. A rejected selection is thrown so the flow can show why,
+      // instead of the old silent console.warn.
+      const response = await api('/auth/me', {
+        method: 'PATCH',
+        body: { targetExamCode: resolvedTarget, targetSubjects: selectedSubjects },
+      });
+      const stored = response?.user?.selectedSubjects;
+      const savedSubjects: string[] = Array.isArray(stored) && stored.length ? stored : selectedSubjects;
+
+      setUserProfile((prev) => ({
+        ...prev,
+        examCategory,
+        selectedSubjects: savedSubjects,
+        targetExam: resolvedTarget,
+        targetSubject: savedSubjects[0] || prev.targetSubject,
+        targetSubjects: savedSubjects,
+        hasCompletedExamSelection: true,
+      }));
+
+      setIsExamSelectionOpen(false);
+      setSelectionConfirmedAt(Date.now());
+
+      const userEmail =
+        userProfile.email || authUser?.email || 'default';
+      const selectionData = {
+        examCategory,
+        selectedSubjects: savedSubjects,
+        targetExam: resolvedTarget,
+        hasCompletedExamSelection: true,
+        updatedAt: new Date().toISOString(),
+      };
+
+      try {
+        localStorage.setItem(
+          `passkru_exam_selection_${userEmail}`,
+          JSON.stringify(selectionData)
+        );
+        localStorage.setItem(
+          'passkru_current_exam_selection',
+          JSON.stringify(selectionData)
+        );
+      } catch (err) {
+        console.error('Failed to save exam selection to localStorage:', err);
+      }
+    },
+    [authUser, userProfile.email]
+  );
+
+  // Synchronize setCurrentPage with React Router navigate
+  const setCurrentPage = useCallback((requested: ActivePage, options?: { replace?: boolean }) => {
+    const page = PAGE_ALIASES[requested] ?? requested;
+    setCurrentPageState(page);
+    // Any navigation ends the quiz's "return to" link; startQuizById sets it again right after.
+    setQuizReturnPage(null);
+    const detailId = page === 'announcement-detail' ? announcementKey(selectedAnnouncement) : null;
+    const targetPath = detailId != null ? `/announcements/${detailId}` : pageToPathMap[page] || '/';
+    if (location.pathname !== targetPath) {
+      navigate(targetPath, { replace: Boolean(options?.replace) });
+    }
+  }, [location.pathname, navigate, selectedAnnouncement]);
+
+  const openAnnouncement = useCallback((announcement: any) => {
+    setSelectedAnnouncement(announcement);
+    setCurrentPageState('announcement-detail');
+    const id = announcementKey(announcement);
+    navigate(id != null ? `/announcements/${id}` : '/announcements');
+  }, [navigate]);
+
+  // Synchronize URL change back to currentPage state. Addresses are corrected in
+  // place: trailing slashes and old aliases are replaced, unknown addresses go to
+  // the home page. "/" stays the landing page even when signed in, so the
+  // sidebar's "back to home" link can reach it.
+  useEffect(() => {
+    const canonical = canonicalPath(location.pathname);
+    if (canonical === null) {
+      navigate(isSignedIn ? '/announcements' : '/', { replace: true });
+      return;
+    }
+    if (canonical !== location.pathname) {
+      navigate(`${canonical}${location.search}`, { replace: true });
+      return;
+    }
+    const matchedPage = pageForPath(canonical);
+    if (matchedPage && matchedPage !== currentPage) {
+      setCurrentPageState(matchedPage);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, isSignedIn, isAuthLoaded]);
+
+  // Handle URL query parameters (logout, viewAsUser)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('logout') === 'true') {
+      logoutUser();
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    if (params.get('viewAsUser') === 'true') {
+      sessionStorage.setItem('viewAsUser', 'true');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [isSignedIn]);
+
+  // Sync auth state with AuthContext
+  useEffect(() => {
+    const syncUser = async () => {
+      if (isSignedIn && authUser) {
+        setIsLoading(true);
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('viewAsUser') === 'true') {
+            sessionStorage.setItem('viewAsUser', 'true');
+          }
+          const isViewingAsUser = sessionStorage.getItem('viewAsUser') === 'true';
+
+          const dbUser = authUser;
+
+          if (dbUser.role === 'admin' && !isViewingAsUser) {
+            if (currentPage === 'login' || currentPage === 'register') {
+              const adminUrl = import.meta.env.VITE_ADMIN_URL || `${window.location.protocol}//${window.location.hostname}:3001`;
+              window.location.href = adminUrl;
+              return;
+            }
+          }
+
+          if (dbUser.role !== 'admin') {
+            sessionStorage.removeItem('viewAsUser');
+          }
+
+          const userEmail = dbUser.email || '';
+          let localSelection: any = null;
+          try {
+            const saved =
+              localStorage.getItem(`passkru_exam_selection_${userEmail}`) ||
+              localStorage.getItem('passkru_current_exam_selection');
+            if (saved) localSelection = JSON.parse(saved);
+          } catch {}
+
+          const examCategory =
+            dbUser.examCategory ||
+            localSelection?.examCategory ||
+            undefined;
+
+          const selectedSubjects =
+            dbUser.selectedSubjects ||
+            localSelection?.selectedSubjects ||
+            (Array.isArray(dbUser.targetSubjects) && dbUser.targetSubjects.length > 0
+              ? dbUser.targetSubjects
+              : []);
+
+          const hasCompletedExamSelection =
+            dbUser.hasCompletedExamSelection !== undefined
+              ? dbUser.hasCompletedExamSelection
+              : localSelection?.hasCompletedExamSelection !== undefined
+              ? localSelection.hasCompletedExamSelection
+              : Boolean(examCategory && selectedSubjects && selectedSubjects.length > 0);
+
+          const isAutoSubj = (s: string) =>
+            s.includes('វប្បធម៌ទូទៅ') ||
+            s.includes('General Culture') ||
+            s === 'ភាសាអង់គ្លេស' ||
+            s === 'English';
+
+          const electiveSubject =
+            selectedSubjects.find((s: string) => !isAutoSubj(s)) ||
+            selectedSubjects.find((s: string) => !s.includes('វប្បធម៌ទូទៅ') && !s.includes('General Culture')) ||
+            selectedSubjects[0] ||
+            dbUser.targetSubject ||
+            defaultUserProfile.targetSubject;
+
+          const nextProfile: UserProfile = {
+            id: String(dbUser.userId),
+            name: `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() || 'User',
+            email: dbUser.email || '',
+            avatar: dbUser.avatarUrl || '',
+            targetExam: resolveExamTarget(dbUser),
+            targetSubject: electiveSubject,
+            targetSubjects: Array.isArray(dbUser.targetSubjects) ? dbUser.targetSubjects : [],
+            dailyGoalMinutes: dbUser.dailyGoalMinutes ?? defaultUserProfile.dailyGoalMinutes,
+            streakDays: Number(dbUser.streakDays ?? 0),
+            completedQuestions: Number(dbUser.completedQuestions ?? 0),
+            averageScore: Number(dbUser.averageScore ?? 0),
+            studyHoursTotal: Number(dbUser.studyHoursTotal ?? 0),
+            role: dbUser.role || 'candidate',
+            examCategory,
+            selectedSubjects,
+            hasCompletedExamSelection,
+          };
+
+          setUserProfile(nextProfile);
+          try {
+            localStorage.setItem('passkru_cached_user_profile', JSON.stringify(nextProfile));
+          } catch {}
+
+          setIsLoggedIn(true);
+
+          try {
+            const notifRes = await getNotifications();
+            if (notifRes?.success && Array.isArray(notifRes.notifications)) {
+              setNotifications(
+                notifRes.notifications.map((n: any) => ({
+                  id: String(n.notificationId),
+                  title: { km: n.title, en: n.title },
+                  message: { km: n.message || '', en: n.message || '' },
+                  category: n.category,
+                  timestamp: n.createdAt,
+                  isRead: !!n.isRead,
+                  actionUrl: n.actionUrl,
+                }))
+              );
+            }
+          } catch (notifErr) {
+            console.error('Failed to load notifications in AppContext:', notifErr);
+          }
+
+          if (currentPage === 'login' || currentPage === 'register' || currentPage === 'landing') {
+            setCurrentPage('announcements');
+          }
+          setIsLoading(false);
+        } catch (error: any) {
+          console.error("Failed to sync user role from DB:", error);
+          setIsLoggedIn(false);
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoggedIn(false);
+        setIsLoading(false);
+      }
+    };
+
+    if (isAuthLoaded) {
+      syncUser();
+    }
+  }, [isSignedIn, isAuthLoaded, authUser]);
+
+  const logoutUser = async () => {
+    setIsLoading(true);
+    sessionStorage.removeItem('viewAsUser');
+    try {
+      await logoutAuthContext();
+    } catch (e) {
+      console.error(e);
+    }
+    setIsLoggedIn(false);
+    setUserProfile(defaultUserProfile);
+    setCurrentPage('landing');
+    setIsLoading(false);
+  };
+
+  const markNotificationAsRead = useCallback(async (id: string | number) => {
+    setNotifications(prev =>
+      prev.map(n => (String(n.id) === String(id) || String((n as any).notificationId) === String(id) ? { ...n, isRead: true } : n))
+    );
+    try {
+      const numId = typeof id === 'number' ? id : Number(id);
+      if (Number.isFinite(numId)) {
+        await markNotificationRead(numId);
+      }
+    } catch (err) {
+      console.error('Failed to mark notification as read on server:', err);
+    }
+  }, []);
+
+  const markAllNotificationsAsRead = useCallback(async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    try {
+      await markAllNotificationsRead();
+    } catch (err) {
+      console.error('Failed to mark all notifications as read on server:', err);
+    }
+  }, []);
+
+  const unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
+
+  const toggleBookmarkQuestion = (questionId: string) => {
+    setBookmarkedQuestionIds(prev =>
+      prev.includes(questionId)
+        ? prev.filter(id => id !== questionId)
+        : [...prev, questionId]
+    );
+  };
+
+  /**
+   * Ids come from the real database (a course task's quizId, a quiz picker).
+   * A non-numeric id just clears the selection, which lands the user on the
+   * picker rather than on a made-up quiz.
+   */
+  const startQuizById = (quizId: number | string) => {
+    const numericId = typeof quizId === 'number' ? quizId : Number(quizId);
+    setActiveQuiz(null);
+    setActiveQuizId(Number.isFinite(numericId) ? numericId : null);
+    setCurrentPage('quiz');
+    // Remember where the quiz was opened from, so Exit and the result page go back there.
+    setQuizReturnPage(currentPage === 'quiz' || currentPage === 'mock-exam' ? null : currentPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const startMockQuizById = (quizId: number) => {
+    setActiveQuiz(null);
+    setActiveMockExam(null);
+    setActiveQuizId(quizId);
+    setCurrentPage('mock-exam');
+    setQuizReturnPage(currentPage === 'quiz' || currentPage === 'mock-exam' ? null : currentPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const startFlashcardDeck = ({ deckId, subjectName }: { deckId: number; subjectName: string }) => {
+    setSelectedPracticeSubject(subjectName);
+    setSelectedPracticeSubjectId(null);
+    setActiveFlashcardDeckId(deckId);
+    setCurrentPage('flashcards');
+    setQuizReturnPage(currentPage === 'flashcards' ? null : currentPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const startMockExamById = (examId: number | string) => {
+    const numericId = typeof examId === 'number' ? examId : Number(examId);
+    setActiveMockExam(null);
+    setActiveMockExamId(Number.isFinite(numericId) ? numericId : null);
+    setCurrentPage('practice');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <AppContext.Provider
+      value={{
+        currentPage,
+        setCurrentPage,
+        isLoggedIn,
+        setIsLoggedIn,
+        userProfile,
+        setUserProfile,
+        notifications,
+        markNotificationAsRead,
+        markAllNotificationsAsRead,
+        unreadNotificationsCount,
+        selectedAnnouncement,
+        setSelectedAnnouncement,
+        openAnnouncement,
+        activeQuizId,
+        setActiveQuizId,
+        activeMockExamId,
+        setActiveMockExamId,
+        activeQuiz,
+        setActiveQuiz,
+        activeMockExam,
+        setActiveMockExam,
+        selectedPracticeSubject,
+        setSelectedPracticeSubject,
+        selectedPracticeSubjectId,
+        setSelectedPracticeSubjectId,
+        practiceViewMode,
+        setPracticeViewMode,
+        activeMockSetNumber,
+        setActiveMockSetNumber,
+        subjectScores,
+        saveSubjectScore,
+        bookmarkedQuestionIds,
+        toggleBookmarkQuestion,
+        highlightTaskId,
+        setHighlightTaskId,
+        startQuizById,
+        startMockExamById,
+        quizReturnPage,
+        startMockQuizById,
+        startFlashcardDeck,
+        activeFlashcardDeckId,
+        setActiveFlashcardDeckId,
+        logoutUser,
+        isLoading,
+        setIsLoading,
+        isExamSelectionOpen,
+        openExamSelection,
+        closeExamSelection,
+        saveExamSelection,
+        selectionConfirmedAt,
+        applyExamSelection,
+      }}
+    >
+      {children}
+      {isExamSelectionOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
+          <ExamSelectionFlow isModal onClose={closeExamSelection} />
+        </div>
+      )}
+    </AppContext.Provider>
+  );
+};
+
+export const useApp = () => {
+  const context = useContext(AppContext);
+  if (!context) throw new Error('useApp must be used within an AppProvider');
+  return context;
+};

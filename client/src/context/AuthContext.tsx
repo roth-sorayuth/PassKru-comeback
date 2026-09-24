@@ -55,6 +55,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const data = await exchange.json();
           if (exchange.ok && data.token) {
             localStorage.setItem('token', data.token);
+            if (data.user) {
+              setUser(data.user);
+              setLoading(false);
+              return;
+            }
           }
         } catch (err) {
           console.error('Google sign-in code exchange failed:', err);

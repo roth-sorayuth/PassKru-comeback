@@ -40,7 +40,10 @@ export const LoginButton: React.FC<LoginButtonProps> = ({
   className = '',
   text = 'Continue with Google',
 }) => {
-  const googleAuthUrl = `${API_BASE_URL}/auth/google`;
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const googleAuthUrl = currentOrigin
+    ? `${API_BASE_URL}/auth/google?returnTo=${encodeURIComponent(currentOrigin)}`
+    : `${API_BASE_URL}/auth/google`;
 
   return (
     <a

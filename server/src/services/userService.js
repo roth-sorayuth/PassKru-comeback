@@ -105,7 +105,9 @@ export async function createUser(data) {
       targetExamId: data.targetExamId ? Number(data.targetExamId) : null,
       targetSubject: data.targetSubject ? data.targetSubject.trim() : null,
       knowledgeLevel: data.knowledgeLevel ? data.knowledgeLevel.trim() : null,
-      passwordHash: data.passwordHash || "managed_clerk_auth",
+      // Admin-created accounts never take a password (or hash) from the request;
+      // the user signs in with Google, or registers to set one.
+      passwordHash: "managed_clerk_auth",
       avatarUrl: data.avatarUrl || null,
       dailyGoalMinutes: data.dailyGoalMinutes ? Number(data.dailyGoalMinutes) : 30,
     },

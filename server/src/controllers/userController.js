@@ -1,4 +1,5 @@
 import * as userService from "../services/userService.js";
+import { toPublicUser } from "../utils/publicUser.js";
 
 export async function getUsersHandler(req, res) {
   try {
@@ -7,7 +8,7 @@ export async function getUsersHandler(req, res) {
     res.json({
       success: true,
       count: users.length,
-      users,
+      users: users.map(toPublicUser),
     });
   } catch (error) {
     res.status(500).json({
@@ -23,7 +24,7 @@ export async function getUserByIdHandler(req, res) {
     const user = await userService.getUserById(id);
     res.json({
       success: true,
-      user,
+      user: toPublicUser(user),
     });
   } catch (error) {
     res.status(error.message === "User not found" ? 404 : 500).json({
@@ -39,7 +40,7 @@ export async function createUserHandler(req, res) {
     res.status(201).json({
       success: true,
       message: "User created successfully",
-      user,
+      user: toPublicUser(user),
     });
   } catch (error) {
     res.status(400).json({
@@ -56,7 +57,7 @@ export async function updateUserHandler(req, res) {
     res.json({
       success: true,
       message: "User updated successfully",
-      user,
+      user: toPublicUser(user),
     });
   } catch (error) {
     res.status(400).json({

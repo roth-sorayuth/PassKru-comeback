@@ -1,10 +1,13 @@
 import * as paperService from "../services/paperService.js";
+import { withSignedUrl, withSignedUrls } from "../services/storageService.js";
 
 // GET /api/papers
 export const getPapers = async (req, res, next) => {
   try {
     const { examId, subjectId, year, hasAnswerKey, search, paperType, subjectName, examName } = req.query;
-    const papers = await paperService.getAll({ examId, subjectId, year, hasAnswerKey, search, paperType, subjectName, examName });
+    const papers = await withSignedUrls(
+      await paperService.getAll({ examId, subjectId, year, hasAnswerKey, search, paperType, subjectName, examName })
+    );
 
     return res.status(200).json({
       success: true,
@@ -27,7 +30,7 @@ export const getPaperById = async (req, res, next) => {
       });
     }
 
-    const paper = await paperService.getById(id);
+    const paper = await withSignedUrl(await paperService.getById(id));
 
     return res.status(200).json({
       success: true,

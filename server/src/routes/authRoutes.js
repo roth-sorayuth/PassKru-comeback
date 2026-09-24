@@ -59,18 +59,32 @@ router.post("/google/exchange", authLimiter, async (req, res, next) => {
 });
 
 // GET /api/auth/google
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"], session: false })
-);
+router.get("/google", (req, res, next) => {
+  const returnTo =
+    typeof req.query.returnTo === "string" && req.query.returnTo.startsWith("http")
+      ? req.query.returnTo
+      : (process.env.FRONTEND_URL || "http://localhost:3000");
+
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+    state: returnTo,
+  })(req, res, next);
+});
 
 // GET /api/auth/google/callback
 router.get("/google/callback", (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user, info) => {
+    const rawState = typeof req.query.state === "string" ? req.query.state.trim() : "";
+    const targetUrl =
+      rawState.startsWith("http://") || rawState.startsWith("https://")
+        ? rawState.replace(/\/+$/, "")
+        : (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
+
     if (err || !user) {
       console.error("Google OAuth authentication error:", err || info);
       const errorMessage = err?.message || "auth_failed";
-      return res.redirect(`${FRONTEND_URL}/login?error=${encodeURIComponent(errorMessage)}`);
+      return res.redirect(`${targetUrl}/login?error=${encodeURIComponent(errorMessage)}`);
     }
 
     try {
@@ -90,10 +104,10 @@ router.get("/google/callback", (req, res, next) => {
       });
 
       const code = issueGoogleLoginCode(token, user.userId);
-      return res.redirect(`${FRONTEND_URL}/dashboard?authCode=${encodeURIComponent(code)}`);
+      return res.redirect(`${targetUrl}/dashboard?authCode=${encodeURIComponent(code)}`);
     } catch (error) {
       console.error("Google OAuth token creation error:", error);
-      return res.redirect(`${FRONTEND_URL}/login?error=server_error`);
+      return res.redirect(`${targetUrl}/login?error=server_error`);
     }
   })(req, res, next);
 });

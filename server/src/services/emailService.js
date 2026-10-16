@@ -19,19 +19,24 @@ function getTransporter() {
 
   if (host && user && pass) {
     if (!cachedTransporter) {
-      cachedTransporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        family: 4, // Force IPv4 to prevent ENETUNREACH on systems without IPv6 routing
-        auth: { user, pass },
-        pool: true,
-        maxConnections: 3,
-        maxMessages: 100,
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-      });
+      const isGmail = host.includes("gmail") || user.endsWith("@gmail.com");
+      cachedTransporter = nodemailer.createTransport(
+        isGmail
+          ? {
+              service: "gmail",
+              auth: { user, pass },
+            }
+          : {
+              host,
+              port,
+              secure: port === 465,
+              family: 4,
+              auth: { user, pass },
+              connectionTimeout: 10000,
+              greetingTimeout: 10000,
+              socketTimeout: 15000,
+            }
+      );
     }
     return cachedTransporter;
   }

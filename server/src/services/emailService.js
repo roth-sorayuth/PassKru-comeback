@@ -1,4 +1,10 @@
 import nodemailer from "nodemailer";
+import dns from "node:dns";
+
+// Ensure Node defaults to IPv4 resolution first, preventing ENETUNREACH on systems without IPv6 routing
+if (typeof dns.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first");
+}
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -17,6 +23,7 @@ function getTransporter() {
         host,
         port,
         secure: port === 465,
+        family: 4, // Force IPv4 to prevent ENETUNREACH on systems without IPv6 routing
         auth: { user, pass },
         pool: true,
         maxConnections: 3,

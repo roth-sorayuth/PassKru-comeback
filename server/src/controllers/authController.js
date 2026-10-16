@@ -119,7 +119,7 @@ export const register = async (req, res, next) => {
       // Answer exactly like a fresh signup so the response doesn't reveal the
       // email is registered; the owner gets a "you already have an account" email.
       try {
-        await sendWithTimeout(sendAccountExistsEmail({ email: normalizedEmail }), 6000);
+        await sendWithTimeout(sendAccountExistsEmail({ email: normalizedEmail }));
       } catch (emailError) {
         console.error("[AUTH_REGISTER] Account-exists email error/timeout:", emailError?.message || emailError);
         return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
@@ -396,7 +396,7 @@ export const login = async (req, res, next) => {
           email: normalizedEmail,
           otp,
           firstName: user.firstName,
-        }, 6000);
+        });
       } catch (emailErr) {
         console.error("[AUTH_LOGIN_OTP] Email error/timeout:", emailErr?.message || emailErr);
       }

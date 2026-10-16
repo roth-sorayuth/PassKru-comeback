@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const rawSupabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+// Strip accidental PostgREST path suffix (/rest/v1) and trailing slashes
+const supabaseUrl = rawSupabaseUrl.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn(
@@ -45,17 +47,27 @@ export async function uploadAnnouncementToStorage(file: File): Promise<{ publicU
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const filePath = `documents/${fileName}`;
 
-  const { error } = await supabase.storage.from('Announcement').upload(filePath, file, {
+  let bucketName = 'announcement';
+  let res = await supabase.storage.from(bucketName).upload(filePath, file, {
     cacheControl: '3600',
     upsert: false,
     contentType: file.type || 'application/pdf',
   });
 
-  if (error) {
-    throw new Error(`Supabase announcement upload failed: ${error.message}`);
+  if (res.error && res.error.message.includes('Bucket not found')) {
+    bucketName = 'Announcement';
+    res = await supabase.storage.from(bucketName).upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type || 'application/pdf',
+    });
   }
 
-  const { data } = supabase.storage.from('Announcement').getPublicUrl(filePath);
+  if (res.error) {
+    throw new Error(`Supabase announcement upload failed: ${res.error.message}`);
+  }
+
+  const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
   const fileSize = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
 
   return { publicUrl: data.publicUrl, fileSize };
@@ -76,16 +88,68 @@ export async function uploadAnnouncementImageToStorage(file: File): Promise<{ pu
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const filePath = `thumbnails/${fileName}`;
 
-  const { error } = await supabase.storage.from('Announcement').upload(filePath, file, {
+  let bucketName = 'announcement';
+  let res = await supabase.storage.from(bucketName).upload(filePath, file, {
     cacheControl: '3600',
     upsert: false,
     contentType: file.type,
   });
 
-  if (error) {
-    throw new Error(`Supabase image upload failed: ${error.message}`);
+  if (res.error && res.error.message.includes('Bucket not found')) {
+    bucketName = 'Announcement';
+    res = await supabase.storage.from(bucketName).upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type,
+    });
   }
 
-  const { data } = supabase.storage.from('Announcement').getPublicUrl(filePath);
+  if (res.error) {
+    throw new Error(`Supabase image upload failed: ${res.error.message}`);
+  }
+
+  const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
   return { publicUrl: data.publicUrl };
 }
+
+/**
+ * Upload a mentor avatar image to the "announcement" Supabase Storage bucket.
+ * Returns the public URL on success.
+ */
+export async function uploadMentorImageToStorage(file: File): Promise<{ publicUrl: string }> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('រូបភាពត្រូវតែជាប្រភេទ File រូបភាព (JPG, PNG, WebP, GIF)');
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error(`ទំហំរូបភាពគឺ ${(file.size / (1024 * 1024)).toFixed(1)} MB — សូមជ្រើសរើសរូបភាពក្រោម 5 MB។`);
+  }
+
+  const ext = file.name.split('.').pop() ?? 'jpg';
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const filePath = `mentors/${fileName}`;
+
+  let bucketName = 'announcement';
+  let res = await supabase.storage.from(bucketName).upload(filePath, file, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: file.type,
+  });
+
+  if (res.error && res.error.message.includes('Bucket not found')) {
+    bucketName = 'Announcement';
+    res = await supabase.storage.from(bucketName).upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: file.type,
+    });
+  }
+
+  if (res.error) {
+    throw new Error(`Supabase mentor image upload failed: ${res.error.message}`);
+  }
+
+  const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+  return { publicUrl: data.publicUrl };
+}
+
+

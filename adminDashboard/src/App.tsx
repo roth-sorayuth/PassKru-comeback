@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Shield, LogOut } from 'lucide-react';
-import { uploadPaperToStorage, uploadAnnouncementToStorage } from './lib/supabase';
+import { uploadPaperToStorage, uploadAnnouncementToStorage, uploadMentorImageToStorage } from './lib/supabase';
 import { api } from './lib/api';
 
 /* Types */
@@ -288,6 +288,7 @@ export default function App() {
   const [mentorSubmitStatus, setMentorSubmitStatus] = useState<UploadStatus>('idle');
   const [mentorError, setMentorError] = useState('');
   const [mentorForm, setMentorForm] = useState<MentorFormState>(emptyMentorForm());
+  const [mentorFile, setMentorFile] = useState<File | null>(null);
 
   const handleLogout = async () => {
     try {
@@ -840,6 +841,7 @@ export default function App() {
   const openNewMentorModal = () => {
     setEditingMentor(null);
     setMentorForm(emptyMentorForm());
+    setMentorFile(null);
     setMentorError('');
     setMentorSubmitStatus('idle');
     setIsMentorModalOpen(true);
@@ -847,6 +849,7 @@ export default function App() {
 
   const openEditMentorModal = (m: MentorItem) => {
     setEditingMentor(m);
+    setMentorFile(null);
     const subjectsList = formatMentorSubjects(m.subjects);
     setMentorForm({
       firstName: m.firstName || '',
@@ -875,15 +878,24 @@ export default function App() {
     }
 
     setMentorError('');
-    setMentorSubmitStatus('saving-db');
+    setMentorSubmitStatus('uploading-storage');
 
     try {
+      let finalAvatarUrl = mentorForm.avatarUrl.trim() || null;
+
+      if (mentorFile) {
+        const { publicUrl } = await uploadMentorImageToStorage(mentorFile);
+        finalAvatarUrl = publicUrl;
+      }
+
+      setMentorSubmitStatus('saving-db');
+
       const payload = {
         firstName: mentorForm.firstName.trim(),
         lastName: mentorForm.lastName.trim(),
         title: mentorForm.title.trim() || null,
         roleLabel: mentorForm.roleLabel.trim() || null,
-        avatarUrl: mentorForm.avatarUrl.trim() || null,
+        avatarUrl: finalAvatarUrl,
         experienceYears: mentorForm.experienceYears ? Number(mentorForm.experienceYears) : null,
         bio: mentorForm.bio.trim() || null,
         hourlyRate: mentorForm.hourlyRate.trim() || null,
@@ -1343,6 +1355,8 @@ export default function App() {
         editingMentor={editingMentor}
         mentorForm={mentorForm}
         setMentorForm={setMentorForm}
+        mentorFile={mentorFile}
+        setMentorFile={setMentorFile}
         mentorError={mentorError}
         mentorSubmitStatus={mentorSubmitStatus}
         onSubmit={handleMentorSubmit}

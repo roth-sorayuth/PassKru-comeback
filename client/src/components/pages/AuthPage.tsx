@@ -509,6 +509,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                           <input
                             type="text"
                             required
+                            autoComplete="given-name"
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
                             placeholder={lang === 'km' ? 'សុខ' : 'Sok'}
@@ -525,6 +526,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                           <input
                             type="text"
                             required
+                            autoComplete="family-name"
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
                             placeholder={lang === 'km' ? 'ចាន់' : 'Chan'}
@@ -542,6 +544,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                         <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
                           type="tel"
+                          autoComplete="tel"
                           value={phoneNumber}
                           onChange={(e) => setPhoneNumber(e.target.value)}
                           placeholder="012 345 678"
@@ -561,6 +564,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                     <input
                       type="email"
                       required
+                      autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@example.com"
@@ -579,6 +583,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                       type="password"
                       required
                       minLength={6}
+                      autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
@@ -598,6 +603,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                         type="password"
                         required
                         minLength={6}
+                        autoComplete="new-password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"

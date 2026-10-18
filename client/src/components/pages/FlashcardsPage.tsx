@@ -71,6 +71,10 @@ const getEquivalentSubjectNames = (subjectName: string): string[] => {
   if (lower.includes('វប្បធម៌') || lower.includes('general')) {
     res.add('វប្បធម៌ទូទៅ');
   }
+  if (lower.includes('អង់គ្លេស') || lower.includes('english')) {
+    res.add('ភាសាអង់គ្លេស');
+    res.add('english');
+  }
 
   return Array.from(res);
 };

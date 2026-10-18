@@ -55,6 +55,11 @@ export const Header: React.FC<HeaderProps> = ({
           title: 'គ្រប់គ្រងគ្រូបង្រៀន',
           subtitle: 'ពិនិត្យ អនុម័ត និងគ្រប់គ្រងព័ត៌មាន និងពាក្យសុំរបស់គ្រូបង្រៀន',
         };
+      case 'flashcards':
+        return {
+          title: 'នាំចូល Flashcard',
+          subtitle: 'បញ្ចូល Flashcard ជាច្រើនក្នុងពេលតែមួយពីឯកសារ JSON ដោយមិនបាច់បញ្ចូលដោយដៃ',
+        };
       default:
         return {
           title: 'PassKru Admin',

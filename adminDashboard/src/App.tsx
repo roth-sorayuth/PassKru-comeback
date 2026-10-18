@@ -43,6 +43,7 @@ import { UserManagementTab } from './components/tabs/UserManagementTab';
 import { QuestionBankTab } from './components/tabs/QuestionBankTab';
 import { MockExamBuilderTab, BuilderSubMode } from './components/tabs/MockExamBuilderTab';
 import { MentorModerationTab, formatMentorSubjects } from './components/tabs/MentorModerationTab';
+import { FlashcardImportTab } from './components/tabs/FlashcardImportTab';
 
 /* Modal Components */
 import { PdfViewerModal } from './components/modals/PdfViewerModal';
@@ -61,7 +62,7 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const VALID_TABS: Tab[] = ['upload', 'dashboard', 'prepare-papers', 'announcements', 'users', 'questions', 'mock-exams', 'mentors'];
+  const VALID_TABS: Tab[] = ['upload', 'dashboard', 'prepare-papers', 'announcements', 'users', 'questions', 'mock-exams', 'mentors', 'flashcards'];
 
   const getInitialTab = (): Tab => {
     const params = new URLSearchParams(window.location.search);
@@ -1230,6 +1231,8 @@ export default function App() {
               onSetStatus={handleMentorSetStatus}
             />
           )}
+
+          {tab === 'flashcards' && <FlashcardImportTab subjects={subjects} />}
         </main>
       </div>
 

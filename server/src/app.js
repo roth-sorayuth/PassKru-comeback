@@ -78,7 +78,8 @@ app.use(
 
 // JSON only. No urlencoded parser: HTML forms are the classic CSRF vehicle
 // (no CORS preflight), and no client of this API sends form bodies.
-app.use(express.json());
+// 2mb (up from the 100kb default) so admins can bulk-import flashcard JSON files.
+app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 app.use(passport.initialize());
 

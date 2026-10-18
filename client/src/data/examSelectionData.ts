@@ -149,7 +149,7 @@ const getSubjectTokens = (subject: string): string[] => {
     tokens.push('ព័ត៌មានវិទ្យា', 'ict');
   }
 
-  if (s.includes('វប្បធម៌ទូទៅ') || s.includes('general culture')) {
+  if (s.includes('វប្បធម៌ទូទៅ') || s.includes('general culture') || s.includes('general knowledge') || s.includes('culture') || s.includes('knowledge')) {
     tokens.push('វប្បធម៌ទូទៅ', 'general culture', 'general knowledge', 'culture', 'sec-general-culture', 'pttc-general-culture');
   }
   if (s.includes('គណិត') || s.includes('math')) {

@@ -11,20 +11,18 @@ const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
-// Google sign-in hands the browser a single-use, 60s code instead of the JWT
-// itself, so the session token never sits in a URL (history, logs, Referer).
-// In-memory: fine for one instance; a restart only voids codes in flight.
+// Google sign-in hands the browser a single-use, 60s token instead of the 7-day
+// session JWT itself, so long-lived credentials never sit in URL history or logs.
+// Using a signed 60s JWT ensures exchanges survive server restarts and redeployments.
 const GOOGLE_CODE_TTL_MS = 60 * 1000;
-const googleLoginCodes = new Map();
+const usedExchangeCodes = new Set();
 
-function issueGoogleLoginCode(token, userId) {
-  const now = Date.now();
-  for (const [key, entry] of googleLoginCodes) {
-    if (entry.expiresAt <= now) googleLoginCodes.delete(key);
-  }
-  const code = crypto.randomBytes(32).toString("base64url");
-  googleLoginCodes.set(code, { token, userId, expiresAt: now + GOOGLE_CODE_TTL_MS });
-  return code;
+function issueGoogleLoginCode(userId) {
+  return jwt.sign(
+    { purpose: "google_exchange", userId },
+    JWT_SECRET,
+    { expiresIn: "60s" }
+  );
 }
 
 // POST /api/auth/register
@@ -39,38 +37,80 @@ router.post("/verify-otp", authLimiter, otpVerifyLimiter, verifyOtp);
 // POST /api/auth/resend-otp
 router.post("/resend-otp", authLimiter, otpResendLimiter, resendOtp);
 
-// POST /api/auth/google/exchange — trades the one-time code from the Google
-// redirect for the session token.
+// POST /api/auth/google/exchange — trades the 60s exchange code for the 7-day session token.
 router.post("/google/exchange", authLimiter, async (req, res, next) => {
   try {
-    const code = typeof req.body?.code === "string" ? req.body.code : "";
-    const entry = googleLoginCodes.get(code);
-    googleLoginCodes.delete(code);
-
-    if (!entry || entry.expiresAt <= Date.now()) {
+    const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+    if (!code || usedExchangeCodes.has(code)) {
       return res.status(400).json({ success: false, message: "Sign-in link is invalid or has expired. Please try again." });
     }
 
-    const user = await authService.getUserWithExam(entry.userId);
-    return res.status(200).json({ success: true, token: entry.token, user });
+    let decoded;
+    try {
+      decoded = jwt.verify(code, JWT_SECRET);
+    } catch (jwtErr) {
+      return res.status(400).json({ success: false, message: "Sign-in link is invalid or has expired. Please try again." });
+    }
+
+    if (decoded?.purpose !== "google_exchange" || !decoded?.userId) {
+      return res.status(400).json({ success: false, message: "Invalid sign-in link. Please try again." });
+    }
+
+    usedExchangeCodes.add(code);
+    setTimeout(() => usedExchangeCodes.delete(code), GOOGLE_CODE_TTL_MS);
+
+    const user = await authService.getUserWithExam(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    const token = jwt.sign(
+      { userId: user.userId, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    const isProduction = process.env.NODE_ENV === "production";
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({ success: true, token, user });
   } catch (error) {
     next(error);
   }
 });
 
 // GET /api/auth/google
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"], session: false })
-);
+router.get("/google", (req, res, next) => {
+  const returnTo =
+    typeof req.query.returnTo === "string" && req.query.returnTo.startsWith("http")
+      ? req.query.returnTo
+      : (process.env.FRONTEND_URL || "http://localhost:3000");
+
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+    state: returnTo,
+  })(req, res, next);
+});
 
 // GET /api/auth/google/callback
 router.get("/google/callback", (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user, info) => {
+    const rawState = typeof req.query.state === "string" ? req.query.state.trim() : "";
+    const targetUrl =
+      rawState.startsWith("http://") || rawState.startsWith("https://")
+        ? rawState.replace(/\/+$/, "")
+        : (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
+
     if (err || !user) {
       console.error("Google OAuth authentication error:", err || info);
       const errorMessage = err?.message || "auth_failed";
-      return res.redirect(`${FRONTEND_URL}/login?error=${encodeURIComponent(errorMessage)}`);
+      return res.redirect(`${targetUrl}/login?error=${encodeURIComponent(errorMessage)}`);
     }
 
     try {
@@ -89,11 +129,11 @@ router.get("/google/callback", (req, res, next) => {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      const code = issueGoogleLoginCode(token, user.userId);
-      return res.redirect(`${FRONTEND_URL}/dashboard?authCode=${encodeURIComponent(code)}`);
+      const code = issueGoogleLoginCode(user.userId);
+      return res.redirect(`${targetUrl}/dashboard?authCode=${encodeURIComponent(code)}`);
     } catch (error) {
       console.error("Google OAuth token creation error:", error);
-      return res.redirect(`${FRONTEND_URL}/login?error=server_error`);
+      return res.redirect(`${targetUrl}/login?error=server_error`);
     }
   })(req, res, next);
 });

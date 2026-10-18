@@ -1,7 +1,47 @@
 import nodemailer from "nodemailer";
+import dns from "node:dns";
+
+// Ensure Node defaults to IPv4 resolution first, preventing ENETUNREACH on systems without IPv6 routing
+if (typeof dns.setDefaultResultOrder === "function") {
+  dns.setDefaultResultOrder("ipv4first");
+}
 
 const escapeHtml = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+let cachedTransporter = null;
+
+function getTransporter() {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT) || 587;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (host && user && pass) {
+    if (!cachedTransporter) {
+      const isGmail = host.includes("gmail") || user.endsWith("@gmail.com");
+      cachedTransporter = nodemailer.createTransport(
+        isGmail
+          ? {
+              service: "gmail",
+              auth: { user, pass },
+            }
+          : {
+              host,
+              port,
+              secure: port === 465,
+              family: 4,
+              auth: { user, pass },
+              connectionTimeout: 10000,
+              greetingTimeout: 10000,
+              socketTimeout: 15000,
+            }
+      );
+    }
+    return cachedTransporter;
+  }
+  return null;
+}
 
 /**
  * Sends one email via SMTP, or prints it to the console when SMTP isn't
@@ -9,30 +49,27 @@ const escapeHtml = (value) =>
  * users silently never get their codes).
  */
 async function deliver({ to, subject, html, consoleLines }) {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT) || 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
   const from = process.env.SMTP_FROM || '"PassKru App" <noreply@passkru.com>';
+  const transporter = getTransporter();
 
-  if (host && user && pass) {
+  if (transporter) {
     try {
-      const transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
-        socketTimeout: 8000,
-      });
-
       await transporter.sendMail({ from, to, subject, html });
 
       console.log(`[EMAIL_SERVICE] Email "${subject}" sent via SMTP to: ${to}`);
       return { sent: true, mode: "smtp" };
     } catch (err) {
       console.error("[EMAIL_SERVICE] SMTP send error:", err?.message || err);
+      // In local development, fallback to console log so developers are never blocked
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[EMAIL_SERVICE] Falling back to console output (development mode)...");
+        console.log("\n=======================================================");
+        console.log("             [PASSKRU EMAIL SERVICE - FALLBACK]        ");
+        console.log(`  Recipient Email : ${to}`);
+        for (const line of consoleLines) console.log(`  ${line}`);
+        console.log("=======================================================\n");
+        return { sent: true, mode: "console_fallback" };
+      }
       throw new Error(`Failed to send email via SMTP: ${err?.message || err}`);
     }
   }

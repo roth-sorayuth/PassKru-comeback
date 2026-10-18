@@ -6,15 +6,31 @@ import { getEquivalentSubjectNames } from "./flashcardService.js";
 export const getAll = async (filters = {}) => {
   const where = {};
   if (filters.examId) {
-    where.examId = parseInt(filters.examId, 10);
-  }
-  if (filters.targetExam) {
-    where.exam = {
-      targetCode: {
-        equals: filters.targetExam,
-        mode: "insensitive",
+    where.OR = [
+      { examId: parseInt(filters.examId, 10) },
+      { subjectId: { in: [3, 20, 15] } }, // General Knowledge, English, and Khmer Literature
+    ];
+  } else if (filters.targetExam) {
+    const rawTarget = String(filters.targetExam).toLowerCase().trim();
+    let targetCode = rawTarget;
+    if (rawTarget.includes('elem') || rawTarget.includes('primary') || rawTarget.includes('pttc') || rawTarget.includes('បឋម')) targetCode = 'pttc';
+    else if (rawTarget.includes('sec') || rawTarget.includes('basic') || rawTarget.includes('rttc') || rawTarget.includes('មូលដ្ឋាន')) targetCode = 'rttc';
+    else if (rawTarget.includes('high') || rawTarget.includes('upper') || rawTarget.includes('nie') || rawTarget.includes('ឧត្តម')) targetCode = 'nie';
+
+    where.OR = [
+      {
+        exam: {
+          targetCode: {
+            equals: targetCode,
+            mode: "insensitive",
+          },
+        },
       },
-    };
+      // General Knowledge (ID: 3), English (ID: 20), and Khmer Literature (ID: 15)
+      {
+        subjectId: { in: [3, 20, 15] },
+      },
+    ];
   }
 
   const pastPapersCount = filters.paperType

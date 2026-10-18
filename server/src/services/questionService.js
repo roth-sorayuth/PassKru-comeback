@@ -27,7 +27,17 @@ const includeForDTO = {
   answerOptions: { orderBy: { optionId: "asc" } },
 };
 
-export const listQuestions = async ({ topicId, subjectId, questionType, difficultyLevel, search } = {}) => {
+export const listQuestions = async ({
+  topicId,
+  subjectId,
+  questionType,
+  difficultyLevel,
+  search,
+  examName,
+  category,
+  targetExam,
+  subjectName,
+} = {}) => {
   const where = {};
   if (topicId) where.topicId = Number(topicId);
   if (subjectId) where.topic = { subjectId: Number(subjectId) };
@@ -35,9 +45,38 @@ export const listQuestions = async ({ topicId, subjectId, questionType, difficul
   if (difficultyLevel) where.difficultyLevel = difficultyLevel;
   if (search) where.questionText = { contains: search, mode: "insensitive" };
 
+  const rawCat = String(category || targetExam || examName || '').toLowerCase().trim();
+  let mappedExam = null;
+  if (rawCat.includes('elem') || rawCat.includes('primary') || rawCat.includes('pttc') || rawCat.includes('បឋម')) mappedExam = 'elementary';
+  else if (rawCat.includes('sec') || rawCat.includes('basic') || rawCat.includes('rttc') || rawCat.includes('មូលដ្ឋាន')) mappedExam = 'secondary';
+  else if (rawCat.includes('high') || rawCat.includes('upper') || rawCat.includes('nie') || rawCat.includes('ឧត្តម')) mappedExam = 'highschool';
+  else if (rawCat === 'all') mappedExam = 'All';
+
+  if (subjectName) {
+    const s = subjectName.toLowerCase().trim();
+    if (s.includes('general') || s.includes('knowledge') || s.includes('culture') || s.includes('វប្បធម៌')) {
+      where.subjectName = 'General Knowledge';
+    } else if (s.includes('english') || s.includes('អង់គ្លេស')) {
+      where.subjectName = 'English';
+    } else {
+      where.subjectName = { contains: subjectName, mode: 'insensitive' };
+      if (mappedExam && mappedExam !== 'All') {
+        where.examName = mappedExam;
+      }
+    }
+  } else if (mappedExam && mappedExam !== 'All') {
+    // When querying by category without specific subject: return category's questions, PLUS General Knowledge & English (examName = 'All')
+    where.OR = [
+      { examName: mappedExam },
+      { examName: 'All' },
+    ];
+  } else if (examName) {
+    where.examName = examName;
+  }
+
   const questions = await prisma.question.findMany({
     where,
-    orderBy: { questionId: "desc" },
+    orderBy: { questionId: "asc" },
     include: includeForDTO,
   });
 

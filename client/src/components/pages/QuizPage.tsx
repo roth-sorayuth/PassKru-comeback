@@ -24,7 +24,19 @@ import {
   Clock,
   RefreshCw,
   Layers,
+  Award,
+  BookOpen,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Send,
+  Sparkles,
+  HelpCircle,
+  ShieldCheck,
+  Check,
 } from 'lucide-react';
+import { getSubjects } from '../../services/subjectService';
+import { getSubjectMeta } from './PracticePage';
 
 interface QuizOption {
   optionId: number;
@@ -76,6 +88,38 @@ interface AttemptResult {
   topicStats: { topicId: number; accuracy: number; correct: number; total: number }[];
 }
 
+export interface MockSubjectPaper {
+  subjectId: string;
+  subjectName: string;
+  subjectNameKm: string;
+  subjectNameEn: string;
+  quizId: number;
+  attemptId: number | null;
+  title: string;
+  questions: QuizQuestion[];
+  answers: Record<number, number>;
+}
+
+export interface MockExamSubjectResult {
+  subjectName: string;
+  subjectNameKm: string;
+  subjectNameEn: string;
+  quizId: number;
+  score: number;
+  correctCount: number;
+  totalQuestions: number;
+  answers: GradedAnswer[];
+  questions: QuizQuestion[];
+}
+
+export interface MockExamResult {
+  totalScore: number;
+  totalCorrect: number;
+  totalQuestions: number;
+  passed: boolean;
+  subjectResults: MockExamSubjectResult[];
+}
+
 type Stage = 'lobby' | 'taking' | 'result';
 
 /** Label for the button that returns to the page which opened the quiz. */
@@ -83,6 +127,42 @@ const RETURN_LABELS: Record<string, { km: string; en: string }> = {
   'study-plan': { km: 'ត្រឡប់ទៅផែនការសិក្សា', en: 'Back to Study Plan' },
   dashboard: { km: 'ត្រឡប់ទៅផ្ទាំងគ្រប់គ្រង', en: 'Back to Dashboard' },
   weakness: { km: 'ត្រឡប់ទៅចំណុចខ្សោយ', en: 'Back to Weak Areas' },
+};
+
+export const formatSubjectName = (name: string | null | undefined, lang: string): string => {
+  if (!name) return '';
+  const lower = name.toLowerCase().trim();
+  if (lower.includes('general') || lower.includes('culture') || lower.includes('knowledge') || lower.includes('វប្បធម៌') || lower === 'gk') {
+    return lang === 'km' ? 'វប្បធម៌ទូទៅ' : 'General Knowledge';
+  }
+  if (lower.includes('english') || lower.includes('អង់គ្លេស')) {
+    return lang === 'km' ? 'ភាសាអង់គ្លេស' : 'English Language';
+  }
+  if (lower.includes('khmer') || lower.includes('ខ្មែរ')) {
+    return lang === 'km' ? 'ភាសាខ្មែរ' : 'Khmer Language';
+  }
+  if (lower.includes('math') || lower.includes('គណិត')) {
+    return lang === 'km' ? 'គណិតវិទ្យា' : 'Mathematics';
+  }
+  if (lower.includes('phys') || lower.includes('រូប')) {
+    return lang === 'km' ? 'រូបវិទ្យា' : 'Physics';
+  }
+  if (lower.includes('chem') || lower.includes('គីមី')) {
+    return lang === 'km' ? 'គីមីវិទ្យា' : 'Chemistry';
+  }
+  if (lower.includes('bio') || lower.includes('ជីវ')) {
+    return lang === 'km' ? 'ជីវ:វិទ្យា' : 'Biology';
+  }
+  if (lower.includes('hist') || lower.includes('ប្រវត្តិ')) {
+    return lang === 'km' ? 'ប្រវត្តិវិទ្យា' : 'History';
+  }
+  if (lower.includes('geo') || lower.includes('ភូមិ')) {
+    return lang === 'km' ? 'ភូមិវិទ្យា' : 'Geography';
+  }
+  if (lower.includes('civic') || lower.includes('moral') || lower.includes('សីលធម៌') || lower.includes('ពលរដ្ឋ')) {
+    return lang === 'km' ? 'សីលធម៌-ពលរដ្ឋវិជ្ជា' : 'Civics & Ethics';
+  }
+  return name;
 };
 
 export const QuizPage: React.FC = () => {
@@ -127,11 +207,36 @@ export const QuizPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Multi-subject Mock Exam state
+  const [mockPapers, setMockPapers] = useState<MockSubjectPaper[]>([]);
+  const [activePaperIndex, setActivePaperIndex] = useState<number>(0);
+  const [mockResult, setMockResult] = useState<MockExamResult | null>(null);
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState<boolean>(false);
+  const [mockReviewSubjectFilter, setMockReviewSubjectFilter] = useState<string>('all');
+
+  const toKhmerNumeral = (num: number | string) =>
+    String(num).replace(/[0-9]/g, (d) => '០១២៣៤៥៦៧៨៩'[Number(d)]);
+
   const formatTime = (seconds: number | null) => {
     if (seconds === null) return '--:--';
-    const m = Math.floor(seconds / 60);
+    const hrs = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const formatTimeKm = (seconds: number | null) => {
+    if (seconds === null) return '--:--';
+    const hrs = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (hrs > 0) {
+      return `${toKhmerNumeral(hrs)} ម៉ោង ${toKhmerNumeral(m.toString().padStart(2, '0'))} នាទី ${toKhmerNumeral(s.toString().padStart(2, '0'))} វិនាទី`;
+    }
+    return `${toKhmerNumeral(m.toString().padStart(2, '0'))} នាទី ${toKhmerNumeral(s.toString().padStart(2, '0'))} វិនាទី`;
   };
 
   // Quizzes and mock exams are real DB quizzes: the practice page, a course task
@@ -139,8 +244,8 @@ export const QuizPage: React.FC = () => {
   useEffect(() => {
     if (activeQuizId) {
       openQuiz(activeQuizId);
-    } else if (currentPage === 'mock-exam') {
-      returnToMockExamPage();
+    } else if (currentPage === 'mock-exam' || (isMockExam && !activeQuiz && !activeQuizId)) {
+      loadMockExam(activeMockSetNumber || 1);
     } else if (!selectedPracticeSubject) {
       // No quiz and no subject (refresh, browser back): an all-subjects list isn't a page, so go to the subject list.
       returnToPracticeQuizList(true);
@@ -148,7 +253,7 @@ export const QuizPage: React.FC = () => {
       loadLobby();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, activeQuizId, selectedPracticeSubject]);
+  }, [currentPage, activeQuizId, selectedPracticeSubject, activeMockSetNumber]);
 
   const loadLobby = async () => {
     setLoading(true);
@@ -195,6 +300,138 @@ export const QuizPage: React.FC = () => {
       setError(err?.message || (lang === 'km' ? 'មិនអាចទាញយកកម្រងសំណួរបានទេ' : 'Failed to load quizzes'));
     } finally {
       setStage('lobby');
+      setLoading(false);
+    }
+  };
+
+  const loadMockExam = async (setNum: number = 1) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const targetExam = userProfile?.targetExam || 'nie';
+
+      let candidateSpecializations: string[] = [];
+      if (userProfile?.selectedSubjects && userProfile.selectedSubjects.length > 0) {
+        candidateSpecializations = userProfile.selectedSubjects;
+      } else if (selectedPracticeSubject) {
+        candidateSpecializations = [selectedPracticeSubject];
+      }
+
+      // Authentic Cambodian Teacher Recruitment Exam multi-subject structure:
+      // 1. General Knowledge (វប្បធម៌ទូទៅ)
+      // 2. English (ភាសាអង់គ្លេស)
+      // 3. Candidate Specialization (ឯកទេស)
+      const subjectQueue: { name: string; isCore: boolean }[] = [
+        { name: 'General Knowledge', isCore: true },
+        { name: 'English', isCore: true },
+      ];
+
+      if (candidateSpecializations.length > 0) {
+        for (const spec of candidateSpecializations) {
+          const lower = spec.toLowerCase();
+          if (
+            !lower.includes('general') &&
+            !lower.includes('culture') &&
+            !lower.includes('knowledge') &&
+            !lower.includes('english') &&
+            !lower.includes('អង់គ្លេស') &&
+            !lower.includes('វប្បធម៌')
+          ) {
+            subjectQueue.push({ name: spec, isCore: false });
+          }
+        }
+      } else {
+        if (targetExam === 'pttc') {
+          subjectQueue.push({ name: 'Mathematics', isCore: false });
+          subjectQueue.push({ name: 'Khmer Literature', isCore: false });
+        } else {
+          subjectQueue.push({ name: 'Mathematics', isCore: false });
+        }
+      }
+
+      const papers: MockSubjectPaper[] = [];
+
+      for (const item of subjectQueue) {
+        try {
+          const qListRes = await getQuizzes({
+            targetExam,
+            subjectName: item.name,
+          });
+          const quizzesList = qListRes.quizzes || [];
+          if (quizzesList.length === 0) continue;
+
+          // Find quiz corresponding to setNum (វិញ្ញាសាទី ១, ២, ៣, ៤, ៥)
+          const targetKmNum = toKhmerNumeral(setNum);
+          let matchedQuiz = quizzesList.find((q: any) =>
+            q.title && (
+              q.title.includes(`វិញ្ញាសាទី ${targetKmNum}`) ||
+              q.title.includes(`វិញ្ញាសាទី${targetKmNum}`) ||
+              q.title.includes(`វិញ្ញាសាទី ${setNum}`) ||
+              q.title.includes(`វិញ្ញាសាទី${setNum}`) ||
+              q.title.includes(`Set ${setNum}`)
+            )
+          );
+          if (!matchedQuiz) {
+            matchedQuiz = quizzesList[(setNum - 1) % quizzesList.length] || quizzesList[0];
+          }
+
+          const quizDetailRes = await getQuiz(matchedQuiz.quizId);
+          const fullQuiz = quizDetailRes.quiz;
+          if (!fullQuiz || !fullQuiz.questions || fullQuiz.questions.length === 0) continue;
+
+          let attemptId: number | null = null;
+          try {
+            const attRes = await startAttempt({ attemptType: 'quiz', quizId: matchedQuiz.quizId });
+            attemptId = attRes.attempt.attemptId;
+          } catch (attErr) {
+            console.warn('Could not start attempt for quiz', matchedQuiz.quizId, attErr);
+          }
+
+          const meta = getSubjectMeta(fullQuiz.subjectName || item.name, targetExam);
+
+          papers.push({
+            subjectId: String(fullQuiz.subjectId || matchedQuiz.subjectId || item.name),
+            subjectName: fullQuiz.subjectName || item.name,
+            subjectNameKm: meta.nameKm || formatSubjectName(fullQuiz.subjectName || item.name, 'km'),
+            subjectNameEn: meta.nameEn || formatSubjectName(fullQuiz.subjectName || item.name, 'en'),
+            quizId: matchedQuiz.quizId,
+            attemptId,
+            title: fullQuiz.title || matchedQuiz.title,
+            questions: fullQuiz.questions,
+            answers: {},
+          });
+        } catch (err) {
+          console.error('Failed to load mock exam paper for subject', item.name, err);
+        }
+      }
+
+      if (papers.length === 0) {
+        throw new Error(lang === 'km' ? 'មិនអាចទាញយកវិញ្ញាសាប្រឡងសាកល្បងបានទេ' : 'Failed to load mock exam papers');
+      }
+
+      setMockPapers(papers);
+
+      // If user selected a specific subject, start on that subject tab
+      if (selectedPracticeSubject) {
+        const foundIdx = papers.findIndex((p) =>
+          p.subjectName.toLowerCase().includes(selectedPracticeSubject.toLowerCase()) ||
+          p.subjectNameKm.toLowerCase().includes(selectedPracticeSubject.toLowerCase()) ||
+          selectedPracticeSubject.toLowerCase().includes(p.subjectNameKm.toLowerCase())
+        );
+        setActivePaperIndex(foundIdx >= 0 ? foundIdx : 0);
+      } else {
+        setActivePaperIndex(0);
+      }
+
+      setCurrentIndex(0);
+      setMockResult(null);
+      // Realistic official Cambodian teacher recruitment exam duration: 120 minutes (7,200 seconds)
+      setTimeLeft(120 * 60);
+      setStage('taking');
+    } catch (err: any) {
+      setError(err?.message || (lang === 'km' ? 'មិនអាចចាប់ផ្តើមការប្រឡងសាកល្បងបានទេ' : 'Failed to start mock exam'));
+      setStage('lobby');
+    } finally {
       setLoading(false);
     }
   };
@@ -256,18 +493,114 @@ export const QuizPage: React.FC = () => {
     }
   };
 
+  const handleSubmitMockExam = async () => {
+    if (submitting || mockPapers.length === 0) return;
+    setSubmitting(true);
+    setShowSubmitConfirm(false);
+    setError(null);
+    setTimeLeft(null);
+
+    try {
+      const subjectResults: MockExamSubjectResult[] = [];
+      let totalCorrect = 0;
+      let totalQuestions = 0;
+
+      for (const paper of mockPapers) {
+        let paperResult: AttemptResult;
+        const payload = (paper.questions || []).map((q) => ({
+          questionId: q.questionId,
+          selectedOptionId: paper.answers[q.questionId] ?? null,
+        }));
+
+        if (paper.attemptId) {
+          const res = await submitAttempt(paper.attemptId, payload);
+          paperResult = res.result;
+        } else {
+          const newAtt = await startAttempt({ attemptType: 'quiz', quizId: paper.quizId });
+          const res = await submitAttempt(newAtt.attempt.attemptId, payload);
+          paperResult = res.result;
+        }
+
+        totalCorrect += paperResult.correctCount;
+        totalQuestions += paperResult.totalQuestions;
+
+        // Save score to subjectScores for mock-exam
+        saveSubjectScore({
+          subjectId: paper.subjectId,
+          subjectName: paper.subjectName,
+          quizId: String(paper.quizId),
+          mockSetNumber: activeMockSetNumber || 1,
+          targetExam: userProfile?.targetExam,
+          category: 'mock-exam',
+          round: 1,
+          score: paperResult.score,
+        });
+
+        subjectResults.push({
+          subjectName: paper.subjectName,
+          subjectNameKm: paper.subjectNameKm,
+          subjectNameEn: paper.subjectNameEn,
+          quizId: paper.quizId,
+          score: paperResult.score,
+          correctCount: paperResult.correctCount,
+          totalQuestions: paperResult.totalQuestions,
+          answers: paperResult.answers || [],
+          questions: paper.questions,
+        });
+      }
+
+      const totalScore = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+      const passed = totalScore >= 50;
+
+      setMockResult({
+        totalScore,
+        totalCorrect,
+        totalQuestions,
+        passed,
+        subjectResults,
+      });
+
+      setStage('result');
+    } catch (err: any) {
+      setError(err?.message || (lang === 'km' ? 'មិនអាចដាក់ស្នើការប្រឡងសាកល្បងបានទេ' : 'Failed to submit mock exam'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSelectMockOption = (qId: number, optId: number) => {
+    setMockPapers((prev) => {
+      const next = [...prev];
+      const curPaper = { ...next[activePaperIndex] };
+      const curAnswers = { ...curPaper.answers };
+      if (curAnswers[qId] === optId) {
+        delete curAnswers[qId];
+      } else {
+        curAnswers[qId] = optId;
+      }
+      curPaper.answers = curAnswers;
+      next[activePaperIndex] = curPaper;
+      return next;
+    });
+  };
+
+  const handleClearMockOption = (qId: number) => {
+    setMockPapers((prev) => {
+      const next = [...prev];
+      const curPaper = { ...next[activePaperIndex] };
+      const curAnswers = { ...curPaper.answers };
+      delete curAnswers[qId];
+      curPaper.answers = curAnswers;
+      next[activePaperIndex] = curPaper;
+      return next;
+    });
+  };
+
   const returnToMockExamPage = () => {
     try {
       sessionStorage.setItem('passkru_practice_category', 'mock-exam');
     } catch { }
-    setTimeLeft(null);
-    setActiveMockExam(null);
-    setActiveQuizId(null);
-    setActiveQuiz(null);
-    setCurrentQuizKey(null);
-    setQuiz(null);
-    setAttemptId(null);
-    setResult(null);
+    resetQuizState();
     setSelectedPracticeSubject(null);
     setPracticeViewMode('subject-select');
     setCurrentPage('practice');
@@ -282,6 +615,10 @@ export const QuizPage: React.FC = () => {
     setQuiz(null);
     setAttemptId(null);
     setResult(null);
+    setMockPapers([]);
+    setActivePaperIndex(0);
+    setMockResult(null);
+    setShowSubmitConfirm(false);
   };
 
   // The practice page's quiz subject list, for a quiz that has neither a subject nor an origin page.
@@ -317,7 +654,11 @@ export const QuizPage: React.FC = () => {
   };
 
   const handleRetake = () => {
-    if (quiz) openQuiz(quiz.quizId);
+    if (isMockExam) {
+      loadMockExam(activeMockSetNumber || 1);
+    } else if (quiz) {
+      openQuiz(quiz.quizId);
+    }
   };
 
   // Countdown Timer Effect for Mock Exam / Timed Quiz
@@ -325,7 +666,11 @@ export const QuizPage: React.FC = () => {
     if (stage !== 'taking' || timeLeft === null) return;
 
     if (timeLeft <= 0) {
-      handleSubmit();
+      if (isMockExam && mockPapers.length > 0) {
+        handleSubmitMockExam();
+      } else {
+        handleSubmit();
+      }
       return;
     }
 
@@ -335,7 +680,7 @@ export const QuizPage: React.FC = () => {
 
     return () => clearInterval(timerId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage, timeLeft]);
+  }, [stage, timeLeft, isMockExam, mockPapers]);
 
   if (loading) {
     return (
@@ -455,7 +800,455 @@ export const QuizPage: React.FC = () => {
       )}
 
       {/* ---------- Taking ---------- */}
-      {stage === 'taking' && quiz && (() => {
+      {stage === 'taking' && isMockExam && mockPapers.length > 0 && (() => {
+        const currentPaper = mockPapers[activePaperIndex] || mockPapers[0];
+        const paperQuestions = currentPaper?.questions || [];
+        const currentQ = paperQuestions[currentIndex];
+        const hasCurrentAnswer = currentQ ? currentPaper.answers[currentQ.questionId] !== undefined : false;
+
+        const totalMockQuestions = mockPapers.reduce((sum, p) => sum + p.questions.length, 0);
+        const totalMockAnswered = mockPapers.reduce((sum, p) => sum + Object.keys(p.answers).length, 0);
+        const currentPaperAnswered = Object.keys(currentPaper.answers).length;
+
+        const levelTag = getExamCategoryTag(userProfile?.targetExam || 'nie', lang);
+        const formatLevel = (tag: string) => {
+          if (tag.includes('ឧត្តម') || userProfile?.targetExam === 'nie') return 'ថ្នាក់ឧត្តម (វិទ្យាស្ថានជាតិអប់រំ NIE)';
+          if (tag.includes('មូលដ្ឋាន') || userProfile?.targetExam === 'rttc') return 'ថ្នាក់មូលដ្ឋាន (គរុកោសល្យភូមិភាគ RTTC)';
+          if (tag.includes('បឋម') || userProfile?.targetExam === 'pttc') return 'ថ្នាក់បឋមសិក្សា (គរុកោសល្យរាជធានី-ខេត្ត PTTC)';
+          return tag;
+        };
+        const levelText = formatLevel(levelTag);
+
+        return (
+          <div className="space-y-6">
+            {/* 1. Official Royal Cambodian Examination Header */}
+            <div className="bg-gradient-to-b from-amber-50/70 via-white to-amber-50/40 rounded-3xl border-2 border-amber-200/80 p-5 sm:p-7 shadow-xs text-center space-y-2 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0a3263] via-amber-400 to-[#0a3263]" />
+              <div className="space-y-1">
+                <p className="text-base sm:text-xl font-black tracking-widest text-[#0a3263] font-serif">
+                  ព្រះរាជាណាចក្រកម្ពុជា
+                </p>
+                <p className="text-xs sm:text-sm font-extrabold tracking-wider text-amber-700">
+                  ជាតិ សាសនា ព្រះមហាក្សត្រ
+                </p>
+                <div className="w-28 h-0.5 bg-gradient-to-r from-transparent via-amber-500 to-transparent mx-auto my-1" />
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-amber-200/50 text-xs sm:text-sm">
+                <div className="font-extrabold text-[#0a3263] flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>ក្រសួងអប់រំ យុវជន និងកីឡា</span>
+                </div>
+                <div className="font-black text-slate-900 bg-amber-100/70 px-3 py-1 rounded-full text-xs">
+                  វិញ្ញាសាប្រឡងប្រជែងជ្រើសរើសគ្រូបង្រៀន • {levelText}
+                </div>
+                <div className="font-bold text-slate-600">
+                  សម័យប្រឡង៖ ២០២៤-២០២៥
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Top Info & Live Timer Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-[#0a3263] text-white">
+                    វិញ្ញាសាទី {toKhmerNumeral(activeMockSetNumber || 1)}
+                  </span>
+                  <h2 className="text-sm sm:text-base font-extrabold text-slate-900">
+                    ការប្រឡងសាកល្បងផ្លូវការ (រួមបញ្ចូល {toKhmerNumeral(mockPapers.length)} មុខវិជ្ជា)
+                  </h2>
+                </div>
+                <p className="text-xs font-semibold text-slate-500">
+                  បានឆ្លើយសរុប៖ <span className="font-bold text-[#0a3263]">{toKhmerNumeral(totalMockAnswered)}</span> / {toKhmerNumeral(totalMockQuestions)} សំណួរ • មុខវិជ្ជាបច្ចុប្បន្ន៖ <span className="font-bold text-indigo-700">{currentPaper.subjectNameKm}</span> ({toKhmerNumeral(currentPaperAnswered)}/{toKhmerNumeral(paperQuestions.length)})
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* Timer Display */}
+                {timeLeft !== null && (
+                  <div
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-mono font-black shadow-xs transition-all border ${
+                      timeLeft < 600
+                        ? 'bg-rose-50 text-rose-700 border-rose-300 animate-pulse'
+                        : 'bg-[#0a3263] text-white border-[#0a3263]'
+                    }`}
+                    title={formatTimeKm(timeLeft)}
+                  >
+                    <Clock className={`w-4 h-4 ${timeLeft < 600 ? 'text-rose-600' : 'text-amber-300'}`} />
+                    <span>នៅសល់៖ {formatTime(timeLeft)}</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={backToLobby}
+                  className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                >
+                  {lang === 'km' ? 'ចាកចេញ' : 'Exit'}
+                </button>
+              </div>
+            </div>
+
+            {/* 3. Multi-Subject Stepper / Tabs Bar */}
+            <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80">
+              <div className="text-[11px] font-bold text-slate-500 px-3 py-1 flex items-center justify-between">
+                <span>មុខវិជ្ជាប្រឡង ({toKhmerNumeral(mockPapers.length)} មុខវិជ្ជា)៖</span>
+                <span className="text-[11px] text-slate-400">ចុចលើមុខវិជ្ជា ឬប្រើប៊ូតុងខាងក្រោមដើម្បីប្តូរមុខវិជ្ជា</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
+                {mockPapers.map((paper, pIdx) => {
+                  const isCurrent = pIdx === activePaperIndex;
+                  const answeredCount = Object.keys(paper.answers).length;
+                  const totalQ = paper.questions.length;
+                  const isCompleted = answeredCount === totalQ && totalQ > 0;
+
+                  return (
+                    <button
+                      key={paper.quizId || pIdx}
+                      type="button"
+                      onClick={() => {
+                        setActivePaperIndex(pIdx);
+                        setCurrentIndex(0);
+                      }}
+                      className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-left transition-all cursor-pointer border ${
+                        isCurrent
+                          ? 'bg-[#0a3263] text-white border-[#0a3263] shadow-sm ring-2 ring-[#0a3263]/20'
+                          : 'bg-white text-slate-800 hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
+                            isCurrent
+                              ? 'bg-amber-400 text-slate-900'
+                              : isCompleted
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {toKhmerNumeral(pIdx + 1)}
+                        </span>
+                        <div className="truncate">
+                          <p className={`text-xs sm:text-sm font-black truncate ${isCurrent ? 'text-white' : 'text-slate-900'}`}>
+                            {paper.subjectNameKm}
+                          </p>
+                          <p className={`text-[11px] ${isCurrent ? 'text-blue-200' : 'text-slate-500'}`}>
+                            {paper.questions.length} សំណួរ
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span
+                          className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                            isCurrent
+                              ? 'bg-white/20 text-white'
+                              : isCompleted
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {toKhmerNumeral(answeredCount)}/{toKhmerNumeral(totalQ)}
+                        </span>
+                        {isCompleted && (
+                          <CheckCircle2 className={`w-4 h-4 ${isCurrent ? 'text-amber-300' : 'text-emerald-500'}`} />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 4. Active Question View (Responsive Layout) */}
+            {paperQuestions.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-500">
+                មុខវិជ្ជានេះមិនទាន់មានសំណួរនៅឡើយទេ។
+              </div>
+            ) : (
+              <div className="flex flex-col lg:flex-row gap-5 items-start">
+                {/* Left/Main Column: Question Card */}
+                <div className="flex-1 min-w-0 w-full">
+                  {currentQ && (
+                    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col justify-between min-h-[460px] space-y-6">
+                      <div className="space-y-5">
+                        {/* Question Title & Action */}
+                        <div className="flex items-start justify-between gap-4 pb-3 border-b border-slate-100">
+                          <div>
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-700">
+                              <span>{currentPaper.subjectNameKm}</span>
+                              <span>•</span>
+                              <span>សំណួរទី {toKhmerNumeral(currentIndex + 1)} នៃ {toKhmerNumeral(paperQuestions.length)}</span>
+                            </div>
+                          </div>
+
+                          {hasCurrentAnswer && (
+                            <button
+                              type="button"
+                              onClick={() => handleClearMockOption(currentQ.questionId)}
+                              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition cursor-pointer"
+                              title="ដកការជ្រើសរើសចម្លើយ"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              <span>ដកចម្លើយ</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Question Stem */}
+                        <div className="text-base sm:text-lg font-bold text-slate-900 leading-relaxed">
+                          <MathText text={currentQ.questionText} />
+                        </div>
+
+                        {/* Options List */}
+                        <div className="space-y-3 pt-2">
+                          {(currentQ.options || []).map((opt) => {
+                            const selected = currentPaper.answers[currentQ.questionId] === opt.optionId;
+                            return (
+                              <button
+                                key={opt.optionId}
+                                type="button"
+                                onClick={() => handleSelectMockOption(currentQ.questionId, opt.optionId)}
+                                className={`w-full text-left py-3.5 px-5 rounded-2xl border transition-all cursor-pointer flex items-center gap-4 group ${
+                                  selected
+                                    ? 'bg-[#0a3263]/10 border-[#0a3263] text-[#0a3263] font-bold ring-2 ring-[#0a3263]/20 shadow-xs'
+                                    : 'bg-white border-slate-200 text-slate-700 hover:border-[#0a3263]/40 hover:bg-slate-50/60'
+                                }`}
+                              >
+                                <div
+                                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
+                                    selected
+                                      ? 'border-[#0a3263] bg-[#0a3263]'
+                                      : 'border-slate-300 group-hover:border-slate-400 bg-white'
+                                  }`}
+                                >
+                                  {selected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                                <div className="flex-1 text-sm font-medium leading-relaxed">
+                                  <MathText text={opt.optionText} />
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Intra-Subject Question Navigation */}
+                      <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+                          disabled={currentIndex === 0}
+                          className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs sm:text-sm font-bold shadow-2xs transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>សំណួរមុន</span>
+                        </button>
+
+                        <span className="text-xs font-bold text-slate-400">
+                          {toKhmerNumeral(currentIndex + 1)} / {toKhmerNumeral(paperQuestions.length)}
+                        </span>
+
+                        {currentIndex < paperQuestions.length - 1 ? (
+                          <button
+                            type="button"
+                            onClick={() => setCurrentIndex((i) => Math.min(paperQuestions.length - 1, i + 1))}
+                            className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer"
+                          >
+                            <span>សំណួរបន្ទាប់</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        ) : activePaperIndex < mockPapers.length - 1 ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActivePaperIndex((i) => i + 1);
+                              setCurrentIndex(0);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl bg-[#0a3263] hover:bg-[#082447] text-white text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer"
+                          >
+                            <span>បន្តទៅមុខវិជ្ជាបន្ទាប់</span>
+                            <ArrowRight className="w-3.5 h-3.5 text-amber-300" />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setShowSubmitConfirm(true)}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>បញ្ចប់ការប្រឡង</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column: Question Navigator Palette */}
+                <div className="w-full lg:w-[280px] shrink-0">
+                  <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4 lg:sticky lg:top-24">
+                    <div className="flex items-center justify-between pb-1 border-b border-slate-100 text-xs">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-900">
+                        <CheckSquare className="w-4 h-4 text-[#0a3263]" />
+                        <span>សំណួរក្នុងមុខវិជ្ជានេះ</span>
+                      </div>
+                      <span className="text-[11px] font-bold text-indigo-600">
+                        {toKhmerNumeral(currentPaperAnswered)} / {toKhmerNumeral(paperQuestions.length)}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-5 gap-2 max-h-[300px] overflow-y-auto p-0.5">
+                      {paperQuestions.map((qItem, qIdx) => {
+                        const isAnswered = currentPaper.answers[qItem.questionId] !== undefined;
+                        const isCurrent = currentIndex === qIdx;
+                        return (
+                          <button
+                            key={qItem.questionId || qIdx}
+                            type="button"
+                            onClick={() => setCurrentIndex(qIdx)}
+                            className={`h-9 w-full rounded-xl text-xs font-black transition flex items-center justify-center cursor-pointer shadow-2xs ${
+                              isCurrent
+                                ? 'bg-[#0a3263] text-white shadow-sm ring-2 ring-[#0a3263]/30'
+                                : isAnswered
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
+                            }`}
+                          >
+                            {toKhmerNumeral(qIdx + 1)}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-[#0a3263]" />
+                        <span>កំពុងធ្វើ</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span>បានឆ្លើយ</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-slate-300" />
+                        <span>មិនទាន់ឆ្លើយ</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 5. Sequential Multi-Subject Navigation Bar (Prominent at Bottom) */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                {activePaperIndex > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePaperIndex((i) => i - 1);
+                      setCurrentIndex(0);
+                    }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border-2 border-slate-200 hover:border-slate-300 bg-white text-slate-700 text-xs sm:text-sm font-bold shadow-2xs transition cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4 text-[#0a3263]" />
+                    <span>ត្រឡប់ទៅមុខវិជ្ជាមុន ({mockPapers[activePaperIndex - 1].subjectNameKm})</span>
+                  </button>
+                ) : (
+                  <div className="text-xs font-semibold text-slate-400">
+                    មុខវិជ្ជាដំបូង ({currentPaper.subjectNameKm})
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                {activePaperIndex < mockPapers.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActivePaperIndex((i) => i + 1);
+                      setCurrentIndex(0);
+                    }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#0a3263] hover:bg-[#082447] text-white text-xs sm:text-sm font-black shadow-md transition cursor-pointer"
+                  >
+                    <span>បន្តទៅមុខវិជ្ជាបន្ទាប់ ({mockPapers[activePaperIndex + 1].subjectNameKm})</span>
+                    <ArrowRight className="w-4 h-4 text-amber-300" />
+                  </button>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => setShowSubmitConfirm(true)}
+                  disabled={submitting}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-black shadow-md transition cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                  <span>បញ្ចប់ និងដាក់ស្នើការប្រឡងទាំងមូល</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 6. Submit Confirmation Modal in Khmer */}
+            {showSubmitConfirm && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
+                <div className="bg-white rounded-3xl border border-slate-200 max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl animate-scaleUp">
+                  <div className="text-center space-y-2">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
+                      <HelpCircle className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-black text-slate-900">
+                      បញ្ជាក់ការបញ្ចប់ និងដាក់ស្នើការប្រឡងសាកល្បង
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                      អ្នកបានឆ្លើយចំនួន <span className="font-bold text-[#0a3263]">{toKhmerNumeral(totalMockAnswered)}</span> ក្នុងចំណោម <span className="font-bold text-slate-900">{toKhmerNumeral(totalMockQuestions)}</span> សំណួរ (នៅសល់ <span className="font-bold text-rose-600">{toKhmerNumeral(totalMockQuestions - totalMockAnswered)}</span> មិនទាន់ឆ្លើយ)។
+                    </p>
+                  </div>
+
+                  {/* Summary of each subject */}
+                  <div className="space-y-2 max-h-48 overflow-y-auto p-1 bg-slate-50 rounded-2xl border border-slate-100">
+                    {mockPapers.map((p, idx) => {
+                      const ansCount = Object.keys(p.answers).length;
+                      const isAll = ansCount === p.questions.length;
+                      return (
+                        <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200/60 text-xs font-bold">
+                          <span className="text-slate-800">{p.subjectNameKm}</span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[11px] ${isAll ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                            បានឆ្លើយ {toKhmerNumeral(ansCount)} / {toKhmerNumeral(p.questions.length)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowSubmitConfirm(false)}
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs sm:text-sm font-bold transition cursor-pointer"
+                    >
+                      ត្រឡប់ទៅពិនិត្យឡើងវិញ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSubmitMockExam}
+                      disabled={submitting}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-black shadow-sm transition cursor-pointer"
+                    >
+                      {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                      <span>យល់ព្រម ដាក់ស្នើការប្រឡង</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ---------- Taking (Single Quiz) ---------- */}
+      {stage === 'taking' && !isMockExam && quiz && (() => {
         const cleanQuizTitle = (quiz.title || '').replace(/ឈុត/g, 'វិញ្ញាសារ');
         const levelTag = getExamCategoryTag(userProfile?.targetExam || 'nie', lang);
         const formatLevel = (tag: string) => {
@@ -465,10 +1258,11 @@ export const QuizPage: React.FC = () => {
           return tag;
         };
         const levelText = formatLevel(levelTag);
-        const fullExamTitle = cleanQuizTitle.includes(quiz.subjectName || '')
+        const localizedSubject = formatSubjectName(quiz.subjectName, lang);
+        const fullExamTitle = cleanQuizTitle.includes(localizedSubject) || (quiz.subjectName && cleanQuizTitle.includes(quiz.subjectName))
           ? cleanQuizTitle
-          : quiz.subjectName
-            ? `${quiz.subjectName}${levelText ? ` (${levelText})` : ''} - ${cleanQuizTitle}`
+          : localizedSubject
+            ? `${localizedSubject}${levelText ? ` (${levelText})` : ''} - ${cleanQuizTitle}`
             : cleanQuizTitle;
         const answeredCount = Object.keys(answers).length;
         const totalQuestions = quiz.questions.length;
@@ -487,7 +1281,7 @@ export const QuizPage: React.FC = () => {
                   {fullExamTitle}
                 </h1>
                 <p className="text-xs sm:text-sm font-medium text-slate-500">
-                  {quiz.subjectName ? `${quiz.subjectName} • ` : ''}{answeredCount}/{totalQuestions} {lang === 'km' ? 'បានឆ្លើយ' : 'answered'}
+                  {localizedSubject ? `${localizedSubject} • ` : ''}{answeredCount}/{totalQuestions} {lang === 'km' ? 'បានឆ្លើយ' : 'answered'}
                 </p>
                 {/* Accent Purple Indicator Line */}
                 <div className="w-12 h-1 bg-indigo-600 rounded-full mt-2.5" />
@@ -855,8 +1649,251 @@ export const QuizPage: React.FC = () => {
         );
       })()}
 
-      {/* ---------- Result ---------- */}
-      {stage === 'result' && result && quiz && (
+      {/* ---------- Mock Exam Result (Official Certificate in Khmer) ---------- */}
+      {stage === 'result' && isMockExam && mockResult && (() => {
+        const levelTag = getExamCategoryTag(userProfile?.targetExam || 'nie', lang);
+        const formatLevel = (tag: string) => {
+          if (tag.includes('ឧត្តម') || userProfile?.targetExam === 'nie') return 'ថ្នាក់ឧត្តម (វិទ្យាស្ថានជាតិអប់រំ NIE)';
+          if (tag.includes('មូលដ្ឋាន') || userProfile?.targetExam === 'rttc') return 'ថ្នាក់មូលដ្ឋាន (គរុកោសល្យភូមិភាគ RTTC)';
+          if (tag.includes('បឋម') || userProfile?.targetExam === 'pttc') return 'ថ្នាក់បឋមសិក្សា (គរុកោសល្យរាជធានី-ខេត្ត PTTC)';
+          return tag;
+        };
+        const levelText = formatLevel(levelTag);
+
+        const filteredSubjects = mockReviewSubjectFilter === 'all'
+          ? mockResult.subjectResults
+          : mockResult.subjectResults.filter(s => s.subjectName === mockReviewSubjectFilter || s.subjectNameKm === mockReviewSubjectFilter);
+
+        return (
+          <div className="space-y-8 animate-fadeIn max-w-5xl mx-auto">
+            {/* 1. Official Certificate Header */}
+            <div className="bg-gradient-to-b from-amber-50/80 via-white to-amber-50/60 rounded-3xl border-2 border-amber-300 p-6 sm:p-8 shadow-md text-center space-y-3 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#0a3263] via-amber-400 to-[#0a3263]" />
+              <p className="text-lg sm:text-2xl font-black tracking-widest text-[#0a3263] font-serif">
+                ព្រះរាជាណាចក្រកម្ពុជា
+              </p>
+              <p className="text-xs sm:text-sm font-black tracking-wider text-amber-700">
+                ជាតិ សាសនា ព្រះមហាក្សត្រ
+              </p>
+              <div className="w-32 h-0.5 bg-gradient-to-r from-transparent via-amber-500 to-transparent mx-auto my-2" />
+              <h1 className="text-xl sm:text-3xl font-black text-slate-900 pt-1">
+                លទ្ធផលផ្លូវការនៃការប្រឡងសាកល្បងជ្រើសរើសគ្រូបង្រៀន
+              </h1>
+              <p className="text-xs sm:text-sm font-bold text-slate-600">
+                សម័យប្រឡង៖ ២០២៤-២០២៥ • វិញ្ញាសាប្រឡងសាកល្បងទី {toKhmerNumeral(activeMockSetNumber || 1)} • {levelText}
+              </p>
+            </div>
+
+            {/* 2. Primary Status Card */}
+            <div
+              className={`rounded-3xl p-8 text-center text-white shadow-lg space-y-4 border ${
+                mockResult.passed
+                  ? 'bg-gradient-to-br from-emerald-800 via-teal-900 to-[#0a3263] border-emerald-400/40'
+                  : 'bg-gradient-to-br from-rose-900 via-slate-900 to-[#0a3263] border-rose-400/40'
+              }`}
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black shadow-xs bg-white/20 text-white border border-white/30 backdrop-blur-xs">
+                {mockResult.passed ? (
+                  <>
+                    <Award className="w-4 h-4 text-amber-300" />
+                    <span>ជាប់ជាស្ថាពរ (PASSED)</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-4 h-4 text-amber-300" />
+                    <span>មិនទាន់ជាប់ទេ (FAILED)</span>
+                  </>
+                )}
+              </div>
+
+              <div>
+                <p className="text-5xl sm:text-6xl font-black tracking-tight text-white">
+                  {mockResult.totalScore}%
+                </p>
+                <p className="text-sm sm:text-base font-bold text-white/90 mt-2">
+                  ឆ្លើយត្រឹមត្រូវ {toKhmerNumeral(mockResult.totalCorrect)} លើ {toKhmerNumeral(mockResult.totalQuestions)} សំណួរ (រួមបញ្ចូល {toKhmerNumeral(mockResult.subjectResults.length)} មុខវិជ្ជា)
+                </p>
+              </div>
+
+              <p className="text-xs sm:text-sm max-w-xl mx-auto leading-relaxed text-blue-100/90">
+                {mockResult.passed
+                  ? 'សូមអបអរសាទរ! អ្នកបានឆ្លងកាត់ការប្រឡងសាកល្បងផ្លូវការដោយជោគជ័យ ស្របតាមកម្រិតស្តង់ដារប្រឡងប្រជែងក្រសួងអប់រំ យុវជន និងកីឡា។'
+                  : 'លទ្ធផលនេះមិនទាន់គ្រប់ ៥០% នៃពិន្ទុជាប់ឡើយ។ សូមពិនិត្យមើលចម្លើយកែតម្រូវ និងការពន្យល់ខាងក្រោមដើម្បីពង្រឹងសមត្ថភាពបន្ថែម។'}
+              </p>
+            </div>
+
+            {/* 3. Subject-by-Subject Score Cards Grid */}
+            <div className="space-y-3">
+              <h2 className="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#0a3263]" />
+                <span>ពិន្ទុតាមមុខវិជ្ជានីមួយៗ</span>
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {mockResult.subjectResults.map((sub, sIdx) => {
+                  const subPassed = sub.score >= 50;
+                  return (
+                    <div
+                      key={sIdx}
+                      className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3 flex flex-col justify-between"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="text-[11px] font-bold text-slate-400">មុខវិជ្ជាទី {toKhmerNumeral(sIdx + 1)}</span>
+                          <h3 className="text-sm sm:text-base font-black text-slate-900">
+                            {sub.subjectNameKm}
+                          </h3>
+                        </div>
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-black ${
+                            subPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {subPassed ? 'ជាប់' : 'ខ្សោយ'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-baseline justify-between pt-2 border-t border-slate-100">
+                        <span className="text-2xl font-black text-slate-900">{sub.score}%</span>
+                        <span className="text-xs font-semibold text-slate-500">
+                          {toKhmerNumeral(sub.correctCount)} / {toKhmerNumeral(sub.totalQuestions)} ត្រឹមត្រូវ
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 4. Question Correction & Review Section */}
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#0a3263]" />
+                  <span>ការកែវិញ្ញាសា និងការពន្យល់ចម្លើយលម្អិត</span>
+                </h2>
+
+                {/* Filter Tabs by Subject */}
+                <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setMockReviewSubjectFilter('all')}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                      mockReviewSubjectFilter === 'all'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    ទាំងអស់ ({mockResult.totalQuestions})
+                  </button>
+                  {mockResult.subjectResults.map((s, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setMockReviewSubjectFilter(s.subjectName)}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
+                        mockReviewSubjectFilter === s.subjectName
+                          ? 'bg-white text-slate-900 shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      {s.subjectNameKm}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {filteredSubjects.map((sub) => (
+                  <div key={sub.quizId} className="space-y-3">
+                    <div className="bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-xl flex items-center justify-between">
+                      <span className="text-xs sm:text-sm font-black text-slate-900">
+                        មុខវិជ្ជា៖ {sub.subjectNameKm} ({toKhmerNumeral(sub.correctCount)}/{toKhmerNumeral(sub.totalQuestions)} ត្រឹមត្រូវ)
+                      </span>
+                      <span className="text-xs font-bold text-slate-500">
+                        ពិន្ទុ៖ {sub.score}%
+                      </span>
+                    </div>
+
+                    {sub.questions.map((q, qIdx) => {
+                      const graded = sub.answers?.find((a) => a.questionId === q.questionId);
+                      const correctOpt = (q.options || []).find((o) => o.optionId === graded?.correctOptionId);
+                      const chosenOpt = (q.options || []).find((o) => o.optionId === graded?.selectedOptionId);
+
+                      return (
+                        <div
+                          key={q.questionId}
+                          className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3 shadow-2xs"
+                        >
+                          <div className="flex items-start gap-3">
+                            {graded?.isCorrect ? (
+                              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                            ) : (
+                              <XCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                            )}
+                            <div className="min-w-0 space-y-1.5 flex-1">
+                              <p className="text-sm font-bold text-slate-900 leading-relaxed">
+                                {toKhmerNumeral(qIdx + 1)}. <MathText text={q.questionText} />
+                              </p>
+
+                              <p className="text-xs text-slate-600">
+                                ចម្លើយរបស់អ្នក៖{' '}
+                                <span className={graded?.isCorrect ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'}>
+                                  {chosenOpt?.optionText ? <MathText text={chosenOpt.optionText} /> : 'មិនបានឆ្លើយ'}
+                                </span>
+                              </p>
+
+                              {!graded?.isCorrect && correctOpt && (
+                                <p className="text-xs text-slate-600">
+                                  ចម្លើយត្រឹមត្រូវ៖{' '}
+                                  <span className="text-emerald-700 font-bold">
+                                    <MathText text={correctOpt.optionText} />
+                                  </span>
+                                </p>
+                              )}
+
+                              {graded?.explanation && (
+                                <div className="text-xs text-slate-700 bg-amber-50/60 border border-amber-200/60 rounded-xl p-3 mt-2 leading-relaxed">
+                                  <span className="font-bold text-amber-900">ការពន្យល់៖ </span>
+                                  <MathText text={graded.explanation} />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 5. Bottom Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-4 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={handleRetake}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-slate-200 hover:border-slate-300 text-slate-700 text-xs sm:text-sm font-bold bg-white hover:bg-slate-50 transition cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>ធ្វើវិញ្ញាសានេះម្តងទៀត</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={backToLobby}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#0a3263] hover:bg-[#082447] text-white text-xs sm:text-sm font-black shadow-md transition cursor-pointer"
+              >
+                <span>ត្រឡប់ទៅជ្រើសរើសវិញ្ញាសា</span>
+                <ArrowRight className="w-4 h-4 text-amber-300" />
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ---------- Result (Single Quiz) ---------- */}
+      {stage === 'result' && !isMockExam && result && quiz && (
         <>
           <div className="bg-[#0a3263] rounded-3xl p-8 text-white text-center space-y-3">
             <p className="text-5xl font-extrabold">{result.score}%</p>
@@ -868,11 +1905,11 @@ export const QuizPage: React.FC = () => {
               <span>
                 {lang === 'km'
                   ? isMockExam
-                    ? `បានរក្សាទុកពិន្ទុ ${result.score}% ក្នុងវិញ្ញាសាប្រឡងសាកល្បង ជុំទី ${activeMockExam?.round || 1} លើមុខវិជ្ជា «${selectedPracticeSubject || quiz.subjectName}» រួចរាល់`
-                    : `បានរក្សាទុកពិន្ទុ ${result.score}% ក្នុងកម្រងសំណួរ Quiz លើមុខវិជ្ជា «${selectedPracticeSubject || quiz.subjectName}» រួចរាល់`
+                    ? `បានរក្សាទុកពិន្ទុ ${result.score}% ក្នុងវិញ្ញាសាប្រឡងសាកល្បង ជុំទី ${activeMockExam?.round || 1} លើមុខវិជ្ជា «${formatSubjectName(selectedPracticeSubject || quiz.subjectName, lang)}» រួចរាល់`
+                    : `បានរក្សាទុកពិន្ទុ ${result.score}% ក្នុងកម្រងសំណួរ Quiz លើមុខវិជ្ជា «${formatSubjectName(selectedPracticeSubject || quiz.subjectName, lang)}» រួចរាល់`
                   : isMockExam
-                    ? `Score ${result.score}% saved to Mock Exam Round ${activeMockExam?.round || 1} for "${selectedPracticeSubject || quiz.subjectName}"`
-                    : `Score ${result.score}% saved to Quiz for "${selectedPracticeSubject || quiz.subjectName}"`}
+                    ? `Score ${result.score}% saved to Mock Exam Round ${activeMockExam?.round || 1} for "${formatSubjectName(selectedPracticeSubject || quiz.subjectName, lang)}"`
+                    : `Score ${result.score}% saved to Quiz for "${formatSubjectName(selectedPracticeSubject || quiz.subjectName, lang)}"`}
               </span>
             </div>
             <p className="text-xs text-blue-300">

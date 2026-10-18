@@ -1,0 +1,3002 @@
+[
+  {
+    "questionID": 1,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើលោហៈអាល់កាឡាំងស្ថិតនៅក្នុងក្រុមទីប៉ុន្មាននៃតារាងខួប ហើយមានអេឡិចត្រុងស្រទាប់ក្រៅប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "ក្រុមទី 1A, មានអេឡិចត្រុងស្រទាប់ក្រៅ 1",
+    "explanation": "លោហៈអាល់កាឡាំងជាធាតុនៃក្រុមទី 1A ដែលមានអេឡិចត្រុងវ៉ាឡង់ចំនួន 1។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៦ រ៉ូម៉ាំង I.1",
+    "options": [
+      {
+        "text": "ក្រុមទី 1A, មានអេឡិចត្រុងស្រទាប់ក្រៅ 1",
+        "isCorrect": true
+      },
+      {
+        "text": "ក្រុមទី 2A, មានអេឡិចត្រុងស្រទាប់ក្រៅ 2",
+        "isCorrect": false
+      },
+      {
+        "text": "ក្រុមទី 7A, មានអេឡិចត្រុងស្រទាប់ក្រៅ 7",
+        "isCorrect": false
+      },
+      {
+        "text": "ក្រុមទី 8A, មានអេឡិចត្រុងស្រទាប់ក្រៅ 8",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 2,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើគេទទួលបានផលិផលអ្វីខ្លះពីបំណិតប្រភាគនៃប្រេងកាត?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "ឧស្ម័នឆេះ សាំង ណាប់តា កាស៊ាំង ម៉ាស៊ូត ប្រេងរំអិល និងប៊ីទូម",
+    "explanation": "បំណិតប្រភាគនៃប្រេងកាតផ្តល់ផលិផលតាមចំណុចរំពុះរួមមាន៖ ឧស្ម័នឆេះ សាំង ណាប់តា កាស៊ាំង ម៉ាស៊ូត ប្រេងរំអិល និងប៊ីទូម។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៦ រ៉ូម៉ាំង I.2",
+    "options": [
+      {
+        "text": "ឧស្ម័នឆេះ សាំង ណាប់តា កាស៊ាំង ម៉ាស៊ូត ប្រេងរំអិល និងប៊ីទូម",
+        "isCorrect": true
+      },
+      {
+        "text": "មេតាន អេតាណុល អាស៊ីតអាសេទិច និងគ្លុយកូស",
+        "isCorrect": false
+      },
+      {
+        "text": "តែប្រេងសាំង និងឧស្ម័នអុកស៊ីសែនសុទ្ធប៉ុណ្ណោះ",
+        "isCorrect": false
+      },
+      {
+        "text": "ធ្យូងថ្ម កាបូនម៉ូណូអុកស៊ីត និងអ៊ីដ្រូសែន",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 3,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសូលុយស្យុងតំប៉ុង (Buffer Solution) គឺជាអ្វី?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "ជាល្បាយរវាងអាស៊ីតខ្សោយនិងបាសឆ្លាស់របស់វា ឬបាសខ្សោយនិងអាស៊ីតឆ្លាស់របស់វា ដែលមានកំហាប់ប្រហែលគ្នា",
+    "explanation": "សូលុយស្យុងតំប៉ុងផ្សំឡើងពីអាស៊ីតខ្សោយ/បាសឆ្លាស់ ឬបាសខ្សោយ/អាស៊ីតឆ្លាស់ មានកំហាប់ប្រហាក់ប្រហែលគ្នា និងរក្សាតម្លៃ pH ឱ្យប្រែប្រួលតិចតួច។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៦ រ៉ូម៉ាំង III",
+    "options": [
+      {
+        "text": "ជាល្បាយរវាងអាស៊ីតខ្សោយនិងបាសឆ្លាស់របស់វា ឬបាសខ្សោយនិងអាស៊ីតឆ្លាស់របស់វា ដែលមានកំហាប់ប្រហែលគ្នា",
+        "isCorrect": true
+      },
+      {
+        "text": "ជាល្បាយស្មើគ្នារវាងអាស៊ីតខ្លាំង និងបាសខ្លាំង",
+        "isCorrect": false
+      },
+      {
+        "text": "ជាសូលុយស្យុងអំបិលរលាយក្នុងទឹកសុទ្ធដែលមាន pH ស្មើ 7 ជានិច្ច",
+        "isCorrect": false
+      },
+      {
+        "text": "ជាសូលុយស្យុងអាស៊ីតសុទ្ធដែលមិនអាចរំលាយបាសបាន",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 4,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើលក្ខណៈខុសគ្នាសំខាន់រវាងប្រតិកម្មអេស្ទែរកម្មដោយប្រើអាស៊ីតកាបុកស៊ីលិច និងអានីឌ្រីតអាស៊ីតជាមួយអាល់កុលគឺជាអ្វី?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "ជាមួយអាស៊ីតកាបុកស៊ីលិចជាប្រតិកម្មមានកម្រិត រីឯជាមួយអានីឌ្រីតអាស៊ីតជាប្រតិកម្មសព្វ",
+    "explanation": "ប្រតិកម្មរវាងអាល់កុលជាមួយអាស៊ីតកាបុកស៊ីលិចជាប្រតិកម្មលំនឹងទ្វេទិស រីឯជាមួយអានីឌ្រីតអាស៊ីតជាប្រតិកម្មសព្វ (ទៅមុខទាំងស្រុង)។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៦ រ៉ូម៉ាំង IV.1",
+    "options": [
+      {
+        "text": "ជាមួយអាស៊ីតកាបុកស៊ីលិចជាប្រតិកម្មមានកម្រិត រីឯជាមួយអានីឌ្រីតអាស៊ីតជាប្រតិកម្មសព្វ",
+        "isCorrect": true
+      },
+      {
+        "text": "ជាមួយអាស៊ីតកាបុកស៊ីលិចជាប្រតិកម្មសព្វ រីឯជាមួយអានីឌ្រីតអាស៊ីតជាប្រតិកម្មមានកម្រិត",
+        "isCorrect": false
+      },
+      {
+        "text": "ប្រតិកម្មទាំងពីរមិនបង្កើតអេស្ទែរដូចគ្នាទេ",
+        "isCorrect": false
+      },
+      {
+        "text": "ប្រតិកម្មជាមួយអានីឌ្រីតអាស៊ីតត្រូវការកាតាលីករខ្លាំងជាងជានិច្ច",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 5,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេមានប៊ុយតាន-1-អុល 0.100 mol ដោយដឹងថា M = 74 g/mol និងម៉ាសមាឌ μ = 0.81 g/mL។ តើមាឌប៊ុយតាន-1-អុលដែលត្រូវប្រើស្មើប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "9.14 mL",
+    "explanation": "m = 0.100 * 74 = 7.4 g។ V = 7.4 / 0.81 ≈ 9.136 mL ≈ 9.14 mL។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៦ រ៉ូម៉ាំង IV.2.ក",
+    "options": [
+      {
+        "text": "9.14 mL",
+        "isCorrect": true
+      },
+      {
+        "text": "7.40 mL",
+        "isCorrect": false
+      },
+      {
+        "text": "10.00 mL",
+        "isCorrect": false
+      },
+      {
+        "text": "6.00 mL",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 6,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេឱ្យអានីឌ្រីតអេតាណូអិច 0.100 mol មានប្រតិកម្មជាមួយប៊ុយតាន-1-អុល 0.100 mol គេទទួលបានអេស្ទែរ 9.9 mL។ រកទិន្នផលនៃទង្វើនេះ បើ M(អេស្ទែរ)=116 g/mol និង μ=0.88 g/mL។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "75.1%",
+    "explanation": "m(ពិសោធន៍) = 0.88 * 9.9 = 8.712 g; m(ទ្រឹស្តី) = 0.100 * 116 = 11.6 g។ %Rd = (8.712 / 11.6) * 100 = 75.1%។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៦ រ៉ូម៉ាំង IV.2.ខ",
+    "options": [
+      {
+        "text": "75.1%",
+        "isCorrect": true
+      },
+      {
+        "text": "85.3%",
+        "isCorrect": false
+      },
+      {
+        "text": "67.0%",
+        "isCorrect": false
+      },
+      {
+        "text": "90.5%",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 7,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេមានសូលុយស្យុង Ba(NO3)2 កំហាប់ 5.0 x 10^-2 mol/L មាឌ 50 mL។ តើកំហាប់អ៊ីយ៉ុងសរុបក្នុងសូលុយស្យុងនេះស្មើនឹងប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "0.15 M",
+    "explanation": "Ba(NO3)2 បំបែកផ្តល់ 1 Ba2+ និង 2 NO3- (សរុប 3 អ៊ីយ៉ុង)។ [អ៊ីយ៉ុងសរុប] = 3 * 0.05 M = 0.15 M។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៦ រ៉ូម៉ាំង V.1",
+    "options": [
+      {
+        "text": "0.15 M",
+        "isCorrect": true
+      },
+      {
+        "text": "0.05 M",
+        "isCorrect": false
+      },
+      {
+        "text": "0.10 M",
+        "isCorrect": false
+      },
+      {
+        "text": "0.30 M",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 8,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេលាយ Ba(NO3)2 (50 mL, 0.05 M) ជាមួយ Na2SO4 (50 mL, 0.1 M)។ តើម៉ាសកករ BaSO4 ដែលទទួលបានស្មើប៉ុន្មាន? (Ba=137, S=32, O=16)",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "0.5825 g",
+    "explanation": "n(Ba2+) = 0.0025 mol; n(SO4 2-) = 0.005 mol។ Ba2+ អស់មុន។ m(BaSO4) = 0.0025 * 233 = 0.5825 g។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៦ រ៉ូម៉ាំង V.2.ខ",
+    "options": [
+      {
+        "text": "0.5825 g",
+        "isCorrect": true
+      },
+      {
+        "text": "1.1650 g",
+        "isCorrect": false
+      },
+      {
+        "text": "0.2330 g",
+        "isCorrect": false
+      },
+      {
+        "text": "2.3300 g",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 9,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ដូចម្តេចដែលហៅថា ផលគុណអ៊ីយ៉ុងនៃទឹក (Kw)?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "ផលគុណរវាងកំហាប់អ៊ីយ៉ុង [H3O+] និងកំហាប់អ៊ីយ៉ុង [OH-]",
+    "explanation": "ផលគុណអ៊ីយ៉ុងនៃទឹកជាផលគុណរវាងកំហាប់អ៊ីយ៉ុងអ៊ីដ្រូញ៉ូម និងកំហាប់អ៊ីយ៉ុងអ៊ីដ្រុកស៊ីត តាងដោយ Kw (ឬ Ke)។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+២) រ៉ូម៉ាំង I",
+    "options": [
+      {
+        "text": "ផលគុណរវាងកំហាប់អ៊ីយ៉ុង [H3O+] និងកំហាប់អ៊ីយ៉ុង [OH-]",
+        "isCorrect": true
+      },
+      {
+        "text": "ផលបូករវាងកំហាប់អ៊ីយ៉ុង [H3O+] និង [OH-]",
+        "isCorrect": false
+      },
+      {
+        "text": "ផលធៀបរវាងកំហាប់អ៊ីយ៉ុង [H3O+] និង [OH-]",
+        "isCorrect": false
+      },
+      {
+        "text": "ផលគុណនៃម៉ាសទឹកទាំងអស់ក្នុងសូលុយស្យុង",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 10,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសមីការអ៊ីយ៉ុងសម្រួលនៃប្រតិកម្មរវាង AgNO3(aq) និង Na2SO4(aq) ត្រូវបានសរសេរយ៉ាងដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "2Ag+(aq) + SO4^2-(aq) -> Ag2SO4(s)",
+    "explanation": "អ៊ីយ៉ុងបង្កើតកករគឺ Ag+ និង SO4^2- ដោយកាត់ចោលអ៊ីយ៉ុង Na+ និង NO3-។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+២) រ៉ូម៉ាំង III.ក",
+    "options": [
+      {
+        "text": "2Ag+(aq) + SO4^2-(aq) -> Ag2SO4(s)",
+        "isCorrect": true
+      },
+      {
+        "text": "Ag+(aq) + SO4^2-(aq) -> AgSO4(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "Na+(aq) + NO3-(aq) -> NaNO3(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "2Na+(aq) + SO4^2-(aq) -> Na2SO4(s)",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 11,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសមីការអ៊ីយ៉ុងសម្រួលនៃប្រតិកម្មរវាង BaCl2(aq) និង ZnSO4(aq) គឺជាសមីការមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "Ba^2+(aq) + SO4^2-(aq) -> BaSO4(s)",
+    "explanation": "Ba^2+ ផ្សំជាមួយ SO4^2- បង្កើតកករ BaSO4(s) ឯ Zn^2+ និង Cl- នៅជា Spectator ions។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+២) រ៉ូម៉ាំង III.ខ",
+    "options": [
+      {
+        "text": "Ba^2+(aq) + SO4^2-(aq) -> BaSO4(s)",
+        "isCorrect": true
+      },
+      {
+        "text": "Zn^2+(aq) + 2Cl-(aq) -> ZnCl2(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "Ba^2+(aq) + 2Cl-(aq) -> BaCl2(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "Zn^2+(aq) + SO4^2-(aq) -> ZnSO4(s)",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 12,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសមីការអ៊ីយ៉ុងសម្រួលនៃប្រតិកម្មរវាង (NH4)2CO3(aq) និង CaCl2(aq) គឺជាសមីការមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "Ca^2+(aq) + CO3^2-(aq) -> CaCO3(s)",
+    "explanation": "Ca^2+ ផ្សំជាមួយ CO3^2- បង្កើតជាកករ CaCO3(s)។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+២) រ៉ូម៉ាំង III.គ",
+    "options": [
+      {
+        "text": "Ca^2+(aq) + CO3^2-(aq) -> CaCO3(s)",
+        "isCorrect": true
+      },
+      {
+        "text": "NH4+(aq) + Cl-(aq) -> NH4Cl(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "2NH4+(aq) + CO3^2-(aq) -> (NH4)2CO3(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "Ca^2+(aq) + 2Cl-(aq) -> CaCl2(s)",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 13,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសមីការអ៊ីយ៉ុងសម្រួលនៃប្រតិកម្មរវាង Na2S(aq) និង ZnCl2(aq) គឺជាសមីការមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "Zn^2+(aq) + S^2-(aq) -> ZnS(s)",
+    "explanation": "Zn^2+ មានអំពើជាមួយ S^2- បង្កើតបានជាកករស័ង្កសីស៊ុលភួ ZnS(s)។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+២) រ៉ូម៉ាំង III.ឃ",
+    "options": [
+      {
+        "text": "Zn^2+(aq) + S^2-(aq) -> ZnS(s)",
+        "isCorrect": true
+      },
+      {
+        "text": "2Na+(aq) + 2Cl-(aq) -> 2NaCl(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "Na+(aq) + S^2-(aq) -> Na2S(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "Zn^2+(aq) + 2Cl-(aq) -> ZnCl2(s)",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 14,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេឱ្យល្បាយអេទីលអាល់កុល ផេណុល និងអាស៊ីតអាសេទិច 10.2 g មានអំពើជាមួយទឹកប្រូមលើស ទទួលបានកករ 19.86 g (M=331 g/mol)។ រកម៉ាសផេណុលក្នុងល្បាយដើម (M=94 g/mol)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "5.64 g",
+    "explanation": "n(ផេណុល) = n(កករ) = 19.86 / 331 = 0.06 mol។ m(ផេណុល) = 0.06 * 94 = 5.64 g។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+២) រ៉ូម៉ាំង IV",
+    "options": [
+      {
+        "text": "5.64 g",
+        "isCorrect": true
+      },
+      {
+        "text": "1.80 g",
+        "isCorrect": false
+      },
+      {
+        "text": "2.76 g",
+        "isCorrect": false
+      },
+      {
+        "text": "4.25 g",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 15,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "សូលុយស្យុងអាម៉ូញ៉ាក់ NH3 មានកំហាប់ 3.48% គិតជាម៉ាស និងដង់ស៊ីតេ d = 0.979 g/mL (M = 17 g/mol)។ គណនាកំហាប់ជាម៉ូលនៃសូលុយស្យុងនេះ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "2 mol/L",
+    "explanation": "CM = (10 * C% * d) / M = (10 * 3.48 * 0.979) / 17 ≈ 2 mol/L។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+២) រ៉ូម៉ាំង V.ក",
+    "options": [
+      {
+        "text": "2 mol/L",
+        "isCorrect": true
+      },
+      {
+        "text": "1 mol/L",
+        "isCorrect": false
+      },
+      {
+        "text": "0.2 mol/L",
+        "isCorrect": false
+      },
+      {
+        "text": "3.48 mol/L",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 16,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើគូអាស៊ីត/បាសទាំងពីរដែលអាចកើតមានចំពោះប្រភេទគីមី NH3 គឺជាគូណាខ្លះ?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "NH4+/NH3 និង NH3/NH2-",
+    "explanation": "NH3 ជាប្រភេទអំផូទែ (អំផូលីត្រ) អាចដើរតួជាបាសក្នុងគូ NH4+/NH3 និងជាអាស៊ីតក្នុងគូ NH3/NH2-។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+២) រ៉ូម៉ាំង V.ខ",
+    "options": [
+      {
+        "text": "NH4+/NH3 និង NH3/NH2-",
+        "isCorrect": true
+      },
+      {
+        "text": "NH4+/NH3 និង H3O+/H2O",
+        "isCorrect": false
+      },
+      {
+        "text": "NH3/NH4+ និង NH2-/NH3",
+        "isCorrect": false
+      },
+      {
+        "text": "NH3/HNO3 និង NH4+/NH3",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 17,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ក្នុងប្រតិកម្មបំបែកទឹកអុកស៊ីសែន គេអាចប្រើកាតាលីករ Fe^3+(aq) ឬ MnO2(s)។ តើកាតាលីករណាជាកាតាលីសអូម៉ូសែន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "Fe^3+(aq)",
+    "explanation": "Fe^3+(aq) ស្ថិតក្នុងសភាពរាវក្នុងទឹកដូចគ្នាទៅនឹងអង្គធាតុប្រតិករ ទើបជាកាតាលីសអូម៉ូសែន។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង I.1",
+    "options": [
+      {
+        "text": "Fe^3+(aq)",
+        "isCorrect": true
+      },
+      {
+        "text": "MnO2(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "ទាំង Fe^3+(aq) និង MnO2(s)",
+        "isCorrect": false
+      },
+      {
+        "text": "គ្មានកាតាលីករណាត្រឹមត្រូវទេ",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 18,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ក្នុងប្រតិកម្មគីមីមួយ កាលណាអង្គធាតុប្រតិករមួយដើរតួជាអុកស៊ីតករផង និងជារេដុករផង គេហៅថាអ្វី?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "ប្រតិកម្មឌីស្មូតកម្ម (Dismutation)",
+    "explanation": "ប្រតិកម្មដែលប្រភេទគីមីមួយរងទាំងអុកស៊ីតកម្ម និងរេដុកម្មដំណាលគ្នា ហៅថាប្រតិកម្មឌីស្មូតកម្ម។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង I.2",
+    "options": [
+      {
+        "text": "ប្រតិកម្មឌីស្មូតកម្ម (Dismutation)",
+        "isCorrect": true
+      },
+      {
+        "text": "ប្រតិកម្មបន្សាប",
+        "isCorrect": false
+      },
+      {
+        "text": "ប្រតិកម្មជំនួសទ្វេ",
+        "isCorrect": false
+      },
+      {
+        "text": "ប្រតិកម្មអេស្ទែរកម្ម",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 19,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើគូអាស៊ីត-បាសរបស់ទឹក (H2O) ត្រូវគ្នានឹងទម្រង់មួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "គូទឹកជាអាស៊ីតគឺ H2O/OH- និងគូទឹកជាបាសគឺ H3O+/H2O",
+    "explanation": "ទឹកបោះបង់ H+ បង្កើតជា OH- (គូ H2O/OH-) និងទឹកចាប់យក H+ បង្កើតជា H3O+ (គូ H3O+/H2O)។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង I.4",
+    "options": [
+      {
+        "text": "គូទឹកជាអាស៊ីតគឺ H2O/OH- និងគូទឹកជាបាសគឺ H3O+/H2O",
+        "isCorrect": true
+      },
+      {
+        "text": "គូទឹកជាអាស៊ីតគឺ H3O+/H2O និងគូទឹកជាបាសគឺ H2O/OH-",
+        "isCorrect": false
+      },
+      {
+        "text": "គូទឹកជាអាស៊ីតគឺ H2O/H3O+ និងគូទឹកជាបាសគឺ OH-/H2O",
+        "isCorrect": false
+      },
+      {
+        "text": "ទឹកមានតែមួយគូគត់គឺ H3O+/OH-",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 20,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "កាលណាគេបង្កើនសម្ពាធលើប្រព័ន្ធលំនឹង 2Pb(s) + 3O2(g) ⇌ 2PbO(s) + 2SO2(g) តើលំនឹងនឹងរំកិលទៅទិសណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "រំកិលទៅទិសដៅស្រប (ទៅស្តាំ)",
+    "explanation": "នៅខាងឆ្វេងមានឧស្ម័ន 3 mol ហើយនៅខាងស្តាំមានឧស្ម័ន 2 mol។ បង្កើនសម្ពាធនាំឱ្យលំនឹងរំកិលទៅទិសម៉ូលឧស្ម័នតិចជាង (ទៅស្តាំ)។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង III.1",
+    "options": [
+      {
+        "text": "រំកិលទៅទិសដៅស្រប (ទៅស្តាំ)",
+        "isCorrect": true
+      },
+      {
+        "text": "រំកិលទៅទិសដៅច្រាស (ទៅឆ្វេង)",
+        "isCorrect": false
+      },
+      {
+        "text": "មិនមានការប្រែប្រួល ឬគ្មានឥទ្ធិពល",
+        "isCorrect": false
+      },
+      {
+        "text": "ប្រតិកម្មឈប់ភ្លាមៗ",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 21,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ចំពោះប្រតិកម្មលំនឹង H2(g) + CO2(g) ⇌ H2O(g) + CO(g) តើការបង្កើនសម្ពាធជះឥទ្ធិពលយ៉ាងដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "មិនរំកិល ឬគ្មានឥទ្ធិពល",
+    "explanation": "ចំនួនម៉ូលឧស្ម័នសងខាងស្មើគ្នា (2 mol ស្មើ 2 mol) នាំឱ្យសម្ពាធគ្មានឥទ្ធិពលលើទីតាំងលំនឹងទេ។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង III.3",
+    "options": [
+      {
+        "text": "មិនរំកិល ឬគ្មានឥទ្ធិពល",
+        "isCorrect": true
+      },
+      {
+        "text": "រំកិលទៅទិសដៅស្រប (ទៅស្តាំ)",
+        "isCorrect": false
+      },
+      {
+        "text": "រំកិលទៅទិសដៅច្រាស (ទៅឆ្វេង)",
+        "isCorrect": false
+      },
+      {
+        "text": "លំនឹងត្រូវបានបំផ្លាញ",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 22,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេរំលាយឧស្ម័ន HCl 5 L (Vm = 25 L/mol) ក្នុងទឹក 2 L។ គណនាតម្លៃ pH នៃសូលុយស្យុងអាស៊ីតនេះ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "1",
+    "explanation": "n = 5 / 25 = 0.2 mol; [HCl] = 0.2 / 2 = 0.1 M។ pH = -log(0.1) = 1។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង IV.1",
+    "options": [
+      {
+        "text": "1",
+        "isCorrect": true
+      },
+      {
+        "text": "2",
+        "isCorrect": false
+      },
+      {
+        "text": "0.1",
+        "isCorrect": false
+      },
+      {
+        "text": "1.3",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 23,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេមានសូលុយស្យុង HCl 50 mL មាន pH = 1។ គណនាមាឌទឹកដែលត្រូវបន្ថែមដើម្បីទទួលបាន pH = 1.3 (ដឹងថា 10^0.7 = 5)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "50 mL",
+    "explanation": "Ci = 0.1 M; Cf = 10^-1.3 = 0.05 M។ Vf = (0.1 * 50) / 0.05 = 100 mL។ មាឌទឹកបន្ថែម = 100 - 50 = 50 mL។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង IV.2",
+    "options": [
+      {
+        "text": "50 mL",
+        "isCorrect": true
+      },
+      {
+        "text": "100 mL",
+        "isCorrect": false
+      },
+      {
+        "text": "25 mL",
+        "isCorrect": false
+      },
+      {
+        "text": "150 mL",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 24,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេមានសូលុយស្យុង CH3COOH 0.1 M មាន pH = 2.9 (ដឹងថា 10^0.1 = 1.26)។ តើភាគរយអ៊ីយ៉ុងកម្ម (%α) ស្មើប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "1.26%",
+    "explanation": "[H3O+] = 1.26 x 10^-3 M។ %α = (1.26 x 10^-3 / 0.1) * 100 = 1.26%។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង V.2",
+    "options": [
+      {
+        "text": "1.26%",
+        "isCorrect": true
+      },
+      {
+        "text": "2.90%",
+        "isCorrect": false
+      },
+      {
+        "text": "0.126%",
+        "isCorrect": false
+      },
+      {
+        "text": "12.6%",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 25,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេមានសូលុយស្យុង CH3COOH 0.1 M មាន [H3O+] = 1.26 x 10^-3 M។ គណនាតម្លៃថេរអាស៊ីត Ka នៃគូ CH3COOH/CH3COO-។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "1.59 x 10^-5",
+    "explanation": "Ka = [H3O+]^2 / Ca = (1.26 x 10^-3)^2 / 0.1 ≈ 1.59 x 10^-5។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង V.3",
+    "options": [
+      {
+        "text": "1.59 x 10^-5",
+        "isCorrect": true
+      },
+      {
+        "text": "1.26 x 10^-4",
+        "isCorrect": false
+      },
+      {
+        "text": "1.80 x 10^-5",
+        "isCorrect": false
+      },
+      {
+        "text": "3.18 x 10^-6",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 26,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ដើម្បីទទួលបានសូលុយស្យុងតំប៉ុង តើគេត្រូវបន្ថែមសូលុយស្យុង NaOH 0.1 M ប៉ុន្មាន mL ទៅក្នុង CH3COOH 0.1 M ចំនួន 20 mL?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "10 mL",
+    "explanation": "ដើម្បីបង្កើតតំប៉ុងល្អ n(អាស៊ីតដើម) = 2 * n(បាស) => Vb = (0.1 * 20) / (2 * 0.1) = 10 mL។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង V.4",
+    "options": [
+      {
+        "text": "10 mL",
+        "isCorrect": true
+      },
+      {
+        "text": "20 mL",
+        "isCorrect": false
+      },
+      {
+        "text": "5 mL",
+        "isCorrect": false
+      },
+      {
+        "text": "40 mL",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 27,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ចំហេះសព្វនៃអ៊ីដ្រូកាបួ 1.68 g (M = 56 g/mol) ផ្តល់ CO2 5.28 g និង H2O 2.16 g។ រក Molecular formula នៃអ៊ីដ្រូកាបួ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "C4H8",
+    "explanation": "m(C) = 1.44 g (0.12 mol), m(H) = 0.24 g (0.24 mol) => n(C):n(H) = 1:2 នាំឱ្យរូបមន្ត C4H8 (M = 56 g/mol)។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៨ (១២+៤) រ៉ូម៉ាំង VI.1",
+    "options": [
+      {
+        "text": "C4H8",
+        "isCorrect": true
+      },
+      {
+        "text": "C3H6",
+        "isCorrect": false
+      },
+      {
+        "text": "C4H10",
+        "isCorrect": false
+      },
+      {
+        "text": "C5H10",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 28,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "តើកន្សោមថេរលំនឹង K = ([OH-] * [HA]) / [A-] ត្រូវគ្នានឹងសមីការប្រតិកម្មមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "A-(aq) + H2O(l) ⇌ HA(aq) + OH-(aq)",
+    "explanation": "ជាសមីការអ៊ីដ្រូលីសនៃបាសខ្សោយ A- ជាមួយទឹក បង្កើត HA និង OH-។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៩ សំណួរ I.3",
+    "options": [
+      {
+        "text": "A-(aq) + H2O(l) ⇌ HA(aq) + OH-(aq)",
+        "isCorrect": true
+      },
+      {
+        "text": "HA(aq) + H2O(l) ⇌ A-(aq) + H3O+(aq)",
+        "isCorrect": false
+      },
+      {
+        "text": "HA(aq) + OH-(aq) ⇌ A-(aq) + H2O(l)",
+        "isCorrect": false
+      },
+      {
+        "text": "A-(aq) + H3O+(aq) ⇌ HA(aq) + H2O(l)",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 29,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ចំពោះប្រតិកម្មអេស្ទែរកម្ម តើការបន្ថែមកម្ដៅ និងកាតាលីករ អាចបង្កើនទិន្នផលប្រតិកម្មដល់ 100% បានដែរឬទេ?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "មិនអាចទេ ពីព្រោះកាតាលីករគ្រាន់តែបង្កើនល្បឿនឱ្យឆាប់ដល់លំនឹង តែមិនបង្កើនទិន្នផលទេ",
+    "explanation": "កាតាលីករ និងកម្ដៅគ្រាន់តែជួយពន្លឿនឱ្យឆាប់ឈានដល់លំនឹងគីមី មិនអាចបង្កើនទិន្នផលលំនឹងដល់ 100% បានឡើយ។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៩ សំណួរ I.4",
+    "options": [
+      {
+        "text": "មិនអាចទេ ពីព្រោះកាតាលីករគ្រាន់តែបង្កើនល្បឿនឱ្យឆាប់ដល់លំនឹង តែមិនបង្កើនទិន្នផលទេ",
+        "isCorrect": true
+      },
+      {
+        "text": "អាចបាន ពីព្រោះកម្ដៅធ្វើឱ្យប្រតិកម្មដើរទៅមុខទាំងស្រុង",
+        "isCorrect": false
+      },
+      {
+        "text": "អាចបាន បើប្រើកាតាលីករអាស៊ីតស៊ុលផួរិចលើសលប់",
+        "isCorrect": false
+      },
+      {
+        "text": "មិនអាចទេ ពីព្រោះកាតាលីករបន្ថយល្បឿនប្រតិកម្មច្រាស",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 30,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ក្នុងប្រតិកម្មរវាង MnO4- និង H2C2O4 ដោយមានវត្តមាន H2SO4 តើប្រភេទគីមីណាជាអុកស៊ីតករ?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "MnO4-",
+    "explanation": "MnO4- ចាប់យកអេឡិចត្រុង (ចំនួនអុកស៊ីតកម្ម Mn ថយពី +7 មក +2) ដូច្នេះវាជាអុកស៊ីតករ។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៩ លំហាត់ II.1.គ",
+    "options": [
+      {
+        "text": "MnO4-",
+        "isCorrect": true
+      },
+      {
+        "text": "H2C2O4",
+        "isCorrect": false
+      },
+      {
+        "text": "Mn^2+",
+        "isCorrect": false
+      },
+      {
+        "text": "CO2",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 31,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "គេធ្វើប្រតិកម្មសាប៊ូកម្ម អេទីលប៉ង់តាណូអាត 1 kg (M=130 g/mol) ជាមួយ NaOH។ បើទិន្នផល 78% តើទទួលបានសាប៊ូសូដ្យូមប៉ង់តាណូអាត (M=124 g/mol) ប៉ុន្មាន kg?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "0.745 kg",
+    "explanation": "m(ទ្រឹស្តី) = (1/130) * 124 ≈ 0.9548 kg; m(ពិសោធន៍) = 0.9548 * 78% ≈ 0.745 kg។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៩ លំហាត់ II.2.គ",
+    "options": [
+      {
+        "text": "0.745 kg",
+        "isCorrect": true
+      },
+      {
+        "text": "0.955 kg",
+        "isCorrect": false
+      },
+      {
+        "text": "1.000 kg",
+        "isCorrect": false
+      },
+      {
+        "text": "0.650 kg",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 32,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ក្នុងម៉ូលេគុលសាប៊ូសូដ្យូមប៉ង់តាណូអាត CH3-(CH2)3-COO^- Na+ តើផ្នែកណាជាផ្នែកអ៊ីដ្រូផូប (Hydrophobic)?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "កន្ទុយអ៊ីដ្រូកាបួ CH3-(CH2)3-",
+    "explanation": "កន្ទុយអ៊ីដ្រូកាបួគ្មានប៉ូល ជាផ្នែកអ៊ីដ្រូផូប (ខ្លាចទឹក) ចំណែកក្បាលប៉ូល -COO^- Na+ ជាផ្នែកអ៊ីដ្រូភីល។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូអនុ_២០១៦_២០១៩.pdf - វិញ្ញាសា ២០១៩ លំហាត់ II.2.ខ",
+    "options": [
+      {
+        "text": "កន្ទុយអ៊ីដ្រូកាបួ CH3-(CH2)3-",
+        "isCorrect": true
+      },
+      {
+        "text": "ក្បាលប៉ូល -COO^- Na+",
+        "isCorrect": false
+      },
+      {
+        "text": "អ៊ីយ៉ុង Na+",
+        "isCorrect": false
+      },
+      {
+        "text": "បង្គំកាបុកស៊ីលាត -COO^-",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 33,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ចំពោះអត្រាកម្ម តើសូលុយស្យុងស្តង់ដាជាសូលុយស្យុងបែបណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "ស្គាល់កំហាប់",
+    "explanation": "សូលុយស្យុងស្តង់ដាជាសូលុយស្យុងដែលគេបានកំណត់ និងស្គាល់កំហាប់ច្បាស់លាស់។",
+    "referenceNote": "គីមី_ត្រៀមគ្រូមូលដ្ឋាន.pdf - វិញ្ញាសាទី៤ សំណួរ ii",
+    "options": [
+      {
+        "text": "ស្គាល់កំហាប់",
+        "isCorrect": true
+      },
+      {
+        "text": "មិនស្គាល់កំហាប់",
+        "isCorrect": false
+      },
+      {
+        "text": "ជាអង្គធាតុចង្អុលពណ៌",
+        "isCorrect": false
+      },
+      {
+        "text": "ជាសូលុយស្យុងអាស៊ីតជានិច្ច",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 34,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "លំនាំដែលសមាសធាតុម៉ូលេគុលបង្កើតអ៊ីយ៉ុងក្រោមអំពើនៃទឹក ហៅថាអ្វី?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "អ៊ីយ៉ុងកម្ម",
+    "explanation": "ដំណើរការដែលម៉ូលេគុលកូវ៉ាឡង់បែកចេញជាអ៊ីយ៉ុងក្នុងទឹកហៅថា អ៊ីយ៉ុងកម្ម (Ionization)។",
+    "referenceNote": "គីមី_ត្រៀមគ្រូមូលដ្ឋាន.pdf - វិញ្ញាសាទី៤ សំណួរ iii",
+    "options": [
+      {
+        "text": "អ៊ីយ៉ុងកម្ម",
+        "isCorrect": true
+      },
+      {
+        "text": "ការបំបែក",
+        "isCorrect": false
+      },
+      {
+        "text": "អ៊ីដ្រាតកម្ម",
+        "isCorrect": false
+      },
+      {
+        "text": "ស៊ុលវ៉ាតកម្ម",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 35,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "អ៊ីដ្រូលីសអង្គធាតុខ្លាញ់ក្នុងមជ្ឈដ្ឋានបាស គេទទួលបានអ្វីខ្លះ?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "អាល់កុល (គ្លីសេរ៉ុល) និងសាប៊ូ",
+    "explanation": "អ៊ីដ្រូលីសទ្រីគ្លីសេរីតក្នុងបាស បង្កើតបានជាគ្លីសេរ៉ុល និងអំបិលអាស៊ីតខ្លាញ់ (សាប៊ូ)។",
+    "referenceNote": "គីមី_ត្រៀមគ្រូមូលដ្ឋាន.pdf - វិញ្ញាសាទី៤ សំណួរ iv",
+    "options": [
+      {
+        "text": "អាល់កុល (គ្លីសេរ៉ុល) និងសាប៊ូ",
+        "isCorrect": true
+      },
+      {
+        "text": "អាល់កុល និងអាស៊ីតខ្លាញ់",
+        "isCorrect": false
+      },
+      {
+        "text": "អាល់កុល និងអេស្ទែ",
+        "isCorrect": false
+      },
+      {
+        "text": "អេស្ទែ និងទឹក",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 36,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ចំណុចសមមូលអាស៊ីត-បាស គឺជាចំណុចដែលផ្ទៀងផ្ទាត់លក្ខខណ្ឌណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "n(H3O+) = n(OH-)",
+    "explanation": "នៅចំណុចសមមូល ចំនួនម៉ូល H3O+ ស្មើគ្នានឹងចំនួនម៉ូល OH- ដែលបានបន្ថែម។",
+    "referenceNote": "គីមី_ត្រៀមគ្រូមូលដ្ឋាន.pdf - វិញ្ញាសាទី៤ សំណួរ vii",
+    "options": [
+      {
+        "text": "n(H3O+) = n(OH-)",
+        "isCorrect": true
+      },
+      {
+        "text": "n(A) = n(B)",
+        "isCorrect": false
+      },
+      {
+        "text": "[H3O+] = [OH-]",
+        "isCorrect": false
+      },
+      {
+        "text": "[A] = [B]",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 37,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ចូរតម្រៀបសមាសធាតុខាងក្រោមតាមលំដាប់កើននៃចំណុចរំពុះ៖ CaCl2, KCl, NaCl, CO2, HCl។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "CO2 < HCl < KCl < NaCl < CaCl2",
+    "explanation": "CO2 (ឡុនដុន) < HCl (ឌីប៉ូល-ឌីប៉ូល) < KCl (អ៊ីយ៉ុង) < NaCl (អ៊ីយ៉ុង) < CaCl2 (អ៊ីយ៉ុងបន្ទុក 2+)។",
+    "referenceNote": "គីមី_ត្រៀមគ្រូមូលដ្ឋាន.pdf - វិញ្ញាសាទី៤ សំណួរ viii",
+    "options": [
+      {
+        "text": "CO2 < HCl < KCl < NaCl < CaCl2",
+        "isCorrect": true
+      },
+      {
+        "text": "CO2 < HCl < NaCl < KCl < CaCl2",
+        "isCorrect": false
+      },
+      {
+        "text": "HCl < CO2 < NaCl < KCl < CaCl2",
+        "isCorrect": false
+      },
+      {
+        "text": "HCl < NaCl < KCl < CO2 < CaCl2",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 38,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "ក្នុងចំណោមសំណុំខាងក្រោម តើសំណុំណាមានប្រភេទគីមីមិនប៉ូលែ (Nonpolar) ទាំងអស់?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "CH4, CF4, CO2, Cl2",
+    "explanation": "CH4, CF4 (តេត្រាអែត), CO2 (លីនេអ៊ែរ), Cl2 (ម៉ូលេគុលឌីអាតូមដូចគ្នា) សុទ្ធតែមានម៉ូម៉ង់ឌីប៉ូលសរុបស្មើ 0។",
+    "referenceNote": "គីមី_ត្រៀមគ្រូមូលដ្ឋាន.pdf - វិញ្ញាសាទី៤ សំណួរ ix",
+    "options": [
+      {
+        "text": "CH4, CF4, CO2, Cl2",
+        "isCorrect": true
+      },
+      {
+        "text": "CO2, CCl4, CHCl3, CBr4",
+        "isCorrect": false
+      },
+      {
+        "text": "CH4, CS2, CF4, H2O",
+        "isCorrect": false
+      },
+      {
+        "text": "CO2, CH2Cl2, CHCl3, H2",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 39,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Chemistry",
+    "questionText": "វិភាគឌីអាស៊ីតមួយមាន C 40.7%, O 54.2% និង H 5.1%។ បើយក 2.36 g ទៅបន្សាបជាមួយ KOH 0.2 M អស់ 200 mL តើអាស៊ីតនេះមានរូបមន្តអ្វី?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "C4H6O4",
+    "explanation": "n = 0.04 / 2 = 0.02 mol => M = 2.36 / 0.02 = 118 g/mol នាំឱ្យរូបមន្តគឺ C4H6O4។",
+    "referenceNote": "គីមី_ត្រៀមគ្រូមូលដ្ឋាន.pdf - វិញ្ញាសាទី៤ សំណួរ xii",
+    "options": [
+      {
+        "text": "C4H6O4",
+        "isCorrect": true
+      },
+      {
+        "text": "C5H8O4",
+        "isCorrect": false
+      },
+      {
+        "text": "C6H10O4",
+        "isCorrect": false
+      },
+      {
+        "text": "H2C2O4",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 40,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "នៅក្នុងសៀគ្វីអគ្គិសនីមួយ តើទិសដៅសន្មតនៃចរន្តអគ្គិសនីរត់យ៉ាងដូចម្តេចធៀបនឹងជនិតា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "ចេញពីប៉ូលវិជ្ជមាន (+) ទៅកាន់ប៉ូលអវិជ្ជមាន (-) នៃជនិតា",
+    "explanation": "ទិសដៅសន្មតនៃចរន្តអគ្គិសនីរត់ចេញពីប៉ូលបូកឆ្ពោះទៅប៉ូលដកនៅក្រៅជនិតា។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០០៦ (ឯកទេសទី២) សំណួរ ១",
+    "options": [
+      {
+        "text": "ចេញពីប៉ូលវិជ្ជមាន (+) ទៅកាន់ប៉ូលអវិជ្ជមាន (-) នៃជនិតា",
+        "isCorrect": true
+      },
+      {
+        "text": "ចេញពីប៉ូលអវិជ្ជមាន (-) ទៅកាន់ប៉ូលវិជ្ជមាន (+) នៃជនិតា",
+        "isCorrect": false
+      },
+      {
+        "text": "ចេញពីប៉ូលវិជ្ជមាន តែបន្ទុកវិជ្ជមានរត់ច្រាសទិសដៅចរន្ត",
+        "isCorrect": false
+      },
+      {
+        "text": "គ្មានទិសដៅជាក់លាក់ទេ",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 41,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "ជនិតាមួយមាន E = 100V, r = 2Ω ភ្ជាប់ជាស៊េរីជាមួយរេស៊ីស្តង់ R = 3Ω និងកង្ហារមួយ (E' = 70V, r' = 1Ω)។ គណនាផលសងប៉ូតង់ស្យែលនៃគ្រឿងទទួល (កង្ហារ)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "75 V",
+    "explanation": "I = (100 - 70) / (3 + 2 + 1) = 5 A។ U_គ្រឿងទទួល = E' + r' * I = 70 + 1 * 5 = 75 V។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ១៩៩៩ (ឯកទេសទី១) សំណួរ ៣.ខ",
+    "options": [
+      {
+        "text": "75 V",
+        "isCorrect": true
+      },
+      {
+        "text": "70 V",
+        "isCorrect": false
+      },
+      {
+        "text": "65 V",
+        "isCorrect": false
+      },
+      {
+        "text": "85 V",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 42,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "កុងដង់សាទ័រពីរ C1 = 10µF និង C2 = 30µF តជាស៊េរីទៅនឹងប្រភព U = 120V។ គណនាបន្ទុកអគ្គិសនីរួម Q នៃបង្គុំ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "900 µC",
+    "explanation": "C_eq = (10 * 30) / (10 + 30) = 7.5 µF => Q = 7.5 * 120 = 900 µC។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០០១ (ឯកទេសទី១) សំណួរ ២.ក",
+    "options": [
+      {
+        "text": "900 µC",
+        "isCorrect": true
+      },
+      {
+        "text": "300 µC",
+        "isCorrect": false
+      },
+      {
+        "text": "1200 µC",
+        "isCorrect": false
+      },
+      {
+        "text": "4800 µC",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 43,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "បូប៊ីនមួយមាន L = 3 mH តជាស៊េរីជាមួយកុងដង់សាទ័រ C = 10 µF ផ្ទុកតង់ស្យុង V = 12 V។ គណនាថាមពលសរុបនៃសៀគ្វី LC។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "7.2 x 10^-4 J",
+    "explanation": "E = (1/2) C V^2 = 0.5 * (10 x 10^-6) * 12^2 = 7.2 x 10^-4 J។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០១៧ (ឯកទេសទី១) សំណួរ ៥.ខ",
+    "options": [
+      {
+        "text": "7.2 x 10^-4 J",
+        "isCorrect": true
+      },
+      {
+        "text": "1.44 x 10^-3 J",
+        "isCorrect": false
+      },
+      {
+        "text": "3.6 x 10^-4 J",
+        "isCorrect": false
+      },
+      {
+        "text": "7.2 x 10^-3 J",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 44,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "ខ្សែចម្លងត្រង់វែងមួយឆ្លងកាត់ដោយចរន្ត I = 8 A ក្នុងខ្យល់។ គណនាអាំងឌុចស្យុងម៉ាញេទិច B ត្រង់ចំណុច M ចម្ងាយ r = 4 m ពីខ្សែ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "4 x 10^-7 T",
+    "explanation": "B = 2 x 10^-7 * (I / r) = 2 x 10^-7 * (8 / 4) = 4 x 10^-7 T។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០០០ (ឯកទេសទី២) សំណួរ I.គ",
+    "options": [
+      {
+        "text": "4 x 10^-7 T",
+        "isCorrect": true
+      },
+      {
+        "text": "2 x 10^-7 T",
+        "isCorrect": false
+      },
+      {
+        "text": "8 x 10^-7 T",
+        "isCorrect": false
+      },
+      {
+        "text": "1.6 x 10^-6 T",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 45,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "ចំណុចបន្ទុកពីរ q1 = 10^-8 C និង q2 = 10^-9 C ស្ថិតនៅចម្ងាយ r = 3 cm ក្នុងខ្យល់ (k = 9 x 10^9 N·m²/C²)។ គណនាកម្លាំងគូឡុំ F រវាងបន្ទុកទាំងពីរ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "10^-4 N",
+    "explanation": "F = (9 x 10^9 * 10^-8 * 10^-9) / (0.03)^2 = 10^-4 N។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០០៣ (ឯកទេសទី១) សំណួរ ៣",
+    "options": [
+      {
+        "text": "10^-4 N",
+        "isCorrect": true
+      },
+      {
+        "text": "10^-5 N",
+        "isCorrect": false
+      },
+      {
+        "text": "9 x 10^-4 N",
+        "isCorrect": false
+      },
+      {
+        "text": "3 x 10^-5 N",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 46,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "ប៉ោលទោលមួយមានប្រវែងខ្សែ l = 1 m យោលនៅកន្លែងដែលមាន g = 9.81 m/s²។ គណនាខួបលំយោល T នៃប៉ោល (មុំតូច)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "2.0 s",
+    "explanation": "T = 2π √(1 / 9.81) ≈ 2.0 s។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០០៥ (ឯកទេសទី២) សំណួរ ៣",
+    "options": [
+      {
+        "text": "2.0 s",
+        "isCorrect": true
+      },
+      {
+        "text": "1.0 s",
+        "isCorrect": false
+      },
+      {
+        "text": "3.14 s",
+        "isCorrect": false
+      },
+      {
+        "text": "4.0 s",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 47,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "កាល់វ៉ាណូម៉ែត្រមួយមាន rg = 20Ω វាស់ចរន្តធំបំផុតបាន Ig = 1 mA។ បើចង់បំប្លែងជាអំពែម៉ែត្រវាស់បាន Ia = 1 A តើត្រូវតស៊ឺន Rs ប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "0.02 Ω",
+    "explanation": "Rs = (10^-3 * 20) / (1 - 10^-3) ≈ 0.02 Ω។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០០៥ (ឯកទេសទី២) សំណួរ ៦.ក",
+    "options": [
+      {
+        "text": "0.02 Ω",
+        "isCorrect": true
+      },
+      {
+        "text": "0.20 Ω",
+        "isCorrect": false
+      },
+      {
+        "text": "2.00 Ω",
+        "isCorrect": false
+      },
+      {
+        "text": "20.0 Ω",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 48,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "ម៉ាស៊ីនកម្ដៅមួយមានទិន្នផល e = 0.24 (24%) បានបំពេញកម្មន្ត W = 1200 J។ គណនាបរិមាណកម្ដៅ Qh ដែលស្រូបពីធុងក្តៅ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "5000 J",
+    "explanation": "Qh = W / e = 1200 / 0.24 = 5000 J។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០១៤ (ឯកទេសទី១) សំណួរ ២",
+    "options": [
+      {
+        "text": "5000 J",
+        "isCorrect": true
+      },
+      {
+        "text": "288 J",
+        "isCorrect": false
+      },
+      {
+        "text": "2500 J",
+        "isCorrect": false
+      },
+      {
+        "text": "6000 J",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 49,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "ឧស្ម័នមួយទទួលកម្ដៅ Q = 300 cal និងបានបំពេញកម្មន្ត W = 200 cal ទៅលើមជ្ឈដ្ឋានក្រៅ។ គណនាបម្រែបម្រួលថាមពលក្នុង ΔU នៃប្រព័ន្ធ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "+100 cal",
+    "explanation": "ΔU = Q - W = 300 - 200 = +100 cal។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០១៨ (ឯកទេសទី១) សំណួរ ៤.ក",
+    "options": [
+      {
+        "text": "+100 cal",
+        "isCorrect": true
+      },
+      {
+        "text": "+500 cal",
+        "isCorrect": false
+      },
+      {
+        "text": "-100 cal",
+        "isCorrect": false
+      },
+      {
+        "text": "+600 cal",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 50,
+    "topicId": 1,
+    "examName": "គ្រូមូលដ្ឋាន (អនុវិទ្យាល័យ)",
+    "subjectName": "Physics",
+    "questionText": "បម្លាស់ទីនៃរលកមួយឱ្យដោយសមីការ y = 0.20 sin(0.20x - 0.20t) (m)។ គណនាល្បឿនដំណាលរលក v។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "1.0 m/s",
+    "explanation": "v = ω / k = 0.20 / 0.20 = 1.0 m/s។",
+    "referenceNote": "រូបវិទ្យា_គ្រូអនុ_១៩៩៩_២០១៨.pdf - វិញ្ញាសា ២០១៨ (ឯកទេសទី១) សំណួរ ២",
+    "options": [
+      {
+        "text": "1.0 m/s",
+        "isCorrect": true
+      },
+      {
+        "text": "0.20 m/s",
+        "isCorrect": false
+      },
+      {
+        "text": "2.0 m/s",
+        "isCorrect": false
+      },
+      {
+        "text": "0.04 m/s",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 51,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសមាសធាតុស្មុគស្មាញ «ប៉ូតាស្យូមហិចសាភ្លុយអរ៉ូកូបាលឡាត(III)» មានរូបមន្តគីមីត្រឹមត្រូវដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "K3[CoF6]",
+    "explanation": "កាតយ៉ុងប៉ូតាស្យូម K+ ភ្ជាប់ជាមួយអានីយ៉ុងស្មុគស្មាញ [CoF6]3- បានរូបមន្ត K3[CoF6]។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ១.គ",
+    "options": [
+      {
+        "text": "K3[CoF6]",
+        "isCorrect": true
+      },
+      {
+        "text": "K[CoF4]",
+        "isCorrect": false
+      },
+      {
+        "text": "K2[CoF6]",
+        "isCorrect": false
+      },
+      {
+        "text": "K3[CoF4]",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 52,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសមាសធាតុស្មុគស្មាញ «ឌីអាមីនប្រាក់(I) ឌីស្យាណូអាហ្សង់តាត(I)» មានរូបមន្តត្រឹមត្រូវដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "[Ag(NH3)2][Ag(CN)2]",
+    "explanation": "កាតយ៉ុងស្មុគស្មាញ [Ag(NH3)2]+ ភ្ជាប់ជាមួយអានីយ៉ុងស្មុគស្មាញ [Ag(CN)2]- បាន [Ag(NH3)2][Ag(CN)2]។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ១.ក",
+    "options": [
+      {
+        "text": "[Ag(NH3)2][Ag(CN)2]",
+        "isCorrect": true
+      },
+      {
+        "text": "[Ag(NH3)2]2[Ag(CN)4]",
+        "isCorrect": false
+      },
+      {
+        "text": "[Ag(NH3)4][Ag(CN)2]",
+        "isCorrect": false
+      },
+      {
+        "text": "[Ag(NH3)][Ag(CN)]",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 53,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសមាសធាតុស្មុគស្មាញ «ឌីអាមីនដែក(III) ហិចសាស្យាណូក្រូម៉ាត(III)» មានរូបមន្តត្រឹមត្រូវដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "[Fe(NH3)2][Cr(CN)6]",
+    "explanation": "តាមអត្រាកំណែ ផ្សំរវាងកាតយ៉ុងនិងអានីយ៉ុងស្មុគស្មាញគឺ [Fe(NH3)2][Cr(CN)6]។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ១.ខ",
+    "options": [
+      {
+        "text": "[Fe(NH3)2][Cr(CN)6]",
+        "isCorrect": true
+      },
+      {
+        "text": "[Fe(NH3)6][Cr(CN)6]",
+        "isCorrect": false
+      },
+      {
+        "text": "[Fe(NH3)2]3[Cr(CN)6]",
+        "isCorrect": false
+      },
+      {
+        "text": "[Fe(NH3)4][Cr(CN)2]",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 54,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "សមាសធាតុ Cl_x O_y មានប្រតិកម្មជាមួយ H2 លើស គេទទួលបាន HCl 0.233 g និង H2O 0.403 g។ បើម៉ាសម៉ូលេគុលចន្លោះ 180 ទៅ 185 g/mol តើវាជារូបមន្តអ្វី? (Cl=35.5, O=16)",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "Cl2O7",
+    "explanation": "n(Cl) = 0.00638 mol; n(O) = 0.02239 mol => n(Cl)/n(O) ≈ 2/7 នាំឱ្យរូបមន្ត Cl2O7 (M = 183 g/mol)។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ២",
+    "options": [
+      {
+        "text": "Cl2O7",
+        "isCorrect": true
+      },
+      {
+        "text": "ClO2",
+        "isCorrect": false
+      },
+      {
+        "text": "Cl2O",
+        "isCorrect": false
+      },
+      {
+        "text": "Cl2O6",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 55,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើចំណុចខុសគ្នាសំខាន់ផ្នែកលក្ខណៈគីមីរវាង Al(OH)3 និង Fe(OH)3 គឺជាអ្វី?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "Al(OH)3 មានចរិតអំផូទែ (រលាយក្នុងបាសខ្លាំង) រីឯ Fe(OH)3 គ្មានប្រតិកម្មជាមួយបាសទេ",
+    "explanation": "Al(OH)3 រលាយក្នុង NaOH ផ្តល់ NaAlO2 ខណៈដែល Fe(OH)3 មិនមានប្រតិកម្មជាមួយបាសឡើយ។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៣",
+    "options": [
+      {
+        "text": "Al(OH)3 មានចរិតអំផូទែ (រលាយក្នុងបាសខ្លាំង) រីឯ Fe(OH)3 គ្មានប្រតិកម្មជាមួយបាសទេ",
+        "isCorrect": true
+      },
+      {
+        "text": "Fe(OH)3 មានប្រតិកម្មជាមួយបាស រីឯ Al(OH)3 គ្មានប្រតិកម្មទេ",
+        "isCorrect": false
+      },
+      {
+        "text": "Al(OH)3 មិនរលាយក្នុងអាស៊ីត រីឯ Fe(OH)3 រលាយក្នុងអាស៊ីត",
+        "isCorrect": false
+      },
+      {
+        "text": "សមាសធាតុទាំងពីររលាយក្នុងបាសដូចគ្នា",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 56,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើរបាយអេឡិចត្រុងត្រឹមត្រូវរបស់អ៊ីយ៉ុងដែក Fe^2+ (Z=26) គឺជាជម្រើសមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁶",
+    "explanation": "Fe (Z=26) មានរបាយ [Ar] 4s² 3d⁶។ ពេលបាត់បង់អេឡិចត្រុង 2 បង្កើត Fe^2+ វានៅសល់ [Ar] 3d⁶។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៤.a",
+    "options": [
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁶",
+        "isCorrect": true
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁴",
+        "isCorrect": false
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁸",
+        "isCorrect": false
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s¹ 3d⁵",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 57,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើរបាយអេឡិចត្រុងត្រឹមត្រូវរបស់អ៊ីយ៉ុងនីកែល Ni^2+ (Z=28) គឺជាជម្រើសមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁸",
+    "explanation": "Ni (Z=28) មានរបាយ [Ar] 4s² 3d⁸។ បាត់បង់អេឡិចត្រុង 2 ពីស្រទាប់ 4s នៅសល់ [Ar] 3d⁸។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៤.c",
+    "options": [
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁸",
+        "isCorrect": true
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d⁶",
+        "isCorrect": false
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹⁰",
+        "isCorrect": false
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁴ 4s² 3d⁸",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 58,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើរបាយអេឡិចត្រុងត្រឹមត្រូវរបស់អាតូមអ៊ីយ៉ូត I (Z=53) គឺជាជម្រើសមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s² 4d¹⁰ 5p⁵",
+    "explanation": "I (Z=53) ស្ថិតក្នុងក្រុមទី VIIA និងខួបទី ៥ មានរបាយអេឡិចត្រុងកាត់ជា [Kr] 5s² 4d¹⁰ 5p⁵។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៤.d",
+    "options": [
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s² 4d¹⁰ 5p⁵",
+        "isCorrect": true
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s² 4d¹⁰ 5p⁶",
+        "isCorrect": false
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s¹ 4d¹⁰ 5p⁶",
+        "isCorrect": false
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹⁰ 4s² 4p⁶ 5s² 4d⁸",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 59,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "សំលោហៈ Cu-Ag ចំនួន 2.8 g មានប្រតិកម្មជាមួយ HNO3 ខាប់ ទទួលបាន NO2 ចំនួន 896 cm³ (0.04 mol)។ គណនាសមាសភាពភាគរយជាម៉ាសនៃលោហៈ Cu ក្នុងសំលោហៈ។ (Cu=64, Ag=108)",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "22.86%",
+    "explanation": "ប្រព័ន្ធសមីការ៖ 108x + 64y = 2.8 និង x + 2y = 0.04 => x = 0.02 mol (Ag), y = 0.01 mol (Cu)។ m(Cu) = 0.64 g => %Cu = (0.64 / 2.8) * 100 = 22.86%។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៥",
+    "options": [
+      {
+        "text": "22.86%",
+        "isCorrect": true
+      },
+      {
+        "text": "77.14%",
+        "isCorrect": false
+      },
+      {
+        "text": "32.00%",
+        "isCorrect": false
+      },
+      {
+        "text": "18.50%",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 60,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "វិភាគសមាសធាតុសរីរាង្គ A (C, H, O, N) ចំនួន 2.46 g ទទួលបាន CO2 5.28 g, H2O 0.9 g និង N2 224 cm³ (ល.ធ)។ បើដង់ស៊ីតេចំហាយធៀបខ្យល់ d = 4.24 (M = 123 g/mol) តើ A មានរូបមន្តម៉ូលេគុលដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "C6H5NO2 (នីត្រូបង់សែន)",
+    "explanation": "សមាមាត្រ C:H:O:N = 6:5:2:1 នាំឱ្យរូបមន្ត C6H5NO2 ដែលត្រូវនឹងម៉ាសម៉ូលេគុល 123 g/mol។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៦",
+    "options": [
+      {
+        "text": "C6H5NO2 (នីត្រូបង់សែន)",
+        "isCorrect": true
+      },
+      {
+        "text": "C6H5NH2 (អាមីណូបង់សែន)",
+        "isCorrect": false
+      },
+      {
+        "text": "C7H7NO2",
+        "isCorrect": false
+      },
+      {
+        "text": "C6H4(NO2)2",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 61,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "ដើម្បីធ្វើសំយោគទង្វើនីត្រូបង់សែន (C6H5NO2) តើគេឱ្យបង់សែន (C6H6) ធ្វើប្រតិកម្មជាមួយសារធាតុណា ក្រោមវត្តមានកាតាលីករ H2SO4 ខាប់?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "HNO3 ខាប់ (អាស៊ីតនីទ្រិច)",
+    "explanation": "ទង្វើនីត្រូបង់សែនធ្វើឡើងតាមប្រតិកម្មនីត្រាតកម្ម៖ C6H6 + HNO3 -> C6H5NO2 + H2O។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៦.គ",
+    "options": [
+      {
+        "text": "HNO3 ខាប់ (អាស៊ីតនីទ្រិច)",
+        "isCorrect": true
+      },
+      {
+        "text": "NH3 (អាម៉ូញ៉ាក់)",
+        "isCorrect": false
+      },
+      {
+        "text": "NaNO2 និង HCl",
+        "isCorrect": false
+      },
+      {
+        "text": "NO2 ឧស្ម័ន",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 62,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "សូលុយស្យុង H3PO4 (M=98 g/mol) មានកំហាប់ 75.0% ជាម៉ាស និងដង់ស៊ីតេ d = 1.69 g/cm³។ គណនាកំហាប់ម៉ូឡារីតេ (CM) នៃសូលុយស្យុងនេះ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "12.93 mol/L",
+    "explanation": "CM = (10 * 75.0 * 1.69) / 98 ≈ 12.93 mol/L។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៧",
+    "options": [
+      {
+        "text": "12.93 mol/L",
+        "isCorrect": true
+      },
+      {
+        "text": "15.50 mol/L",
+        "isCorrect": false
+      },
+      {
+        "text": "10.25 mol/L",
+        "isCorrect": false
+      },
+      {
+        "text": "18.00 mol/L",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 63,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "ក្នុងសូលុយស្យុង H3PO4 កំហាប់ 75.0% ជាម៉ាស (M=98 g/mol, H2O=18 g/mol) គណនាកំហាប់ម៉ូឡាលីតេ (m)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "30.61 mol/kg",
+    "explanation": "ក្នុងសូលុយស្យុង 100 g មាន H3PO4 75 g (0.7653 mol) និងទឹក 25 g (0.025 kg) => m = 0.7653 / 0.025 ≈ 30.61 mol/kg។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៧",
+    "options": [
+      {
+        "text": "30.61 mol/kg",
+        "isCorrect": true
+      },
+      {
+        "text": "12.93 mol/kg",
+        "isCorrect": false
+      },
+      {
+        "text": "25.00 mol/kg",
+        "isCorrect": false
+      },
+      {
+        "text": "40.82 mol/kg",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 64,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "គណនាប្រភាគម៉ូលនៃ H3PO4 ក្នុងសូលុយស្យុងអាស៊ីតផូស្វរិច 75.0% ជាម៉ាស។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "0.355",
+    "explanation": "n(H3PO4) = 0.7653 mol; n(H2O) = 1.3889 mol => X = 0.7653 / (0.7653 + 1.3889) ≈ 0.355។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៧",
+    "options": [
+      {
+        "text": "0.355",
+        "isCorrect": true
+      },
+      {
+        "text": "0.645",
+        "isCorrect": false
+      },
+      {
+        "text": "0.750",
+        "isCorrect": false
+      },
+      {
+        "text": "0.250",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 65,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "មនុស្សម្នាក់បោះឃ្លីមួយឡើងលើ និងឃ្លីមួយទៀតចុះក្រោមក្នុងពេលដំណាលគ្នា ដោយល្បឿនដើម v0 ដូចគ្នាពីលើដំបូល។ មិនគិតកកិតខ្យល់ តើល្បឿនធ្លាក់ដល់ដីយ៉ាងដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "មានល្បឿនស្មើគ្នា",
+    "explanation": "ថាមពលមេកានិចដើមស្មើគ្នា នាំឱ្យល្បឿនពេលធ្លាក់ដល់ដី v = √(v0^2 + 2gh) ស្មើគ្នា។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៣ សំណួរ ១",
+    "options": [
+      {
+        "text": "មានល្បឿនស្មើគ្នា",
+        "isCorrect": true
+      },
+      {
+        "text": "ឃ្លីបោះចុះក្រោមមានល្បឿនធំជាង",
+        "isCorrect": false
+      },
+      {
+        "text": "ឃ្លីបោះឡើងលើមានល្បឿនធំជាង",
+        "isCorrect": false
+      },
+      {
+        "text": "អាស្រ័យលើម៉ាសរបស់ឃ្លី",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 66,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "បូប៊ីនសុទ្ធមួយ (R=0) តជាស៊េរីជាមួយរេស៊ីស្តង់ R = 90Ω ភ្ជាប់ទៅប្រភព AC 120V។ បើវ៉ុលម៉ែត្រវាស់លើរេស៊ីស្តង់ឃើញ 36V តើតង់ស្យុងលើបូប៊ីន UL ស្មើប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "114.5 V",
+    "explanation": "UL = √(120^2 - 36^2) = √13104 ≈ 114.47 V ≈ 114.5 V។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៣ សំណួរ ៦",
+    "options": [
+      {
+        "text": "114.5 V",
+        "isCorrect": true
+      },
+      {
+        "text": "84.0 V",
+        "isCorrect": false
+      },
+      {
+        "text": "120.0 V",
+        "isCorrect": false
+      },
+      {
+        "text": "90.0 V",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 67,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ហេតុអ្វីបានជាក្នុងលំយោលប៉ោលទោល ថាមពលមេកានិចត្រូវបានរក្សា បើទោះបីជាមានតំណឹងខ្សែ T ក៏ដោយ?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "ពីព្រោះកម្លាំងតំណឹងខ្សែ T កែងនឹងវ៉ិចទ័រល្បឿនជានិច្ច ធ្វើឱ្យកម្មន្តរបស់វាស្មើសូន្យ (W = 0)",
+    "explanation": "តំណឹងខ្សែ T មានទិសកាត់តាមចំណុចព្យួរ និងកែងនឹងទិសដៅនៃបម្លាស់ទីគ្រប់ខណៈ នាំឱ្យ W_T = 0។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៤ សំណួរ ១",
+    "options": [
+      {
+        "text": "ពីព្រោះកម្លាំងតំណឹងខ្សែ T កែងនឹងវ៉ិចទ័រល្បឿនជានិច្ច ធ្វើឱ្យកម្មន្តរបស់វាស្មើសូន្យ (W = 0)",
+        "isCorrect": true
+      },
+      {
+        "text": "ពីព្រោះតំណឹងខ្សែជាកម្លាំងកកិត",
+        "isCorrect": false
+      },
+      {
+        "text": "ពីព្រោះតំណឹងខ្សែស្មើនឹងទម្ងន់ P គ្រប់ពេល",
+        "isCorrect": false
+      },
+      {
+        "text": "ពីព្រោះខ្សែយឺតខ្លាំង",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 68,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "កម្លាំង F = (6i - 2j) N មានអំពើលើអង្គធាតុមួយក្នុងការផ្លាស់ទី d = (3i - j) m។ គណនាកម្មន្ត W ដែលធ្វើដោយកម្លាំងនេះ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "20 J",
+    "explanation": "W = F · d = (6)(3) + (-2)(-1) = 18 + 2 = 20 J។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៤ សំណួរ ៣.ក",
+    "options": [
+      {
+        "text": "20 J",
+        "isCorrect": true
+      },
+      {
+        "text": "16 J",
+        "isCorrect": false
+      },
+      {
+        "text": "18 J",
+        "isCorrect": false
+      },
+      {
+        "text": "24 J",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 69,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ប្រអប់មួយមានម៉ាស m = 40 kg ត្រូវបានរុញលើផ្ទៃផ្ដេកដោយកម្លាំង F = 130 N បានចម្ងាយ s = 5 m។ បើមេគុណកកិត μ = 0.3 (g = 9.8 m/s²) គណនាកម្មន្តនៃកម្លាំងរុញ W(F)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "650 J",
+    "explanation": "W(F) = F * s = 130 * 5 = 650 J។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៦ សំណួរ ១.ក",
+    "options": [
+      {
+        "text": "650 J",
+        "isCorrect": true
+      },
+      {
+        "text": "588 J",
+        "isCorrect": false
+      },
+      {
+        "text": "62 J",
+        "isCorrect": false
+      },
+      {
+        "text": "130 J",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 70,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "គ្រាប់កាំភ្លើងមួយមានម៉ាស m = 10 g ត្រូវបានបាញ់ចេញពីកាណុងប្រវែង 1 m ដោយល្បឿន 600 m/s។ បើកាំភ្លើងមានម៉ាសសរុប M = 4 kg គណនាល្បឿនធាក់ថយនៃកាំភ្លើង។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "1.5 m/s",
+    "explanation": "V = (m * v) / M = (0.010 * 600) / 4 = 1.5 m/s។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៩ សំណួរ ១.ក",
+    "options": [
+      {
+        "text": "1.5 m/s",
+        "isCorrect": true
+      },
+      {
+        "text": "0.15 m/s",
+        "isCorrect": false
+      },
+      {
+        "text": "3.0 m/s",
+        "isCorrect": false
+      },
+      {
+        "text": "6.0 m/s",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 71,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "សមីការនៃលំយោលអាម៉ូនិចមួយគឺ y = 1.60 cos(30t - 0.5) cm។ គណនាល្បឿន v នៅខណៈ t = 0 (មុំគិតជារ៉ាដ្យង់)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "23.0 cm/s",
+    "explanation": "v(0) = -1.60 * 30 * (-sin(0.5 rad)) = 48 * 0.4794 ≈ 23.0 cm/s។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៩ សំណួរ ២",
+    "options": [
+      {
+        "text": "23.0 cm/s",
+        "isCorrect": true
+      },
+      {
+        "text": "48.0 cm/s",
+        "isCorrect": false
+      },
+      {
+        "text": "-42.2 cm/s",
+        "isCorrect": false
+      },
+      {
+        "text": "0 cm/s",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 72,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ដុំឈើមួយមានម៉ាសមាឌ μ = 0.4 x 10^3 kg/m³ ត្រូវបានពន្លិចក្នុងទឹក (1.0 x 10^3 kg/m³) ជម្រៅ 2.2 m រួចព្រលែង។ គណនាសំទុះ a ពេលព្រលែង (g = 9.8 m/s²)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "14.7 m/s²",
+    "explanation": "a = ((ρ_w / μ) - 1) * g = ((1000 / 400) - 1) * 9.8 = 1.5 * 9.8 = 14.7 m/s²។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៩ សំណួរ ៣.ក",
+    "options": [
+      {
+        "text": "14.7 m/s²",
+        "isCorrect": true
+      },
+      {
+        "text": "9.8 m/s²",
+        "isCorrect": false
+      },
+      {
+        "text": "4.9 m/s²",
+        "isCorrect": false
+      },
+      {
+        "text": "19.6 m/s²",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 73,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ឃ្លីស្វ៊ែរតាន់មួយរមៀលដោយគ្មានរអិលពីកំពូលប្លង់ទេរកម្ពស់ h ចុះមកក្រោម។ គណនាល្បឿន v របស់ឃ្លីនៅបាតប្លង់ទេរ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "v = √(10/7 gh)",
+    "explanation": "mgh = (1/2)mv^2 + (1/2)Iω^2 ដោយ I = (2/5)mR^2 នាំឱ្យ v = √(10/7 gh)។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០១០ សំណួរ ៣.ក",
+    "options": [
+      {
+        "text": "v = √(10/7 gh)",
+        "isCorrect": true
+      },
+      {
+        "text": "v = √(2gh)",
+        "isCorrect": false
+      },
+      {
+        "text": "v = √(4/3 gh)",
+        "isCorrect": false
+      },
+      {
+        "text": "v = √(gh)",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 74,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "តាមទ្រឹស្តីបទកូឡុំ ដែនអគ្គិសនី E នៅខាងក្រៅក្បែរផ្ទៃនៃអង្គធាតុចម្លងមានទម្រង់ដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "E = σ / ε0 (កែងនឹងផ្ទៃ)",
+    "explanation": "ដែនអគ្គិសនីនៅក្រៅផ្ទៃអង្គធាតុចម្លងអេឡិចត្រូស្តាទិចមានទិសកែងនឹងផ្ទៃ និងមានតម្លៃ E = σ / ε0។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០១០ សំណួរ ២",
+    "options": [
+      {
+        "text": "E = σ / ε0 (កែងនឹងផ្ទៃ)",
+        "isCorrect": true
+      },
+      {
+        "text": "E = σ / (2ε0)",
+        "isCorrect": false
+      },
+      {
+        "text": "E = 0",
+        "isCorrect": false
+      },
+      {
+        "text": "E = 2σ / ε0",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 75,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "កូនបាល់ម៉ាស 0.1 kg បោះផ្តេកដោយល្បឿន 8 m/s សំដៅដំបង ហើយវាយត្រឡប់មកវិញដោយល្បឿន 12 m/s ក្នុងពេល 0.01 s។ គណនាកម្លាំងមធ្យម F_avg។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "200 N",
+    "explanation": "F_avg = m * Δv / Δt = 0.1 * (12 - (-8)) / 0.01 = 200 N។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០១១ សំណួរ ៤",
+    "options": [
+      {
+        "text": "200 N",
+        "isCorrect": true
+      },
+      {
+        "text": "40 N",
+        "isCorrect": false
+      },
+      {
+        "text": "100 N",
+        "isCorrect": false
+      },
+      {
+        "text": "20 N",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 76,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ភាគល្អិតមួយនៅគល់តម្រុយមានសំទុះ a = 3j m/s² និងល្បឿនដើម v0 = 500i m/s។ គណនាកូអរដោនេទីតាំង (x, y) នៅខណៈ t = 2 s។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "(1000 m, 6 m)",
+    "explanation": "x = 500 * 2 = 1000 m; y = 0.5 * 3 * 2^2 = 6 m => (1000 m, 6 m)។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ សំណួរ ១",
+    "options": [
+      {
+        "text": "(1000 m, 6 m)",
+        "isCorrect": true
+      },
+      {
+        "text": "(500 m, 3 m)",
+        "isCorrect": false
+      },
+      {
+        "text": "(1000 m, 12 m)",
+        "isCorrect": false
+      },
+      {
+        "text": "(250 m, 6 m)",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 77,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ដុំរូបធាតុមួយមានម៉ាសមាឌ ρ1 ដាក់ក្នុងអង្គធាតុរាវ ρ2 ហើយឃើញលិចមាឌ 3/4 ក្នុងអង្គធាតុរាវ។ តើម៉ាសមាឌ ρ2 ស្មើនឹងប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "ρ2 = (4/3) ρ1",
+    "explanation": "ρ1 * V * g = ρ2 * (3/4 V) * g => ρ2 = (4/3) ρ1។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ សំណួរ ៥",
+    "options": [
+      {
+        "text": "ρ2 = (4/3) ρ1",
+        "isCorrect": true
+      },
+      {
+        "text": "ρ2 = (3/4) ρ1",
+        "isCorrect": false
+      },
+      {
+        "text": "ρ2 = (1/4) ρ1",
+        "isCorrect": false
+      },
+      {
+        "text": "ρ2 = 3 ρ1",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 78,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ដុំ A (2 kg) និង B (6 kg) ដាក់ប៉ះគ្នានៅលើផ្ទៃរលោងដេក។ គេរុញដុំ A ដោយកម្លាំងផ្ដេក F = 16 N។ គណនាកម្លាំងដែលដុំ A មានអំពើលើដុំ B។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "12 N",
+    "explanation": "a = 16 / (2 + 6) = 2 m/s² => F_AB = 6 * 2 = 12 N។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី២) សំណួរ ៥",
+    "options": [
+      {
+        "text": "12 N",
+        "isCorrect": true
+      },
+      {
+        "text": "4 N",
+        "isCorrect": false
+      },
+      {
+        "text": "8 N",
+        "isCorrect": false
+      },
+      {
+        "text": "16 N",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 79,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "កម្លាំង F = 55 N អនុវត្តលើពីស្តុងតូចមានមុខកាត់ A1 = 0.015 m² នៃម៉ាស៊ីនលើកអ៊ីដ្រូលីក។ តើវាអាចលើកទម្ងន់រថយន្តលើពីស្តុងធំមុខកាត់ A2 = 4 m² បានប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "14667 N",
+    "explanation": "F2 = 55 * (4 / 0.015) ≈ 14667 N។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី២) សំណួរ ៦",
+    "options": [
+      {
+        "text": "14667 N",
+        "isCorrect": true
+      },
+      {
+        "text": "8250 N",
+        "isCorrect": false
+      },
+      {
+        "text": "220 N",
+        "isCorrect": false
+      },
+      {
+        "text": "3600 N",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 80,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ដុំទឹកកកមានម៉ាសមាឌ 917 kg/m³ អណ្តែតលើទឹកសមុទ្រ (1025 kg/m³)។ គណនាប្រភាគនៃមាឌដុំទឹកកកដែលផុសលើផ្ទៃទឹក។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "10.5%",
+    "explanation": "V_លិច / V = 917 / 1025 ≈ 89.5% => ប្រភាគផុស = 100% - 89.5% = 10.5%។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ សំណួរ ៦",
+    "options": [
+      {
+        "text": "10.5%",
+        "isCorrect": true
+      },
+      {
+        "text": "89.5%",
+        "isCorrect": false
+      },
+      {
+        "text": "5.0%",
+        "isCorrect": false
+      },
+      {
+        "text": "20.0%",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 81,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ចល័តមួយធ្វើចលនាត្រង់ស៊ីនុយសូអ៊ីត x = A sin(100π t + φ)។ នៅ t = 0 ដឹងថា x0 = 0 m និង v0 = -4 m/s។ គណនាអំព្លីទុត A និងផាសដើម φ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "A = 1.27 cm, φ = π rad",
+    "explanation": "x(0) = 0 => φ = π (ដោយសារ v0 < 0)។ A = 4 / (100π) ≈ 0.0127 m = 1.27 cm។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី២) សំណួរ ៨",
+    "options": [
+      {
+        "text": "A = 1.27 cm, φ = π rad",
+        "isCorrect": true
+      },
+      {
+        "text": "A = 4.00 cm, φ = 0 rad",
+        "isCorrect": false
+      },
+      {
+        "text": "A = 1.27 cm, φ = 0 rad",
+        "isCorrect": false
+      },
+      {
+        "text": "A = 2.54 cm, φ = π/2 rad",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 82,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "តើរបាយអេឡិចត្រុងត្រឹមត្រូវរបស់អាតូមប្រាក់ Ag (Z=47) ក្នុងស្ថានភាពបាត គឺជាជម្រើសមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s¹ 4d¹⁰",
+    "explanation": "ដើម្បីឱ្យស្រទាប់រង d ពេញលេញមានស្ថេរភាព អាតូម Ag រៀបអេឡិចត្រុងជា [Kr] 5s¹ 4d¹⁰។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៤.b",
+    "options": [
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s¹ 4d¹⁰",
+        "isCorrect": true
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s² 4d⁹",
+        "isCorrect": false
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 4s² 3d¹⁰ 4p⁶ 5s² 4d¹⁰",
+        "isCorrect": false
+      },
+      {
+        "text": "1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹⁰ 4s² 4p⁶ 5s⁰ 4d⁹",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 83,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "សមាសធាតុ «3,5-ឌីមេទីលស៊ីក្លូអិចសាណូន» ស្ថិតនៅក្នុងនាទីគីមីសរីរាង្គមួយណា?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "សេតូន (Ketone)",
+    "explanation": "កន្ទុយឈ្មោះ «-អូន» និងបង្គំកាបូនីល (C=O) ក្នុងរង្វង់បញ្ជាក់ថាវាជាសេតូនខ្សែបិទ។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ១.ង",
+    "options": [
+      {
+        "text": "សេតូន (Ketone)",
+        "isCorrect": true
+      },
+      {
+        "text": "អាល់ដេអ៊ីត (Aldehyde)",
+        "isCorrect": false
+      },
+      {
+        "text": "អាល់កុល (Alcohol)",
+        "isCorrect": false
+      },
+      {
+        "text": "អេស្ទែ (Ester)",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 84,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើទម្រង់អ៊ីសូមែ Cis ក្នុង «Cis-4,5-ឌីមេទីលស៊ីក្លូអិចសែន» បង្ហាញអំពីការរៀបចំលំហនៃបង្គំមេទីល (-CH3) ទាំងពីរយ៉ាងដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "បង្គំមេទីលទាំងពីរស្ថិតនៅប្លង់ម្ខាងតែមួយធៀបនឹងប្លង់នៃរង្វង់ស៊ីក្លូ",
+    "explanation": "ទម្រង់ Cis សម្គាល់ថាបង្គំទាំងពីរស្ថិតនៅចំហៀងតែមួយនៃប្លង់វង់ស៊ីក្លូ។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ១.ឃ",
+    "options": [
+      {
+        "text": "បង្គំមេទីលទាំងពីរស្ថិតនៅប្លង់ម្ខាងតែមួយធៀបនឹងប្លង់នៃរង្វង់ស៊ីក្លូ",
+        "isCorrect": true
+      },
+      {
+        "text": "បង្គំមេទីលទាំងពីរស្ថិតនៅប្លង់ផ្ទុយគ្នា",
+        "isCorrect": false
+      },
+      {
+        "text": "បង្គំមេទីលទាំងពីរភ្ជាប់លើកាបូនតែមួយ",
+        "isCorrect": false
+      },
+      {
+        "text": "បង្គំមេទីលទាំងពីរស្ថិតនៅលើសម្ព័ន្ធពីរជាន់",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 85,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "តើសមីការតុល្យការតាងប្រតិកម្មរវាងលោហៈប្រាក់ (Ag) ជាមួយអាស៊ីតនីទ្រិចខាប់ (HNO3) ត្រូវបានសរសេរយ៉ាងដូចម្តេច?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "Ag + 2HNO3 -> AgNO3 + NO2 + H2O",
+    "explanation": "Ag រងអុកស៊ីតកម្មដោយ HNO3 ខាប់ បង្កើតជា AgNO3 ឧស្ម័ន NO2 និង H2O។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៥",
+    "options": [
+      {
+        "text": "Ag + 2HNO3 -> AgNO3 + NO2 + H2O",
+        "isCorrect": true
+      },
+      {
+        "text": "3Ag + 4HNO3 -> 3AgNO3 + NO + 2H2O",
+        "isCorrect": false
+      },
+      {
+        "text": "2Ag + 2HNO3 -> 2AgNO3 + H2",
+        "isCorrect": false
+      },
+      {
+        "text": "Ag + HNO3 -> AgNO2 + H2O",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 86,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Chemistry",
+    "questionText": "នៅពេលឱ្យ Al(OH)3 មានប្រតិកម្មជាមួយសូលុយស្យុង NaOH តើគេទទួលបានសមាសធាតុរលាយអ្វី?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "សូដ្យូមអាលុយមីណាត (NaAlO2) និងទឹក",
+    "explanation": "Al(OH)3 + NaOH -> NaAlO2 + 2H2O។",
+    "referenceNote": "គីមីវិទ្យា_គ្រូវិទ្យាល័យ_ឧត្ដម_ចេញ_២០១៨.pdf - វិញ្ញាសា ២០១៨ សំណួរ ៣",
+    "options": [
+      {
+        "text": "សូដ្យូមអាលុយមីណាត (NaAlO2) និងទឹក",
+        "isCorrect": true
+      },
+      {
+        "text": "កករស Al2O3 និងទឹក",
+        "isCorrect": false
+      },
+      {
+        "text": "ឧស្ម័ន H2 និង Al(ONa)3",
+        "isCorrect": false
+      },
+      {
+        "text": "គ្មានប្រតិកម្មកើតឡើងឡើយ",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 87,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "កែវបាឡុងពីរ V1 = 400 cm³ នៅ T1 = 100°C (373 K) និង V2 = 200 cm³ នៅ T2 = 0°C (273 K) ភ្ជាប់គ្នា។ ដំបូងមានខ្យល់ស្ងួតនៅ 20°C (293 K) សម្ពាធ 1 atm។ គណនាសម្ពាធសម្រេច Pf។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "1.13 atm",
+    "explanation": "n_total = P0(V1+V2)/(R*T0) = Pf/R * (V1/T1 + V2/T2) => Pf ≈ 1.13 atm។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៥ សំណួរ ៣",
+    "options": [
+      {
+        "text": "1.13 atm",
+        "isCorrect": true
+      },
+      {
+        "text": "1.00 atm",
+        "isCorrect": false
+      },
+      {
+        "text": "1.25 atm",
+        "isCorrect": false
+      },
+      {
+        "text": "0.95 atm",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 88,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "យន្តហោះ A (vA = 600 km/h) ហោះចុះតាមមុំ 75° ធៀបផ្ដេក និងយន្តហោះ B (vB = 500 km/h) ហោះផ្ដេកទៅឆ្វេង។ គណនាល្បឿនយន្តហោះ B ធៀបនឹង A (v_B/A)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "688 km/h",
+    "explanation": "តាមផលដកវ៉ិចទ័រ v_B/A = vB - vA គណនាតាមកូអរដោនេផ្តល់លទ្ធផលប្រហែល 688 km/h។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី២) សំណួរ ៣",
+    "options": [
+      {
+        "text": "688 km/h",
+        "isCorrect": true
+      },
+      {
+        "text": "1100 km/h",
+        "isCorrect": false
+      },
+      {
+        "text": "100 km/h",
+        "isCorrect": false
+      },
+      {
+        "text": "780 km/h",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 89,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ភាគល្អិតមួយធ្វើចលនាតាមប៉ារ៉ាបូល y = 0.5 x² ដោយ vx = 5t (m/s)។ គណនាចម្ងាយ r ពីភាគល្អិតទៅគល់ O នៅពេល t = 1 s បើនៅ t=0, x=0, y=0។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "4.02 m",
+    "explanation": "x(1) = ∫5t dt = 2.5 m; y(1) = 0.5*(2.5)^2 = 3.125 m => r = √(2.5^2 + 3.125^2) ≈ 4.00 m ≈ 4.02 m។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី១) សំណួរ ២",
+    "options": [
+      {
+        "text": "4.02 m",
+        "isCorrect": true
+      },
+      {
+        "text": "2.50 m",
+        "isCorrect": false
+      },
+      {
+        "text": "5.62 m",
+        "isCorrect": false
+      },
+      {
+        "text": "3.12 m",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 90,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ស្វ៊ែរសាច់មួយរមៀលលើផ្ទៃដេកដោយល្បឿន v = 20 m/s រួចរមៀលឡើងលើប្លង់ទេរគ្មានកកិត។ គណនាកម្ពស់ h ដែលវាឡើងបាន (g = 9.8 m/s²)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "28.6 m",
+    "explanation": "E_k = (7/10) m v^2 = m g h => h = (7 v^2) / (10 g) = (7 * 400) / 98 ≈ 28.57 m ≈ 28.6 m។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី១) សំណួរ ៤",
+    "options": [
+      {
+        "text": "28.6 m",
+        "isCorrect": true
+      },
+      {
+        "text": "20.4 m",
+        "isCorrect": false
+      },
+      {
+        "text": "14.3 m",
+        "isCorrect": false
+      },
+      {
+        "text": "40.0 m",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 91,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ឧស្ម័ន CO2 ម៉ាស 10 g ត្រូវបានដុតកម្តៅពី 20°C ទៅ 30°C នៅសម្ពាធថេរ។ គណនាកម្មន្ត W នៃការរីកមាឌរបស់ឧស្ម័ន (M = 44 g/mol, R = 8.314 J/mol·K)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "18.9 J",
+    "explanation": "W = P ΔV = n R ΔT = (10 / 44) * 8.314 * 10 ≈ 18.895 J ≈ 18.9 J។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី១) សំណួរ ៦",
+    "options": [
+      {
+        "text": "18.9 J",
+        "isCorrect": true
+      },
+      {
+        "text": "83.1 J",
+        "isCorrect": false
+      },
+      {
+        "text": "44.0 J",
+        "isCorrect": false
+      },
+      {
+        "text": "189.0 J",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 92,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ត្រីនៅក្នុងទឹកជម្រៅមួយ (n = 1.33) មើលឃើញព្រះអាទិត្យរៀបលិច (មុំចំណាំងប៉ះ i = 90°)។ តើត្រីមើលព្រះអាទិត្យក្រោមមុំចំណាំងបែរ r ប៉ុន្មាន?",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "48.8°",
+    "explanation": "sin(r) = sin(90°) / n = 1 / 1.33 = 0.7519 => r ≈ 48.75° ≈ 48.8° (មុំព្រំដែន)។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី១) សំណួរ ៨",
+    "options": [
+      {
+        "text": "48.8°",
+        "isCorrect": true
+      },
+      {
+        "text": "90.0°",
+        "isCorrect": false
+      },
+      {
+        "text": "41.2°",
+        "isCorrect": false
+      },
+      {
+        "text": "30.0°",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 93,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "អង្គធាតុមួយធ្វើចលនាយឺតស្មើពីល្បឿន 13 m/s ដោយអត្រា 2 m/s រាល់វិនាទី ក្នុងរយៈពេល 6 s។ គណនាចម្ងាយចរ s ក្នុងរយៈពេលនេះ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "42 m",
+    "explanation": "s = v0 * t - (1/2) a t^2 = 13 * 6 - 0.5 * 2 * 6^2 = 78 - 36 = 42 m។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី១) សំណួរ ១",
+    "options": [
+      {
+        "text": "42 m",
+        "isCorrect": true
+      },
+      {
+        "text": "78 m",
+        "isCorrect": false
+      },
+      {
+        "text": "36 m",
+        "isCorrect": false
+      },
+      {
+        "text": "60 m",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 94,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ប៉ោលរមួលមួយមានថេររមួល C = 6.8 N·m/rad និងមានម៉ូម៉ង់និចលភាព J = 3 x 10^-4 kg·m²។ គណនាខួបលំយោល T។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "0.042 s",
+    "explanation": "T = 2π √(J / C) = 2π √(3 x 10^-4 / 6.8) = 2π √(4.41 x 10^-5) ≈ 2π * 0.00664 ≈ 0.0417 s ≈ 0.042 s។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី១) សំណួរ ៣",
+    "options": [
+      {
+        "text": "0.042 s",
+        "isCorrect": true
+      },
+      {
+        "text": "0.150 s",
+        "isCorrect": false
+      },
+      {
+        "text": "0.021 s",
+        "isCorrect": false
+      },
+      {
+        "text": "1.250 s",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 95,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ភាគល្អិតមួយធ្វើចលនាត្រង់ដោយសមីការ x = t³ - 9t² + 15t (m)។ គណនាទីតាំង x របស់ភាគល្អិតនៅខណៈ t = 6 s។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "-18 m",
+    "explanation": "x(6) = 6³ - 9(6)² + 15(6) = 216 - 324 + 90 = -18 m។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី២) សំណួរ ១",
+    "options": [
+      {
+        "text": "-18 m",
+        "isCorrect": true
+      },
+      {
+        "text": "18 m",
+        "isCorrect": false
+      },
+      {
+        "text": "0 m",
+        "isCorrect": false
+      },
+      {
+        "text": "-36 m",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 96,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "ភាគល្អិតមួយធ្វើចលនាដោយល្បឿន v = 5 / (4 + x) (m/s)។ គណនាសំទុះ a របស់ភាគល្អិតនៅពេល x = 2 m។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "-0.116 m/s²",
+    "explanation": "a = v * (dv/dx) = [5 / (4 + x)] * [-5 / (4 + x)²] = -25 / (4 + x)³។ នៅ x = 2: a = -25 / 6³ = -25 / 216 ≈ -0.116 m/s²។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម_២.pdf - វិញ្ញាសា ២០១១ (ឯកទេសទី២) សំណួរ ៣",
+    "options": [
+      {
+        "text": "-0.116 m/s²",
+        "isCorrect": true
+      },
+      {
+        "text": "-0.694 m/s²",
+        "isCorrect": false
+      },
+      {
+        "text": "0.116 m/s²",
+        "isCorrect": false
+      },
+      {
+        "text": "-1.250 m/s²",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 97,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "អេក្រង់សង្កេតមួយដាក់ចម្ងាយ D = 1.2 m ពីរង្វះភ្លោះយ៉ាំងដែលមានចន្លោះ a = 0.03 mm។ ប្រឡោះភ្លឺលំដាប់ទី 2 ស្ថិតនៅចម្ងាយ x2 = 4.5 cm ពីកណ្តាល។ គណនាជំហានរលកពន្លឺ λ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "medium",
+    "correctAnswer": "562.5 nm",
+    "explanation": "x2 = 2 * (λ * D / a) => λ = (x2 * a) / (2 * D) = (0.045 * 0.03 x 10^-3) / (2 * 1.2) = 5.625 x 10^-7 m = 562.5 nm។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៣ សំណួរ ៥",
+    "options": [
+      {
+        "text": "562.5 nm",
+        "isCorrect": true
+      },
+      {
+        "text": "600.0 nm",
+        "isCorrect": false
+      },
+      {
+        "text": "450.0 nm",
+        "isCorrect": false
+      },
+      {
+        "text": "500.0 nm",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 98,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "រលកពីរមានសមីការ y1 = 5 sin[π(4x - 1200t)] និង y2 = 5 sin[π(4x - 1200t - 0.25)]។ គណនាប្រេកង់ f នៃរលកទាំងពីរ។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "easy",
+    "correctAnswer": "600 Hz",
+    "explanation": "ω = 1200π rad/s => f = ω / (2π) = 1200π / (2π) = 600 Hz។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៣ សំណួរ ៤",
+    "options": [
+      {
+        "text": "600 Hz",
+        "isCorrect": true
+      },
+      {
+        "text": "1200 Hz",
+        "isCorrect": false
+      },
+      {
+        "text": "300 Hz",
+        "isCorrect": false
+      },
+      {
+        "text": "100 Hz",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 99,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "អេឡិចត្រុងមួយ (m = 9.1 x 10^-31 kg, q = -e = -1.6 x 10^-19 C) មានល្បឿន v0 = 3 x 10^4 m/s ចូលក្នុងដែនអគ្គិសនីឯកសណ្ឋាន ហើយឈប់ក្រោយផ្លាស់ទីបាន d = 45 cm។ គណនាអាំងតង់ស៊ីតេដែន E។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "5.69 x 10^-3 V/m",
+    "explanation": "(1/2) m v0^2 = e E d => E = (m v0^2) / (2 e d) = [9.1 x 10^-31 * 9 x 10^8] / [2 * 1.6 x 10^-19 * 0.45] ≈ 5.69 x 10^-3 V/m។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០០៩ សំណួរ ៥",
+    "options": [
+      {
+        "text": "5.69 x 10^-3 V/m",
+        "isCorrect": true
+      },
+      {
+        "text": "2.84 x 10^-3 V/m",
+        "isCorrect": false
+      },
+      {
+        "text": "1.14 x 10^-2 V/m",
+        "isCorrect": false
+      },
+      {
+        "text": "9.10 x 10^-4 V/m",
+        "isCorrect": false
+      }
+    ]
+  },
+  {
+    "questionID": 100,
+    "topicId": 2,
+    "examName": "គ្រូឧត្តម (វិទ្យាល័យ / NIE)",
+    "subjectName": "Physics",
+    "questionText": "កាំរស្មី X ចាំងប៉ះមានជំហានរលក λ = 0.140 nm ចាំងផ្លាតលើសន្លឹកកាបូនដោយបង្កើតមុំផ្លាត θ = 180° (Compton scattering)។ គណនាជំហានរលកចាំងផ្លាត λ' (ដឹងថា λ_c = 0.00243 nm)។",
+    "questionType": "multiple_choice",
+    "difficultyLevel": "hard",
+    "correctAnswer": "0.14486 nm",
+    "explanation": "Δλ = λ' - λ = λ_c (1 - cos 180°) = 2 λ_c = 2 * 0.00243 = 0.00486 nm => λ' = 0.140 + 0.00486 = 0.14486 nm។",
+    "referenceNote": "រូបវិទ្យា_គ្រូវិទ្យាល័យ_ឬគ្រូឧត្ដម.pdf - វិញ្ញាសា ២០១០ សំណួរ ៥",
+    "options": [
+      {
+        "text": "0.14486 nm",
+        "isCorrect": true
+      },
+      {
+        "text": "0.14243 nm",
+        "isCorrect": false
+      },
+      {
+        "text": "0.14000 nm",
+        "isCorrect": false
+      },
+      {
+        "text": "0.13514 nm",
+        "isCorrect": false
+      }
+    ]
+  }
+]

@@ -40,6 +40,9 @@ passport.use(
               data: {
                 googleId,
                 avatarUrl: user.avatarUrl || avatarUrl,
+                isEmailVerified: true,
+                verificationOtp: null,
+                otpExpiresAt: null,
               },
             });
           }

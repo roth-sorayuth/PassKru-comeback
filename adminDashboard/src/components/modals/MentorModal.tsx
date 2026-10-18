@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useRef } from 'react';
+import { X, AlertCircle, Loader2, Upload, Camera, Trash2 } from 'lucide-react';
 import { MentorItem, MentorStatus, UploadStatus } from '../../types';
 
 export interface MentorFormState {
@@ -38,6 +38,8 @@ interface MentorModalProps {
   editingMentor: MentorItem | null;
   mentorForm: MentorFormState;
   setMentorForm: React.Dispatch<React.SetStateAction<MentorFormState>>;
+  mentorFile: File | null;
+  setMentorFile: (file: File | null) => void;
   mentorError: string;
   mentorSubmitStatus: UploadStatus;
   onSubmit: (e: React.FormEvent) => void;
@@ -49,10 +51,13 @@ export const MentorModal: React.FC<MentorModalProps> = ({
   editingMentor,
   mentorForm,
   setMentorForm,
+  mentorFile,
+  setMentorFile,
   mentorError,
   mentorSubmitStatus,
   onSubmit,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   if (!isOpen) return null;
 
   return (
@@ -136,15 +141,61 @@ export const MentorModal: React.FC<MentorModalProps> = ({
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-normal text-slate-700 uppercase tracking-wider">តំណរូបថត (Avatar URL)</label>
-            <input
-              type="text"
-              placeholder="https://..."
-              value={mentorForm.avatarUrl}
-              onChange={(e) => setMentorForm((f) => ({ ...f, avatarUrl: e.target.value }))}
-              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-black placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black font-normal"
-            />
+          {/* Avatar Image Upload (uses announcement bucket) */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-normal text-slate-700 uppercase tracking-wider">រូបថតគ្រូបង្រៀន (Avatar Image)</label>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border border-dashed border-slate-300 hover:border-black bg-slate-50/60 hover:bg-slate-100/80 rounded-2xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2"
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => setMentorFile(e.target.files?.[0] || null)}
+                className="hidden"
+              />
+              {mentorFile ? (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={URL.createObjectURL(mentorFile)}
+                    alt="Preview"
+                    className="w-12 h-12 rounded-full object-cover border border-slate-300 shadow-2xs"
+                  />
+                  <div className="text-left">
+                    <p className="text-xs font-semibold text-black truncate max-w-[200px]">{mentorFile.name}</p>
+                    <p className="text-[11px] text-slate-500">{(mentorFile.size / (1024 * 1024)).toFixed(2)} MB · ចុចដើម្បីប្តូរ</p>
+                  </div>
+                </div>
+              ) : mentorForm.avatarUrl ? (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={mentorForm.avatarUrl}
+                    alt="Avatar"
+                    className="w-12 h-12 rounded-full object-cover border border-slate-300 shadow-2xs"
+                  />
+                  <div className="text-left">
+                    <p className="text-xs font-semibold text-black">រូបថតបច្ចុប្បន្ន</p>
+                    <p className="text-[11px] text-slate-500">ចុចដើម្បីជ្រើសរើសរូបភាពថ្មីជំនួស</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-slate-600 text-xs font-normal">
+                  <Upload className="w-4 h-4 text-black" />
+                  <span>ចុចដើម្បីជ្រើសរើសរូបថត (JPG, PNG, WebP)</span>
+                </div>
+              )}
+            </div>
+            {/* Optional URL manual input */}
+            <div className="pt-1">
+              <input
+                type="text"
+                placeholder="ឬបញ្ចូលតំណរូបភាពផ្ទាល់ (https://...)"
+                value={mentorForm.avatarUrl}
+                onChange={(e) => setMentorForm((f) => ({ ...f, avatarUrl: e.target.value }))}
+                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-black font-normal"
+              />
+            </div>
           </div>
 
           <div className="space-y-1">

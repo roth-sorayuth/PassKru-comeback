@@ -39,9 +39,9 @@ function otpMatches(expected, submitted) {
 }
 
 /**
- * Runs an email send with a strict execution time limit (6 seconds max)
+ * Runs an email send with a reasonable execution time limit (12 seconds)
  */
-async function sendWithTimeout(sendPromise, timeoutMs = 6000) {
+async function sendWithTimeout(sendPromise, timeoutMs = 12000) {
   return Promise.race([
     sendPromise,
     new Promise((_, reject) =>
@@ -50,7 +50,7 @@ async function sendWithTimeout(sendPromise, timeoutMs = 6000) {
   ]);
 }
 
-const sendOtpWithTimeout = (params, timeoutMs) => sendWithTimeout(sendVerificationOtpEmail(params), timeoutMs);
+const sendOtpWithTimeout = (params, timeoutMs = 12000) => sendWithTimeout(sendVerificationOtpEmail(params), timeoutMs);
 
 /**
  * Checks if a user has exceeded the maximum OTP request limit (4 per 24 hours).
@@ -116,15 +116,10 @@ export const register = async (req, res, next) => {
     });
 
     if (existingUser && existingUser.isEmailVerified) {
-      // Answer exactly like a fresh signup so the response doesn't reveal the
-      // email is registered; the owner gets a "you already have an account" email.
-      try {
-        await sendWithTimeout(sendAccountExistsEmail({ email: normalizedEmail }), 6000);
-      } catch (emailError) {
-        console.error("[AUTH_REGISTER] Account-exists email error/timeout:", emailError?.message || emailError);
-        return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
-      }
-      return res.status(201).json(registerAccepted(normalizedEmail));
+      return res.status(409).json({
+        success: false,
+        message: "An account with this email address already exists. Please sign in instead.",
+      });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -174,14 +169,17 @@ export const register = async (req, res, next) => {
         email: normalizedEmail,
         otp,
         firstName: firstName.trim(),
-      }, 6000);
+      });
     } catch (emailError) {
       console.error("[AUTH_REGISTER] OTP Email error/timeout:", emailError?.message || emailError);
       // Rollback newly created user if email sending fails completely
       if (isNewUser && user?.userId) {
         await prisma.user.delete({ where: { userId: user.userId } }).catch(() => {});
       }
-      return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
+      return res.status(500).json({
+        success: false,
+        message: emailError?.message || REGISTER_EMAIL_FAILED,
+      });
     }
 
     return res.status(201).json(registerAccepted(normalizedEmail));
@@ -317,12 +315,12 @@ export const resendOtp = async (req, res, next) => {
         email: normalizedEmail,
         otp: newOtp,
         firstName: user.firstName,
-      }, 6000);
+      });
     } catch (emailErr) {
       console.error("[AUTH_RESEND] OTP Email error/timeout:", emailErr?.message || emailErr);
       return res.status(500).json({
         success: false,
-        message: "Failed to send verification code email. Please try again in a moment.",
+        message: emailErr?.message || "Failed to send verification code email. Please try again in a moment.",
       });
     }
 
@@ -393,7 +391,7 @@ export const login = async (req, res, next) => {
           email: normalizedEmail,
           otp,
           firstName: user.firstName,
-        }, 6000);
+        });
       } catch (emailErr) {
         console.error("[AUTH_LOGIN_OTP] Email error/timeout:", emailErr?.message || emailErr);
       }

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   getQuizzes,
   getQuiz,
+  getCategoryQuestions,
   createQuiz,
   updateQuiz,
   deleteQuiz,
@@ -13,6 +14,8 @@ const router = Router();
 
 // Quizzes and questions are readable by candidates for taking quizzes.
 // Creating, updating, or deleting quizzes requires authentication and admin privileges.
+router.get("/category-questions", getCategoryQuestions);
+
 router.route("/")
   .get(getQuizzes)
   .post(protect, admin, createQuiz);

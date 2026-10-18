@@ -217,7 +217,7 @@ export const allSubjectsList: SubjectItem[] = [
   {
     id: 'pttc-general-culture',
     nameKm: 'វប្បធម៌ទូទៅ',
-    nameEn: 'General Culture',
+    nameEn: 'General Knowledge',
     category: 'Core',
     targetExams: ['pttc'],
     icon: Globe,
@@ -270,7 +270,7 @@ export const allSubjectsList: SubjectItem[] = [
   {
     id: 'sec-general-culture',
     nameKm: 'វប្បធម៌ទូទៅ',
-    nameEn: 'General Culture',
+    nameEn: 'General Knowledge',
     category: 'Core',
     targetExams: ['nie', 'rttc'],
     icon: Globe,
@@ -523,10 +523,10 @@ export const getSubjectMeta = (subjectName: string, examTarget: ExamTarget): Sub
       ],
     };
   }
-  if (norm.includes('វប្បធម៌') || norm.includes('culture')) {
+  if (norm.includes('វប្បធម៌') || norm.includes('culture') || norm.includes('general') || norm.includes('knowledge') || norm === 'gk') {
     return {
       nameKm: 'វប្បធម៌ទូទៅ',
-      nameEn: 'General Culture',
+      nameEn: 'General Knowledge',
       category: examTarget === 'pttc' ? 'Primary' : 'Core',
       icon: Landmark,
       colorBg: 'bg-amber-50',
@@ -622,6 +622,29 @@ export const getSubjectMeta = (subjectName: string, examTarget: ExamTarget): Sub
       colorBorder: 'border-violet-100',
       topicsKm: ['មូលដ្ឋានគ្រឹះកុំព្យូទ័រ និងប្រព័ន្ធប្រតិបត្តិការ', 'បណ្តាញកុំព្យូទ័រ និងអ៊ីនធឺណិត', 'កម្មវិធីការិយាល័យ និងបច្ចេកវិទ្យាអប់រំ', 'សន្តិសុខឌីជីថល'],
       topicsEn: ['Computer Basics & Operating Systems', 'Networking & Internet', 'Office Applications & EdTech', 'Digital Safety & Cyber Security'],
+    };
+  }
+  if (norm.includes('សីលធម៌') || norm.includes('ពលរដ្ឋ') || norm.includes('civic') || norm.includes('ethic')) {
+    return {
+      nameKm: 'សីលធម៌-ពលរដ្ឋវិជ្ជា',
+      nameEn: 'Civics & Ethics',
+      category: 'Specialization',
+      icon: ShieldCheck,
+      colorBg: 'bg-emerald-50',
+      colorText: 'text-emerald-600',
+      colorBorder: 'border-emerald-100',
+      topicsKm: [
+        'សីលធម៌ និងការអប់រំគុណធម៌',
+        'ច្បាប់ និងស្ថាប័នពលរដ្ឋ',
+        'សិទ្ធិមនុស្ស និងប្រជាធិបតេយ្យ',
+        'ទំនួលខុសត្រូវសង្គម និងបរិស្ថាន',
+      ],
+      topicsEn: [
+        'Ethics & Moral Education',
+        'Civic Law & Institutions',
+        'Human Rights & Democracy',
+        'Social & Environmental Responsibility',
+      ],
     };
   }
 
@@ -822,8 +845,8 @@ export const PracticePage: React.FC = () => {
             return {
               id: String(s.subjectId),
               dbSubjectId: s.subjectId,
-              nameKm: s.subjectName,
-              nameEn: meta.nameEn,
+              nameKm: meta.nameKm || s.subjectName,
+              nameEn: meta.nameEn || s.subjectName,
               category: meta.category,
               targetExams: [selectedExamTarget],
               icon: meta.icon,
@@ -975,49 +998,32 @@ export const PracticePage: React.FC = () => {
     setCurrentPage('flashcards');
   };
 
-  const handleStartSubjectMockExam = async (subject: SubjectItem, setNum: number = 1) => {
+  const handleStartFullMockExam = (setNum: number = 1) => {
     try {
       sessionStorage.setItem('passkru_practice_category', 'mock-exam');
     } catch { }
+    setActiveMockExam(null);
+    setActiveQuizId(null);
+    setActiveQuiz(null);
+    setActiveMockSetNumber(setNum);
+    setSelectedPracticeSubjectId(null);
+    setSelectedPracticeSubject(null);
+    setMockExamNotice(null);
+    setCurrentPage('mock-exam');
+  };
+
+  const handleStartSubjectMockExam = (subject: SubjectItem, setNum: number = 1) => {
+    try {
+      sessionStorage.setItem('passkru_practice_category', 'mock-exam');
+    } catch { }
+    setActiveMockExam(null);
+    setActiveQuizId(null);
+    setActiveQuiz(null);
     setActiveMockSetNumber(setNum);
     setSelectedPracticeSubjectId(subject.id);
     setSelectedPracticeSubject(subject.nameKm);
     setMockExamNotice(null);
-
-    try {
-      // Query real organized quizzes from backend database API
-      const res = await getQuizzes({
-        targetExam: selectedExamTarget,
-        subjectName: subject.nameKm,
-      });
-
-      const quizzesList = res?.quizzes || [];
-      if (quizzesList.length > 0) {
-        const kmDigit = localizeNumber(setNum, 'km');
-        const matchedApiQuiz =
-          quizzesList.find((q: any) =>
-            q.title?.includes(`វិញ្ញាសាទី ${setNum}`) ||
-            q.title?.includes(`វិញ្ញាសាទី ${kmDigit}`) ||
-            q.title?.toLowerCase().includes(`set ${setNum}`) ||
-            q.title?.toLowerCase().includes(`set-${setNum}`)
-          ) ||
-          quizzesList[setNum - 1] ||
-          quizzesList[0];
-
-        if (matchedApiQuiz?.quizId) {
-          setActiveMockExam(null);
-          setActiveQuiz(null);
-          setActiveQuizId(matchedApiQuiz.quizId);
-          setCurrentPage('mock-exam');
-          return;
-        }
-      }
-      setMockExamNotice(lang === 'km'
-        ? `មុខវិជ្ជា «${subject.nameKm}» មិនទាន់មានវិញ្ញាសានៅក្នុងមូលដ្ឋានទិន្នន័យទេ។`
-        : `${subject.nameEn} has no papers in the database yet.`);
-    } catch (err: any) {
-      setMockExamNotice(err?.message || (lang === 'km' ? 'មិនអាចទាញយកវិញ្ញាសាបានទេ' : 'Failed to load papers'));
-    }
+    setCurrentPage('mock-exam');
   };
 
   const handleStartSubject = (subject: SubjectItem) => {
@@ -1125,6 +1131,35 @@ export const PracticePage: React.FC = () => {
                 ? `មុខវិជ្ជាក្នុងវិញ្ញាសាប្រឡងសាកល្បងទី ${localizeNumber(activeMockSetTab, 'km')} (បេក្ខជនត្រូវបានផ្តល់ពេលវេលាកំណត់សម្រាប់ធ្វើវិញ្ញាសាតាមមុខវិជ្ជានីមួយៗ)`
                 : `Subjects in Mock Exam ${activeMockSetTab} (Candidates are given time to complete each subject paper)`}
             </span>
+          </div>
+
+          {/* Full Official Multi-Subject Mock Exam Launch Banner */}
+          <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-[#0a3263] rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5 border border-emerald-400/30">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black bg-white/20 text-white border border-white/25">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>{lang === 'km' ? 'ការប្រឡងសាកល្បងផ្លូវការ (ពេញលេញគ្រប់មុខវិជ្ជា)' : 'Full Official Mock Exam (All Subjects)'}</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white">
+                {lang === 'km'
+                  ? `ចាប់ផ្តើមការប្រឡងសាកល្បងទី ${localizeNumber(activeMockSetTab, 'km')} (បន្តបន្ទាប់គ្រប់មុខវិជ្ជា)`
+                  : `Start Full Mock Exam Set ${activeMockSetTab} (Sequential Subjects)`}
+              </h2>
+              <p className="text-xs sm:text-sm text-emerald-100 max-w-2xl leading-relaxed">
+                {lang === 'km'
+                  ? `ធ្វើវិញ្ញាសាគ្រប់មុខវិជ្ជាជាប់ៗគ្នាដូចការប្រឡងពិតប្រាកដ (វប្បធម៌ទូទៅ, ភាសាអង់គ្លេស និងឯកទេស) ជាមួយនឹងពេលវេលាកំណត់ផ្លូវការ ១២០ នាទី និងមានប៊ូតុងបន្តទៅមុខវិជ្ជាបន្ទាប់ ឬត្រឡប់ក្រោយ។`
+                  : `Take all subject papers sequentially just like the real examination (General Knowledge, English, and Specialization) with full 120-minute official time and subject navigation buttons.`}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleStartFullMockExam(activeMockSetTab)}
+              className="shrink-0 px-6 py-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-black text-sm sm:text-base shadow-lg transition flex items-center justify-center gap-2.5 cursor-pointer transform hover:scale-[1.02]"
+            >
+              <Play className="w-5 h-5 fill-current" />
+              <span>{lang === 'km' ? 'ចាប់ផ្តើមប្រឡងពេញលេញ' : 'Start Full Mock Exam'}</span>
+            </button>
           </div>
 
           {mockExamNotice && (

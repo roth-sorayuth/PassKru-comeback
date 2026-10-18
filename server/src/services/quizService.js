@@ -9,6 +9,56 @@ import { prisma } from "../config/prisma.js";
  * side in scoringService against the DB rows instead.
  */
 
+export function normalizeCategory(categoryOrTarget) {
+  if (!categoryOrTarget) return null;
+  const s = String(categoryOrTarget).toLowerCase().trim();
+  if (s.includes('elem') || s.includes('primary') || s.includes('pttc') || s.includes('បឋម')) return 'pttc';
+  if (s.includes('sec') || s.includes('basic') || s.includes('rttc') || s.includes('មូលដ្ឋាន') || s.includes('អនុវិទ្យាល័យ')) return 'rttc';
+  if (s.includes('high') || s.includes('upper') || s.includes('nie') || s.includes('ឧត្តម') || s.includes('វិទ្យាល័យ')) return 'nie';
+  return s;
+}
+
+export function isGeneralKnowledge(name) {
+  if (!name) return false;
+  const s = String(name).toLowerCase().trim();
+  return (
+    s.includes('general') ||
+    s.includes('culture') ||
+    s.includes('knowledge') ||
+    s.includes('វប្បធម៌') ||
+    s.includes('ចំណេះដឹង') ||
+    s === 'gk'
+  );
+}
+
+export function isEnglish(name) {
+  if (!name) return false;
+  const s = String(name).toLowerCase().trim();
+  return s.includes('english') || s.includes('អង់គ្លេស') || s === 'eng';
+}
+
+export function isKhmer(name) {
+  if (!name) return false;
+  const s = String(name).toLowerCase().trim();
+  return s.includes('khmer') || s.includes('ខ្មែរ');
+}
+
+export function mapSubjectName(name) {
+  if (!name) return null;
+  const s = String(name).toLowerCase().trim();
+  if (isGeneralKnowledge(s)) return 'General Knowledge';
+  if (isEnglish(s)) return 'English';
+  if (s.includes('math') || s.includes('គណិត')) return 'Mathematics';
+  if (s.includes('phys') || s.includes('រូប')) return 'Physics';
+  if (s.includes('chem') || s.includes('គីមី')) return 'Chemistry';
+  if (s.includes('bio') || s.includes('ជីវ')) return 'Biology';
+  if (s.includes('hist') || s.includes('ប្រវត្តិ')) return 'History';
+  if (s.includes('geo') || s.includes('ភូមិ')) return 'Geography';
+  if (s.includes('khmer') || s.includes('ខ្មែរ')) return 'Khmer Literature';
+  if (s.includes('civic') || s.includes('moral') || s.includes('សីលធម៌') || s.includes('ពលរដ្ឋ')) return 'Civics & Ethics';
+  return name;
+}
+
 function toTakingQuestion(question, order) {
   return {
     questionId: question.questionId,
@@ -28,33 +78,94 @@ function toTakingQuestion(question, order) {
   };
 }
 
-export const listQuizzes = async ({ subjectId, examId, targetExam, subjectName } = {}) => {
+export const listQuizzes = async ({ subjectId, examId, targetExam, subjectName, category, selectedSubjects } = {}) => {
   const where = {};
-  if (subjectId) where.subjectId = Number(subjectId);
-  if (examId) {
-    where.subject = { ...(where.subject || {}), examId: Number(examId) };
+  if (subjectId) {
+    where.subjectId = Number(subjectId);
   }
-  if (targetExam) {
-    where.subject = {
-      ...(where.subject || {}),
-      exam: {
-        OR: [
-          { targetCode: targetExam },
-          { category: targetExam },
-          { examName: { contains: targetExam, mode: "insensitive" } },
-        ],
-      },
-    };
+
+  const cat = normalizeCategory(targetExam || category);
+
+  let chosenSubjects = null;
+  if (selectedSubjects) {
+    const rawList = Array.isArray(selectedSubjects) ? selectedSubjects : String(selectedSubjects).split(',');
+    chosenSubjects = rawList.map((s) => mapSubjectName(s.trim())).filter(Boolean);
   }
+
   if (subjectName) {
-    where.subject = {
-      ...(where.subject || {}),
-      OR: [
-        { subjectName: { contains: subjectName, mode: "insensitive" } },
-        { subjectName: { contains: subjectName.replace("ភាសា", "ភាសារ"), mode: "insensitive" } },
-        { subjectName: { contains: subjectName.replace("ភាសារ", "ភាសា"), mode: "insensitive" } },
-      ],
-    };
+    const canonical = mapSubjectName(subjectName);
+    if (canonical === 'General Knowledge') {
+      // General Knowledge must show in all 3 categories
+      where.OR = [
+        { subjectId: 3 },
+        { subject: { subjectName: { contains: 'General Knowledge', mode: 'insensitive' } } },
+        { title: { contains: 'វប្បធម៌ទូទៅ' } }
+      ];
+    } else if (canonical === 'English') {
+      // English must show in all 3 categories
+      where.OR = [
+        { subjectId: 20 },
+        { subject: { subjectName: { contains: 'English', mode: 'insensitive' } } },
+        { title: { contains: 'ភាសាអង់គ្លេស' } }
+      ];
+    } else if (canonical === 'Khmer Literature') {
+      // Khmer Literature shows the same quizzes in all 3 categories if chosen
+      where.OR = [
+        { subjectId: 15 },
+        { subject: { subjectName: { contains: 'Khmer', mode: 'insensitive' } } },
+        { title: { contains: 'ខ្មែរ' } }
+      ];
+    } else {
+      // Specialized subject: only show for the category the user chose
+      const subjectFilter = {
+        subject: {
+          subjectName: { contains: canonical, mode: 'insensitive' },
+          ...(cat
+            ? {
+                exam: {
+                  targetCode: { equals: cat, mode: 'insensitive' },
+                },
+              }
+            : {}),
+        },
+      };
+      if (examId) {
+        subjectFilter.subject.examId = Number(examId);
+      }
+      Object.assign(where, subjectFilter);
+    }
+  } else if (chosenSubjects && chosenSubjects.length > 0) {
+    // Only show the chosen subjects, plus General Knowledge, English, and Khmer Literature if chosen
+    const hasKhmer = chosenSubjects.includes('Khmer Literature');
+    const commonIds = [3, 20, ...(hasKhmer ? [15] : [])];
+    const allowedSubjects = Array.from(new Set([...chosenSubjects, 'General Knowledge', 'English']));
+    where.OR = [
+      // Core subjects always allowed
+      { subjectId: { in: commonIds } },
+      // Chosen specialization subjects scoped to the chosen category
+      {
+        subject: {
+          subjectName: { in: allowedSubjects, mode: 'insensitive' },
+          ...(cat ? { exam: { targetCode: { equals: cat, mode: 'insensitive' } } } : {}),
+        },
+      },
+    ];
+  } else if (cat || examId) {
+    // User selected category without specific subject: return category's subjects + General Knowledge, English & Khmer Literature
+    where.OR = [
+      {
+        subject: {
+          exam: {
+            OR: [
+              ...(cat ? [{ targetCode: { equals: cat, mode: 'insensitive' } }] : []),
+              ...(examId ? [{ examId: Number(examId) }] : []),
+            ],
+          },
+        },
+      },
+      // General Knowledge (ID: 3), English (ID: 20), and Khmer Literature (ID: 15)
+      { subjectId: { in: [3, 20, 15] } },
+    ];
   }
 
   const quizzes = await prisma.quiz.findMany({
@@ -147,6 +258,78 @@ export const getQuizForTaking = async (quizId) => {
     targetExam: quiz.subject?.exam?.targetCode ?? quiz.subject?.exam?.category ?? null,
     totalQuestions: questions.length,
     questions,
+  };
+};
+
+/**
+ * Retrieve questions in quiz format defined by each category.
+ * Only returns questions for the category and subject the user has chosen,
+ * while General Knowledge and English always show in all 3 categories.
+ */
+export const getCategoryQuestions = async ({
+  category,
+  targetExam,
+  subjectName,
+  selectedSubjects,
+  limit = 50,
+  offset = 0,
+} = {}) => {
+  const cat = normalizeCategory(targetExam || category);
+  const examNameFilter =
+    cat === 'pttc' ? 'elementary' : cat === 'rttc' ? 'secondary' : cat === 'nie' ? 'highschool' : cat;
+
+  const where = {};
+
+  if (subjectName) {
+    const canonical = mapSubjectName(subjectName);
+    if (canonical === 'General Knowledge' || canonical === 'English' || canonical === 'Khmer Literature') {
+      // General Knowledge, English & Khmer Literature show in all 3 categories (examName is "All")
+      where.subjectName = canonical;
+    } else {
+      // Specific chosen subject in the category
+      where.subjectName = canonical;
+      if (examNameFilter) {
+        where.examName = examNameFilter;
+      }
+    }
+  } else if (selectedSubjects) {
+    const rawList = Array.isArray(selectedSubjects) ? selectedSubjects : String(selectedSubjects).split(',');
+    const mapped = rawList.map((s) => mapSubjectName(s.trim())).filter(Boolean);
+    const hasKhmer = mapped.includes('Khmer Literature');
+    const commonSubjects = ['General Knowledge', 'English', ...(hasKhmer ? ['Khmer Literature'] : [])];
+    const allowed = Array.from(new Set([...mapped, 'General Knowledge', 'English']));
+
+    where.OR = [
+      { subjectName: { in: commonSubjects, mode: 'insensitive' } },
+      {
+        subjectName: { in: allowed, mode: 'insensitive' },
+        ...(examNameFilter ? { examName: examNameFilter } : {}),
+      },
+    ];
+  } else if (examNameFilter) {
+    // Return questions for category, PLUS questions with examName "All" (General Knowledge, English, Khmer)
+    where.OR = [{ examName: examNameFilter }, { examName: 'All' }];
+  }
+
+  const [total, questions] = await Promise.all([
+    prisma.question.count({ where }),
+    prisma.question.findMany({
+      where,
+      orderBy: { questionId: 'asc' },
+      skip: Number(offset),
+      take: Number(limit),
+      include: {
+        topic: { select: { topicId: true, topicName: true, subjectId: true } },
+        answerOptions: { orderBy: { optionId: 'asc' } },
+      },
+    }),
+  ]);
+
+  return {
+    category: cat || 'all',
+    total,
+    count: questions.length,
+    questions: questions.map((q, idx) => toTakingQuestion(q, Number(offset) + idx + 1)),
   };
 };
 

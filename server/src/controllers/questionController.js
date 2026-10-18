@@ -1,15 +1,19 @@
 import * as questionService from "../services/questionService.js";
 
-// GET /api/questions?topicId=&subjectId=&questionType=&difficultyLevel=&search=
+// GET /api/questions?topicId=&subjectId=&questionType=&difficultyLevel=&search=&examName=&category=&targetExam=&subjectName=
 export const getQuestions = async (req, res, next) => {
   try {
-    const { topicId, subjectId, questionType, difficultyLevel, search } = req.query;
+    const { topicId, subjectId, questionType, difficultyLevel, search, examName, category, targetExam, subjectName } = req.query;
     const questions = await questionService.listQuestions({
       topicId,
       subjectId,
       questionType,
       difficultyLevel,
       search,
+      examName,
+      category,
+      targetExam,
+      subjectName,
     });
     return res.status(200).json({ success: true, count: questions.length, questions });
   } catch (error) {

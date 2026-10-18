@@ -1,11 +1,36 @@
 import * as quizService from "../services/quizService.js";
 
-// GET /api/quizzes?subjectId=&examId=&targetExam=&subjectName=
+// GET /api/quizzes?subjectId=&examId=&targetExam=&subjectName=&category=&selectedSubjects=
 export const getQuizzes = async (req, res, next) => {
   try {
-    const { subjectId, examId, targetExam, subjectName } = req.query;
-    const quizzes = await quizService.listQuizzes({ subjectId, examId, targetExam, subjectName });
+    const { subjectId, examId, targetExam, subjectName, category, selectedSubjects } = req.query;
+    const quizzes = await quizService.listQuizzes({
+      subjectId,
+      examId,
+      targetExam,
+      subjectName,
+      category,
+      selectedSubjects,
+    });
     return res.status(200).json({ success: true, count: quizzes.length, quizzes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// GET /api/quizzes/category-questions?category=&targetExam=&subjectName=&selectedSubjects=&limit=&offset=
+export const getCategoryQuestions = async (req, res, next) => {
+  try {
+    const { category, targetExam, subjectName, selectedSubjects, limit, offset } = req.query;
+    const result = await quizService.getCategoryQuestions({
+      category,
+      targetExam,
+      subjectName,
+      selectedSubjects,
+      limit: limit ? parseInt(limit, 10) : 50,
+      offset: offset ? parseInt(offset, 10) : 0,
+    });
+    return res.status(200).json({ success: true, ...result });
   } catch (error) {
     next(error);
   }

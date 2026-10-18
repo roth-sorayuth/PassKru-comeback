@@ -1,4 +1,4 @@
-export type Tab = 'upload' | 'dashboard' | 'prepare-papers' | 'announcements' | 'users' | 'questions' | 'mock-exams' | 'mentors';
+export type Tab = 'upload' | 'dashboard' | 'prepare-papers' | 'announcements' | 'users' | 'questions' | 'mock-exams' | 'mentors' | 'flashcards';
 export type UploadStatus = 'idle' | 'uploading-storage' | 'saving-db' | 'success' | 'error';
 
 export interface Exam {

@@ -19,14 +19,16 @@ function toFlashcardDTO(card) {
 export function getEquivalentSubjectNames(subjName) {
   if (!subjName) return [];
   const s = subjName.trim().toLowerCase();
-  if (s.includes("គណិត")) return ["គណិតវិទ្យា"];
-  if (s.includes("រូប")) return ["រូបវិទ្យា"];
-  if (s.includes("គីមី")) return ["គីមីវិទ្យា"];
-  if (s.includes("វប្បធម៌")) return ["វប្បធម៌ទូទៅ"];
-  if (s.includes("ខ្មែរ")) return ["ភាសាខ្មែរ"];
-  if (s.includes("ប្រវត្តិ")) return ["ប្រវត្តិវិទ្យា", "ប្រវត្តិសាស្ត្រ", "ប្រវត្តិសាស្ត្រខ្មែរ"];
-  if (s.includes("ភូមិ")) return ["ភូមិវិទ្យា", "ភូមិសាស្ត្រ", "ភូមិវិទ្យាកម្ពុជា"];
-  if (s.includes("ជីវ")) return ["ជីវវិទ្យា", "ជីវ:វិទ្យា", "ជីវវិទ្យាកោសិកា"];
+  // Subjects in the `subject` table may carry English names (e.g. "Physics"),
+  // while decks/cards are stored under the Khmer name, so match both.
+  if (s.includes("គណិត") || s.includes("math")) return ["គណិតវិទ្យា"];
+  if (s.includes("រូប") || s.includes("physic")) return ["រូបវិទ្យា"];
+  if (s.includes("គីមី") || s.includes("chem")) return ["គីមីវិទ្យា"];
+  if (s.includes("វប្បធម៌") || s.includes("general knowledge")) return ["វប្បធម៌ទូទៅ"];
+  if (s.includes("ខ្មែរ") || s.includes("khmer")) return ["ភាសាខ្មែរ"];
+  if (s.includes("ប្រវត្តិ") || s.includes("history")) return ["ប្រវត្តិវិទ្យា", "ប្រវត្តិសាស្ត្រ", "ប្រវត្តិសាស្ត្រខ្មែរ"];
+  if (s.includes("ភូមិ") || s.includes("geograph")) return ["ភូមិវិទ្យា", "ភូមិសាស្ត្រ", "ភូមិវិទ្យាកម្ពុជា"];
+  if (s.includes("ជីវ") || s.includes("biolog")) return ["ជីវវិទ្យា", "ជីវ:វិទ្យា", "ជីវវិទ្យាកោសិកា"];
   if (s.includes("អង់គ្លេស") || s.includes("english")) return ["ភាសាអង់គ្លេស"];
   return [subjName];
 }
@@ -205,6 +207,115 @@ export const createDeck = async (data) => {
       description: data.description || null,
     },
   });
+};
+
+const BULK_DIFFICULTY_MAP = {
+  easy: "easy", medium: "medium", hard: "hard",
+  "ងាយ": "easy", "ងាយស្រួល": "easy", "មធ្យម": "medium", "ពិបាក": "hard",
+};
+const BULK_MAX_CARDS = 1000;
+
+/**
+ * Bulk-import flashcards from admin-uploaded JSON. Accepts snake_case
+ * (front_text) or camelCase (frontText). Finds or creates the subject,
+ * creates new decks of `cardsPerDeck` cards, and skips cards whose front text
+ * already exists in that subject so re-importing the same file is harmless.
+ */
+export const bulkImportFlashcards = async ({ subjectId, subjectName, cardsPerDeck, deckTitlePrefix, flashcards }) => {
+  const fail = (message, statusCode = 400) => {
+    const error = new Error(message);
+    error.statusCode = statusCode;
+    throw error;
+  };
+
+  if (!Array.isArray(flashcards) || flashcards.length === 0) fail("flashcards must be a non-empty array");
+  if (flashcards.length > BULK_MAX_CARDS) fail(`Too many flashcards (max ${BULK_MAX_CARDS} per import)`);
+  if (!subjectId && !subjectName?.trim()) fail("Please provide subjectId or subjectName");
+
+  const perDeck = Math.min(Math.max(parseInt(cardsPerDeck, 10) || 10, 1), 100);
+
+  const invalid = [];
+  const seen = new Set();
+  const valid = [];
+  flashcards.forEach((raw, index) => {
+    const frontText = String(raw?.frontText ?? raw?.front_text ?? "").trim();
+    const backText = String(raw?.backText ?? raw?.back_text ?? "").trim();
+    if (!frontText || !backText) {
+      invalid.push({ index: index + 1, reason: "missing front_text or back_text" });
+      return;
+    }
+    if (seen.has(frontText)) return; // duplicate inside the file
+    seen.add(frontText);
+    const hint = raw.hint ? String(raw.hint).trim() : null;
+    const category = raw.category ? String(raw.category).trim().slice(0, 100) : null;
+    const diffKey = String(raw.difficulty ?? "").trim();
+    const difficulty = BULK_DIFFICULTY_MAP[diffKey] || BULK_DIFFICULTY_MAP[diffKey.toLowerCase()] || "medium";
+    valid.push({ frontText, backText, hint, category, difficulty });
+  });
+
+  if (valid.length === 0) fail("No valid flashcards found in the file");
+
+  return await prisma.$transaction(async (tx) => {
+    // Resolve subject (by id, by equivalent name, or create it).
+    let subject = null;
+    if (subjectId && !isNaN(Number(subjectId))) {
+      subject = await tx.subject.findUnique({ where: { subjectId: Number(subjectId) } });
+      if (!subject) fail(`Subject with ID ${subjectId} not found`, 404);
+    } else {
+      const name = subjectName.trim();
+      subject = await tx.subject.findFirst({
+        where: { subjectName: { in: getEquivalentSubjectNames(name), mode: "insensitive" } },
+      });
+      if (!subject) subject = await tx.subject.create({ data: { subjectName: name } });
+    }
+
+    // Skip cards already stored under this subject.
+    const existing = await tx.flashcard.findMany({
+      where: { frontText: { in: valid.map((c) => c.frontText) }, deck: { subjectId: subject.subjectId } },
+      select: { frontText: true },
+    });
+    const existingSet = new Set(existing.map((c) => c.frontText));
+    const toCreate = valid.filter((c) => !existingSet.has(c.frontText));
+
+    let decksCreated = 0;
+    if (toCreate.length > 0) {
+      const existingDecks = await tx.flashcardDeck.findMany({
+        where: { subjectId: subject.subjectId },
+        select: { title: true },
+      });
+      const usedTitles = new Set(existingDecks.map((d) => d.title));
+      const prefix = (deckTitlePrefix || "វិញ្ញាសារទី").trim();
+      let deckNumber = existingDecks.length + 1;
+
+      for (let i = 0; i < toCreate.length; i += perDeck) {
+        let title = `${prefix} ${deckNumber}`;
+        while (usedTitles.has(title)) title = `${prefix} ${++deckNumber}`;
+        usedTitles.add(title);
+        deckNumber++;
+
+        await tx.flashcardDeck.create({
+          data: {
+            subjectId: subject.subjectId,
+            subjectName: subject.subjectName,
+            title,
+            flashcards: {
+              create: toCreate.slice(i, i + perDeck).map((c) => ({ ...c, subjectName: subject.subjectName })),
+            },
+          },
+        });
+        decksCreated++;
+      }
+    }
+
+    return {
+      subjectId: subject.subjectId,
+      subjectName: subject.subjectName,
+      decksCreated,
+      cardsCreated: toCreate.length,
+      skippedDuplicates: valid.length - toCreate.length,
+      invalid,
+    };
+  }, { timeout: 60000 });
 };
 
 export const updateDeck = async (id, data) => {

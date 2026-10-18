@@ -42,6 +42,16 @@ export const createFlashcard = async (req, res, next) => {
   }
 };
 
+// POST /api/flashcards/bulk  { subjectName | subjectId, cardsPerDeck?, deckTitlePrefix?, flashcards: [...] }
+export const bulkImportFlashcards = async (req, res, next) => {
+  try {
+    const result = await flashcardService.bulkImportFlashcards(req.body || {});
+    return res.status(201).json({ success: true, message: "Flashcards imported successfully", ...result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // PUT /api/flashcards/:id
 export const updateFlashcard = async (req, res, next) => {
   try {

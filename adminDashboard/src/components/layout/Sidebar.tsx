@@ -1,5 +1,5 @@
 import React from 'react';
-import { Upload, BookOpen, LayoutDashboard, Megaphone, Users, LogOut, X, HelpCircle, ClipboardList, GraduationCap } from 'lucide-react';
+import { Upload, BookOpen, LayoutDashboard, Megaphone, Users, LogOut, X, HelpCircle, ClipboardList, GraduationCap, Layers } from 'lucide-react';
 import { Tab } from '../../types';
 
 interface SidebarProps {
@@ -28,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'questions', label: 'ឃ្លាំងសំណួរ', icon: HelpCircle },
     { id: 'mock-exams', label: 'បង្កើតវិញ្ញាសាសាកល្បង', icon: ClipboardList },
     { id: 'mentors', label: 'គ្រប់គ្រងគ្រូបង្រៀន', icon: GraduationCap },
+    { id: 'flashcards', label: 'នាំចូល Flashcard', icon: Layers },
   ];
 
   return (

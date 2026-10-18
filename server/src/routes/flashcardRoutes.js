@@ -5,6 +5,7 @@ import {
   createFlashcard,
   updateFlashcard,
   deleteFlashcard,
+  bulkImportFlashcards,
   getFlashcardDecks,
   createFlashcardDeck,
   updateFlashcardDeck,
@@ -22,6 +23,8 @@ router.route("/decks")
 router.route("/decks/:id")
   .put(protect, admin, updateFlashcardDeck)
   .delete(protect, admin, deleteFlashcardDeck);
+
+router.post("/bulk", protect, admin, bulkImportFlashcards);
 
 router.route("/")
   .get(getFlashcards)

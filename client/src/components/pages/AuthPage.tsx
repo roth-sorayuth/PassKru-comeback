@@ -50,6 +50,13 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [resendCooldown, setResendCooldown] = useState(0);
+  // 'verify' = signup email verification, 'login' = emailed sign-in code (2-step login)
+  const [otpPurpose, setOtpPurpose] = useState<'verify' | 'login'>('verify');
+
+  // Forgot-password flow: 'email' (ask for address) -> 'reset' (code + new password)
+  const [forgotStage, setForgotStage] = useState<null | 'email' | 'reset'>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -70,6 +77,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
   const handleModeSwitch = (newMode: 'login' | 'register') => {
     setMode(newMode);
     setShowOtpStep(false);
+    setForgotStage(null);
     setError(null);
     setSuccess(null);
   };
@@ -95,8 +103,8 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
       return;
     }
 
-    if (password.length < 6) {
-      setError(lang === 'km' ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ' : 'Password must be at least 6 characters.');
+    if (mode === 'register' && password.length < 8) {
+      setError(lang === 'km' ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៨ តួអក្សរ' : 'Password must be at least 8 characters.');
       return;
     }
 
@@ -119,8 +127,20 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
 
       const data = await res.json();
 
+      if (data.requiresLoginOtp && data.email) {
+        setPendingEmail(data.email);
+        setOtpPurpose('login');
+        setShowOtpStep(true);
+        setOtpDigits(['', '', '', '', '', '']);
+        setResendCooldown(60);
+        setSuccess(lang === 'km' ? 'លេខកូដចូលប្រព័ន្ធត្រូវបានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក' : 'Sign-in code sent to your email.');
+        setLoading(false);
+        return;
+      }
+
       if (data.requiresVerification && data.email) {
         setPendingEmail(data.email);
+        setOtpPurpose('verify');
         setShowOtpStep(true);
         setOtpDigits(['', '', '', '', '', '']);
         setResendCooldown(60);
@@ -205,7 +225,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
     setSuccess(null);
 
     try {
-      const res = await fetchWithTimeout(`${API_BASE_URL}/auth/verify-otp`, {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/auth/${otpPurpose === 'login' ? 'login/verify-otp' : 'verify-otp'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -247,12 +267,16 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
     setSuccess(null);
 
     try {
-      const res = await fetchWithTimeout(`${API_BASE_URL}/auth/resend-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: pendingEmail }),
-      }, 15000);
+      const res = await fetchWithTimeout(
+        `${API_BASE_URL}/auth/${otpPurpose === 'login' ? 'login' : 'resend-otp'}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(otpPurpose === 'login' ? { email: pendingEmail, password } : { email: pendingEmail }),
+        },
+        15000
+      );
 
       const data = await res.json();
 
@@ -273,6 +297,89 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
       setResending(false);
     }
   };
+
+  const handleForgotRequest = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!email.trim()) {
+      setError(lang === 'km' ? 'សូមបញ្ចូលអ៊ីមែល' : 'Please enter your email.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+      }, 15000);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.message || (lang === 'km' ? 'មានបញ្ហា សូមព្យាយាមម្តងទៀត' : 'Something went wrong. Please try again.'));
+        return;
+      }
+      setPendingEmail(email.trim().toLowerCase());
+      setOtpDigits(['', '', '', '', '', '']);
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setResendCooldown(60);
+      setForgotStage('reset');
+      setSuccess(
+        lang === 'km'
+          ? 'បើអ៊ីមែលនេះមានគណនា យើងបានផ្ញើលេខកូដទៅកាន់វា'
+          : 'If an account exists for this email, we sent it a code.'
+      );
+    } catch {
+      setError(lang === 'km' ? 'មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើ' : 'Connection error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const fullOtp = otpDigits.join('');
+    if (fullOtp.length < 6) {
+      setError(lang === 'km' ? 'សូមបញ្ចូលលេខកូដ ៦ តួអក្សរឲ្យគ្រប់' : 'Please enter all 6 digits of the code.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError(lang === 'km' ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៨ តួអក្សរ' : 'Password must be at least 8 characters.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setError(lang === 'km' ? 'ពាក្យសម្ងាត់ទាំងពីរមិនផ្ទៀងផ្ទាត់គ្នាទេ' : 'Passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: pendingEmail, otp: fullOtp, newPassword }),
+      }, 15000);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.message || (lang === 'km' ? 'លេខកូដមិនត្រឹមត្រូវ' : 'Invalid or expired code.'));
+        return;
+      }
+      setForgotStage(null);
+      setMode('login');
+      setPassword('');
+      setSuccess(lang === 'km' ? 'ប្តូរពាក្យសម្ងាត់ជោគជ័យ! សូមចូលប្រព័ន្ធ។' : 'Password updated! Please sign in.');
+    } catch {
+      setError(lang === 'km' ? 'មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើ' : 'Connection error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputClass =
+    'w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#133363]/20 focus:border-[#133363]';
 
   return (
     <div className="h-screen max-h-screen overflow-hidden flex w-full bg-white font-sans relative">
@@ -314,7 +421,9 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
         <button
           type="button"
           onClick={() => {
-            if (showOtpStep) {
+            if (forgotStage) {
+              setForgotStage(null);
+            } else if (showOtpStep) {
               setShowOtpStep(false);
             } else {
               setCurrentPage('landing');
@@ -344,8 +453,147 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
             />
           </div>
 
-          {/* OTP Verification Step View */}
-          {showOtpStep ? (
+          {/* Forgot password flow */}
+          {forgotStage ? (
+            <form
+              onSubmit={forgotStage === 'email' ? handleForgotRequest : handleResetSubmit}
+              className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-xs space-y-4 text-left"
+            >
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-slate-800">
+                  {lang === 'km' ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
+                </h2>
+                <p className="text-xs text-slate-500 mt-1 font-medium">
+                  {forgotStage === 'email'
+                    ? (lang === 'km' ? 'បញ្ចូលអ៊ីមែលរបស់អ្នក ដើម្បីទទួលលេខកូដកំណត់ឡើងវិញ' : 'Enter your email and we will send you a reset code.')
+                    : (lang === 'km' ? `បញ្ចូលលេខកូដដែលបានផ្ញើទៅ ${pendingEmail} និងពាក្យសម្ងាត់ថ្មី` : `Enter the code sent to ${pendingEmail} and choose a new password.`)}
+                </p>
+              </div>
+
+              {error && (
+                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium">
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
+              {success && (
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>{success}</span>
+                </div>
+              )}
+
+              {forgotStage === 'email' ? (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {lang === 'km' ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address'}
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      required
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-center gap-2 my-1">
+                    {otpDigits.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        ref={(el) => { otpInputRefs.current[idx] = el; }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                        onPaste={handleOtpPaste}
+                        className="w-10 h-12 text-center text-xl font-black bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#133363] focus:border-[#133363] shadow-2xs"
+                      />
+                    ))}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {lang === 'km' ? 'ពាក្យសម្ងាត់ថ្មី' : 'New Password'}
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        required
+                        minLength={8}
+                        autoComplete="new-password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {lang === 'km' ? 'ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី' : 'Confirm New Password'}
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="password"
+                        required
+                        minLength={8}
+                        autoComplete="new-password"
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 px-4 bg-[#133363] hover:bg-[#0f284e] text-white font-bold rounded-xl text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 shadow-xs"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                <span>
+                  {forgotStage === 'email'
+                    ? (lang === 'km' ? 'ផ្ញើលេខកូដ' : 'Send Reset Code')
+                    : (lang === 'km' ? 'ប្តូរពាក្យសម្ងាត់' : 'Reset Password')}
+                </span>
+              </button>
+
+              <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                <button
+                  type="button"
+                  onClick={() => { setForgotStage(null); setError(null); setSuccess(null); }}
+                  className="text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
+                >
+                  ← {lang === 'km' ? 'ត្រឡប់ទៅចូលប្រព័ន្ធ' : 'Back to sign in'}
+                </button>
+                {forgotStage === 'reset' && (
+                  <button
+                    type="button"
+                    disabled={resendCooldown > 0 || loading}
+                    onClick={() => handleForgotRequest()}
+                    className="text-[#133363] hover:underline font-semibold disabled:text-slate-400 cursor-pointer"
+                  >
+                    {resendCooldown > 0
+                      ? (lang === 'km' ? `ផ្ញើម្តងទៀត (${resendCooldown}s)` : `Resend code (${resendCooldown}s)`)
+                      : (lang === 'km' ? 'ផ្ញើលេខកូដម្តងទៀត' : 'Resend Code')}
+                  </button>
+                )}
+              </div>
+            </form>
+          ) : showOtpStep ? (
             <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-6 shadow-xs text-center space-y-4">
               <div className="w-12 h-12 bg-blue-100 text-[#133363] rounded-2xl flex items-center justify-center mx-auto shadow-2xs">
                 <ShieldCheck className="w-6 h-6" />
@@ -353,12 +601,14 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
 
               <div>
                 <h2 className="text-xl font-bold text-slate-800">
-                  {lang === 'km' ? 'ផ្ទៀងផ្ទាត់អាសយដ្ឋានអ៊ីមែល' : 'Verify Your Email'}
+                  {otpPurpose === 'login'
+                    ? (lang === 'km' ? 'បញ្ចូលលេខកូដចូលប្រព័ន្ធ' : 'Enter Sign-in Code')
+                    : (lang === 'km' ? 'ផ្ទៀងផ្ទាត់អាសយដ្ឋានអ៊ីមែល' : 'Verify Your Email')}
                 </h2>
                 <p className="text-xs text-slate-500 mt-1 font-medium">
                   {lang === 'km'
                     ? `យើងបានផ្ញើលេខកូដ ៦ តួអក្សរទៅកាន់ ${pendingEmail}`
-                    : `We sent a 6-digit verification code to ${pendingEmail}`}
+                    : `We sent a 6-digit ${otpPurpose === 'login' ? 'sign-in' : 'verification'} code to ${pendingEmail}`}
                 </p>
               </div>
 
@@ -582,7 +832,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                     <input
                       type="password"
                       required
-                      minLength={6}
+                      minLength={mode === 'register' ? 8 : undefined}
                       autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -591,6 +841,18 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                     />
                   </div>
                 </div>
+
+                {mode === 'login' && (
+                  <div className="text-right -mt-2">
+                    <button
+                      type="button"
+                      onClick={() => { setForgotStage('email'); setError(null); setSuccess(null); }}
+                      className="text-xs font-semibold text-[#133363] hover:underline cursor-pointer"
+                    >
+                      {lang === 'km' ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
+                    </button>
+                  </div>
+                )}
 
                 {mode === 'register' && (
                   <div>
@@ -602,7 +864,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                       <input
                         type="password"
                         required
-                        minLength={6}
+                        minLength={8}
                         autoComplete="new-password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}

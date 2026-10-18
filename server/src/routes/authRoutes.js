@@ -1,11 +1,12 @@
 import { Router } from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
-import { getMe, updateMe, register, login, verifyOtp, resendOtp } from "../controllers/authController.js";
+import { getMe, updateMe, register, login, verifyOtp, resendOtp, verifyLoginOtp, forgotPassword, resetPassword } from "../controllers/authController.js";
 import crypto from "crypto";
 import { protect } from "../middlewares/authMiddleware.js";
-import { authLimiter, otpVerifyLimiter, otpResendLimiter } from "../middlewares/rateLimit.js";
+import { authLimiter, otpVerifyLimiter, otpResendLimiter, forgotPasswordLimiter } from "../middlewares/rateLimit.js";
 import * as authService from "../services/authService.js";
+import { safeOrigin } from "../config/origins.js";
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -30,6 +31,15 @@ router.post("/register", authLimiter, register);
 
 // POST /api/auth/login
 router.post("/login", authLimiter, login);
+
+// POST /api/auth/login/verify-otp - completes sign-in with the emailed code
+router.post("/login/verify-otp", authLimiter, otpVerifyLimiter, verifyLoginOtp);
+
+// POST /api/auth/forgot-password - emails a reset code (same answer for any email)
+router.post("/forgot-password", authLimiter, forgotPasswordLimiter, forgotPassword);
+
+// POST /api/auth/reset-password - sets a new password with the emailed code
+router.post("/reset-password", authLimiter, otpVerifyLimiter, resetPassword);
 
 // POST /api/auth/verify-otp
 router.post("/verify-otp", authLimiter, otpVerifyLimiter, verifyOtp);
@@ -86,10 +96,11 @@ router.post("/google/exchange", authLimiter, async (req, res, next) => {
 
 // GET /api/auth/google
 router.get("/google", (req, res, next) => {
+  // Only allowlisted origins may receive the sign-in code; anything else falls
+  // back to the default frontend (otherwise ?returnTo=https://evil.example
+  // would hand the victim's login code to an attacker).
   const returnTo =
-    typeof req.query.returnTo === "string" && req.query.returnTo.startsWith("http")
-      ? req.query.returnTo
-      : (process.env.FRONTEND_URL || "http://localhost:3000");
+    safeOrigin(req.query.returnTo) || safeOrigin(FRONTEND_URL) || "http://localhost:3000";
 
   passport.authenticate("google", {
     scope: ["profile", "email"],
@@ -101,16 +112,20 @@ router.get("/google", (req, res, next) => {
 // GET /api/auth/google/callback
 router.get("/google/callback", (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user, info) => {
-    const rawState = typeof req.query.state === "string" ? req.query.state.trim() : "";
+    // `state` round-trips through the browser, so re-validate it here too.
     const targetUrl =
-      rawState.startsWith("http://") || rawState.startsWith("https://")
-        ? rawState.replace(/\/+$/, "")
-        : (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
+      safeOrigin(req.query.state) || safeOrigin(FRONTEND_URL) || "http://localhost:3000";
 
     if (err || !user) {
       console.error("Google OAuth authentication error:", err || info);
       const errorMessage = err?.message || "auth_failed";
       return res.redirect(`${targetUrl}/login?error=${encodeURIComponent(errorMessage)}`);
+    }
+
+    // Admin sessions require the emailed sign-in code, which the Google flow
+    // does not collect, so admins must use password + OTP sign-in.
+    if (user.role === "admin") {
+      return res.redirect(`${targetUrl}/login?error=${encodeURIComponent("admin_use_password_login")}`);
     }
 
     try {

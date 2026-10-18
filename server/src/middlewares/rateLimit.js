@@ -56,3 +56,13 @@ export const otpResendLimiter = rateLimit({
   keyGenerator: (req) => `resend|${emailKey(req) || ipKeyGenerator(req.ip)}`,
   message: TOO_MANY,
 });
+
+/** Per-account cap on password-reset emails, regardless of IP. */
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  keyGenerator: (req) => `forgot|${emailKey(req) || ipKeyGenerator(req.ip)}`,
+  message: TOO_MANY,
+});

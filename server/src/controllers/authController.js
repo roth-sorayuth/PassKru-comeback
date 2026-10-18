@@ -3,11 +3,13 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { prisma } from "../config/prisma.js";
 import * as authService from "../services/authService.js";
-import { sendVerificationOtpEmail, sendAccountExistsEmail } from "../services/emailService.js";
+import { sendVerificationOtpEmail, sendAccountExistsEmail, sendPurposeOtpEmail } from "../services/emailService.js";
 import { toPublicUser } from "../utils/publicUser.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const MAX_OTP_PER_DAY = 4;
+const MIN_PASSWORD_LENGTH = 8;
+const BCRYPT_ROUNDS = 12;
 
 // Auth failures share one message per endpoint so responses never reveal
 // whether an email is registered, or which sign-in provider it uses.
@@ -26,7 +28,7 @@ const registerAccepted = (email) => ({
 
 // Compared against when the email is unknown, so a missing account takes as
 // long to reject as a wrong password (no timing oracle for enumeration).
-const DUMMY_PASSWORD_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString("hex"), 10);
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(crypto.randomBytes(16).toString("hex"), BCRYPT_ROUNDS);
 
 function generate6DigitOtp() {
   return crypto.randomInt(100000, 1000000).toString();
@@ -51,6 +53,83 @@ async function sendWithTimeout(sendPromise, timeoutMs = 12000) {
 }
 
 const sendOtpWithTimeout = (params, timeoutMs = 12000) => sendWithTimeout(sendVerificationOtpEmail(params), timeoutMs);
+
+// ---------------------------------------------------------------------------
+// Sign-in and password-reset OTPs
+//
+// They reuse the user's verificationOtp/otpExpiresAt/otpLastSentAt columns
+// (only used for signup verification until the account is verified). The
+// stored value is never the code itself: it is one purpose letter plus 9 hex
+// chars of an HMAC over (purpose, user, code), which fits the VARCHAR(10)
+// column, so a database leak does not reveal live codes and a code issued for
+// one purpose cannot be redeemed for another.
+// ---------------------------------------------------------------------------
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_COOLDOWN_MS = 60 * 1000;
+const OTP_PURPOSE = { login: "L", reset: "R" };
+// Every sign-in needs an emailed code unless explicitly switched off. Admin
+// accounts always need one.
+const LOGIN_OTP_ENABLED = process.env.LOGIN_OTP_ENABLED !== "false";
+
+const GENERIC_RESET_ACCEPTED = "If an account exists for this email, a reset code has been sent.";
+
+function otpTag(purposeCode, userId, otp) {
+  const mac = crypto.createHmac("sha256", JWT_SECRET).update(`${purposeCode}|${userId}|${otp}`).digest("hex");
+  return purposeCode + mac.slice(0, 9);
+}
+
+/** Stores a fresh code for `purpose` and returns it, or null while the cooldown applies. */
+async function issuePurposeOtp(user, purpose) {
+  const code = OTP_PURPOSE[purpose];
+  const sentAt = user.otpLastSentAt ? new Date(user.otpLastSentAt).getTime() : 0;
+  const stillLive =
+    user.verificationOtp?.startsWith(code) && user.otpExpiresAt && new Date(user.otpExpiresAt).getTime() > Date.now();
+  if (stillLive && Date.now() - sentAt < OTP_COOLDOWN_MS) return null;
+
+  const otp = generate6DigitOtp();
+  await prisma.user.update({
+    where: { userId: user.userId },
+    data: {
+      verificationOtp: otpTag(code, user.userId, otp),
+      otpExpiresAt: new Date(Date.now() + OTP_TTL_MS),
+      otpLastSentAt: new Date(),
+    },
+  });
+  return otp;
+}
+
+/**
+ * Redeems a code. Conditional on the stored value still being the one we
+ * matched, so concurrent requests cannot both use it. `extraData` is applied in
+ * the same update (e.g. the new password hash).
+ */
+async function consumePurposeOtp(user, purpose, submitted, extraData = {}) {
+  const code = OTP_PURPOSE[purpose];
+  const stored = user?.verificationOtp;
+  const expires = user?.otpExpiresAt ? new Date(user.otpExpiresAt).getTime() : 0;
+  if (!user || !user.isEmailVerified || !stored || !stored.startsWith(code) || expires <= Date.now()) return false;
+  if (!/^\d{6}$/.test(submitted) || !otpMatches(stored, otpTag(code, user.userId, submitted))) return false;
+
+  const { count } = await prisma.user.updateMany({
+    where: { userId: user.userId, verificationOtp: stored },
+    data: { ...extraData, verificationOtp: null, otpExpiresAt: null, otpLastSentAt: null },
+  });
+  return count === 1;
+}
+
+/** Sets the session cookie and sends the standard authenticated response. */
+async function sendSession(res, user, message) {
+  const token = jwt.sign({ userId: user.userId, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+  const isProduction = process.env.NODE_ENV === "production";
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax", // "none" required for cross-origin (Vercel -> Railway)
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+  const userWithExam = await authService.getUserWithExam(user.userId);
+  return res.status(200).json({ success: true, message, token, user: userWithExam || toPublicUser(user) });
+}
 
 /**
  * Checks if a user has exceeded the maximum OTP request limit (4 per 24 hours).
@@ -103,10 +182,10 @@ export const register = async (req, res, next) => {
       });
     }
 
-    if (password.length < 6) {
+    if (password.length < MIN_PASSWORD_LENGTH || password.length > 128) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 6 characters long.",
+        message: `Password must be between ${MIN_PASSWORD_LENGTH} and 128 characters long.`,
       });
     }
 
@@ -122,7 +201,7 @@ export const register = async (req, res, next) => {
       });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const otp = generate6DigitOtp();
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     const now = new Date();
@@ -404,28 +483,110 @@ export const login = async (req, res, next) => {
       });
     }
 
-    const token = jwt.sign(
-      { userId: user.userId, email: user.email },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    // Second factor: password alone never yields a session for admins (or for
+    // anyone while LOGIN_OTP_ENABLED). The code goes to the account's email.
+    if (user.role === "admin" || LOGIN_OTP_ENABLED) {
+      let otp;
+      try {
+        otp = await issuePurposeOtp(user, "login");
+        if (otp) {
+          await sendWithTimeout(
+            sendPurposeOtpEmail({ email: normalizedEmail, otp, firstName: user.firstName, purpose: "login" })
+          );
+        }
+      } catch (emailErr) {
+        console.error("[AUTH_LOGIN_2FA] Email error/timeout:", emailErr?.message || emailErr);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to send the sign-in code. Please try again in a moment.",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        requiresLoginOtp: true,
+        email: normalizedEmail,
+        message: otp
+          ? "Enter the 6-digit sign-in code sent to your email."
+          : "A sign-in code was sent recently. Check your email, or wait a minute to request a new one.",
+      });
+    }
 
-    const isProduction = process.env.NODE_ENV === "production";
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax", // "none" required for cross-origin (Vercel → Railway)
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    return sendSession(res, user, "Logged in successfully");
+  } catch (error) {
+    next(error);
+  }
+};
 
-    const userWithExam = await authService.getUserWithExam(user.userId);
+// POST /api/auth/login/verify-otp - second step of sign-in
+export const verifyLoginOtp = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    if (typeof email !== "string" || typeof otp !== "string" || !email.trim() || !otp.trim()) {
+      return res.status(400).json({ success: false, message: "Email and OTP code are required." });
+    }
 
-    return res.status(200).json({
-      success: true,
-      message: "Logged in successfully",
-      token,
-      user: userWithExam || toPublicUser(user),
-    });
+    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    if (!(await consumePurposeOtp(user, "login", otp.trim()))) {
+      return res.status(400).json({ success: false, message: INVALID_OTP });
+    }
+
+    return sendSession(res, user, "Logged in successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /api/auth/forgot-password - always answers the same way (no account disclosure)
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (typeof email !== "string" || !email.trim()) {
+      return res.status(400).json({ success: false, message: "Email is required." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+
+    if (user && user.isEmailVerified) {
+      const otp = await issuePurposeOtp(user, "reset");
+      if (otp) {
+        // Not awaited: SMTP latency must not reveal whether the account exists.
+        sendWithTimeout(
+          sendPurposeOtpEmail({ email: normalizedEmail, otp, firstName: user.firstName, purpose: "reset" })
+        ).catch((err) => console.error("[AUTH_FORGOT] Email error/timeout:", err?.message || err));
+      }
+    }
+
+    return res.status(200).json({ success: true, message: GENERIC_RESET_ACCEPTED });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /api/auth/reset-password
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (
+      typeof email !== "string" || typeof otp !== "string" || typeof newPassword !== "string" ||
+      !email.trim() || !otp.trim()
+    ) {
+      return res.status(400).json({ success: false, message: "Email, OTP code and new password are required." });
+    }
+    if (newPassword.length < MIN_PASSWORD_LENGTH || newPassword.length > 128) {
+      return res.status(400).json({
+        success: false,
+        message: `Password must be between ${MIN_PASSWORD_LENGTH} and 128 characters long.`,
+      });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    if (!(await consumePurposeOtp(user, "reset", otp.trim(), { passwordHash }))) {
+      return res.status(400).json({ success: false, message: INVALID_OTP });
+    }
+
+    return res.status(200).json({ success: true, message: "Password updated. Please sign in with your new password." });
   } catch (error) {
     next(error);
   }

@@ -5,6 +5,7 @@ import passport from "./config/passport.js";
 import swaggerUi from "swagger-ui-express";
 import router from "./routes/index.js";
 import { openApiSpec } from "./docs/openapi.js";
+import { allowedOrigins } from "./config/origins.js";
 
 // Fail fast if critical secrets are missing
 if (!process.env.JWT_SECRET) {
@@ -21,14 +22,6 @@ app.set("trust proxy", 1);
 const isProduction = process.env.NODE_ENV === "production";
 // "Any origin" is opt-in: an unset NODE_ENV must never mean wide-open CORS.
 const allowAnyOrigin = process.env.NODE_ENV === "development";
-
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  ...(process.env.CORS_ORIGINS || "").split(","),
-  ...(isProduction ? [] : ["http://localhost:3000", "http://localhost:3001"]),
-]
-  .map((origin) => origin?.trim().replace(/[\r\n]+/g, "").replace(/\/+$/, ""))
-  .filter(Boolean);
 
 const isAllowedOrigin = (origin) => allowAnyOrigin || allowedOrigins.includes(origin);
 

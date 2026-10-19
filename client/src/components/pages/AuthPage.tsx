@@ -126,8 +126,8 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
         setResendCooldown(60);
         setSuccess(
           mode === 'register'
-            ? (lang === 'km' ? 'សូមពិនិត្យប្រអប់អ៊ីមែលរបស់អ្នក' : 'Check your email inbox')
-            : (lang === 'km' ? 'លេខកូដផ្ទៀងផ្ទាត់ត្រូវបានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក!' : 'Verification code sent to your email!')
+            ? (lang === 'km' ? 'សូមពិនិត្យអ៊ីមែលរបស់អ្នក' : 'Check your email inbox')
+            : (lang === 'km' ? 'លេខកូដផ្ទៀងផ្ទាត់បានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក!' : 'Verification code sent to your email!')
         );
         setLoading(false);
         return;

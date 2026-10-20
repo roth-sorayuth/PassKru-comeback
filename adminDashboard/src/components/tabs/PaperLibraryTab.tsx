@@ -16,6 +16,7 @@ import { PastPaper, Exam, Subject } from '../../types';
 import { examService } from '../../services/examService';
 import { PdfThumbnail } from '../common/PdfThumbnail';
 import { getSubjectTheme } from '../../utils/subjectIcons';
+import { canonicalSubjectName } from '../../utils/subjectNames';
 
 interface PaperLibraryTabProps {
   papers: PastPaper[];
@@ -133,7 +134,8 @@ export const PaperLibraryTab: React.FC<PaperLibraryTabProps> = ({
     );
   };
 
-  // Extract available subjects and their counts for current filterExam
+  // Extract available subjects and their counts for current filterExam, merged by
+  // canonical name: "Math", "Mathematics" and "គណិតវិទ្យា" are one card.
   const availableSubjects = useMemo(() => {
     const subjectsMap = new Map<string, number>();
     const targetLevel = filterExam ? formatExamLevelName(filterExam) : null;
@@ -147,14 +149,15 @@ export const PaperLibraryTab: React.FC<PaperLibraryTabProps> = ({
         s.exam?.examType === filterExam ||
         formatExamLevelName(s.exam?.examType) === targetLevel
       ) {
-        subjectsMap.set(s.subjectName, 0);
+        const name = canonicalSubjectName(s.subjectName);
+        if (!subjectsMap.has(name)) subjectsMap.set(name, 0);
       }
     });
 
     // 2. Count papers for each subject
     modeFilteredPapers.forEach((p) => {
       if (paperMatchesExam(p, filterExam)) {
-        const name = p.subject?.subjectName || DEFAULT_SUBJECT_NAME;
+        const name = canonicalSubjectName(p.subject?.subjectName || DEFAULT_SUBJECT_NAME);
         const current = subjectsMap.get(name) || 0;
         subjectsMap.set(name, current + 1);
       }
@@ -179,7 +182,7 @@ export const PaperLibraryTab: React.FC<PaperLibraryTabProps> = ({
   const papersInView = useMemo(() => {
     if (!selectedSubject) return [];
     return modeFilteredPapers
-      .filter((p) => (p.subject?.subjectName || DEFAULT_SUBJECT_NAME).toLowerCase() === selectedSubject.toLowerCase())
+      .filter((p) => canonicalSubjectName(p.subject?.subjectName || DEFAULT_SUBJECT_NAME) === canonicalSubjectName(selectedSubject))
       .filter((p) => paperMatchesExam(p, filterExam))
       .filter((p) => !q || p.title.toLowerCase().includes(q) || String(p.year).includes(q) || toKhmerNum(p.year).includes(q))
       .sort((a, b) => (b.year || 0) - (a.year || 0));
@@ -197,9 +200,13 @@ export const PaperLibraryTab: React.FC<PaperLibraryTabProps> = ({
 
   const currentSubjectObj = useMemo(() => {
     if (!selectedSubject) return null;
-    return subjects.find(
-      (s) => s.subjectName.toLowerCase() === selectedSubject.toLowerCase()
+    // Delete is only offered when the card is exactly one subject row: a merged
+    // card spans several rows (other levels, the flashcard rows), and deleting
+    // one of them would be a guess.
+    const matches = subjects.filter(
+      (s) => canonicalSubjectName(s.subjectName) === canonicalSubjectName(selectedSubject)
     );
+    return matches.length === 1 ? matches[0] : null;
   }, [subjects, selectedSubject]);
 
   const handleDeleteSubject = async () => {

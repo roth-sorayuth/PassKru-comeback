@@ -20,11 +20,18 @@ function getTransporter() {
   if (host && user && pass) {
     if (!cachedTransporter) {
       const isGmail = host.includes("gmail") || user.endsWith("@gmail.com");
+      // Give up before the callers' 12s limit (sendWithTimeout), so a blocked
+      // or slow SMTP connection fails here with a real error: logged with its
+      // code (ETIMEDOUT, ECONNECTION...) and, in development, falling back to
+      // printing the code in the console. Some hosts (e.g. Railway below Pro)
+      // block outbound SMTP entirely, which looks exactly like a timeout.
+      const timeouts = { connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000 };
       cachedTransporter = nodemailer.createTransport(
         isGmail
           ? {
               service: "gmail",
               auth: { user, pass },
+              ...timeouts,
             }
           : {
               host,
@@ -32,9 +39,7 @@ function getTransporter() {
               secure: port === 465,
               family: 4,
               auth: { user, pass },
-              connectionTimeout: 10000,
-              greetingTimeout: 10000,
-              socketTimeout: 15000,
+              ...timeouts,
             }
       );
     }
@@ -43,44 +48,89 @@ function getTransporter() {
   return null;
 }
 
+const DEFAULT_FROM = '"PassKru App" <noreply@passkru.com>';
+const BREVO_ENDPOINT = "https://api.brevo.com/v3/smtp/email";
+const BREVO_TIMEOUT_MS = 10000; // under the callers' 12s limit (sendWithTimeout)
+
+/** '"PassKru App" <noreply@x.com>' or 'noreply@x.com' -> { name, email }. */
+export function parseFrom(value) {
+  const text = String(value || "").trim();
+  const match = text.match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/);
+  if (match) return { name: match[1].trim() || undefined, email: match[2].trim() };
+  return { email: text };
+}
+
 /**
- * Sends one email via SMTP, or prints it to the console when SMTP isn't
- * configured (development only — a missing SMTP config in production means
- * users silently never get their codes).
+ * Brevo's transactional email API over HTTPS (port 443). Used when
+ * BREVO_API_KEY is set, because some hosts (Railway below Pro) block outbound
+ * SMTP ports entirely. The sender address must be verified in Brevo.
  */
-async function deliver({ to, subject, html, consoleLines }) {
-  const from = process.env.SMTP_FROM || '"PassKru App" <noreply@passkru.com>';
-  const transporter = getTransporter();
-
-  if (transporter) {
+async function sendViaBrevo({ from, to, subject, html }) {
+  const res = await fetch(BREVO_ENDPOINT, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      "api-key": process.env.BREVO_API_KEY,
+    },
+    body: JSON.stringify({ sender: parseFrom(from), to: [{ email: to }], subject, htmlContent: html }),
+    signal: AbortSignal.timeout(BREVO_TIMEOUT_MS),
+  });
+  if (!res.ok) {
+    // Brevo error bodies are { code, message }; never echo request headers (the key).
+    let detail = "";
     try {
-      await transporter.sendMail({ from, to, subject, html });
-
-      console.log(`[EMAIL_SERVICE] Email "${subject}" sent via SMTP to: ${to}`);
-      return { sent: true, mode: "smtp" };
-    } catch (err) {
-      console.error("[EMAIL_SERVICE] SMTP send error:", err?.message || err);
-      // In local development, fallback to console log so developers are never blocked
-      if (process.env.NODE_ENV !== "production") {
-        console.warn("[EMAIL_SERVICE] Falling back to console output (development mode)...");
-        console.log("\n=======================================================");
-        console.log("             [PASSKRU EMAIL SERVICE - FALLBACK]        ");
-        console.log(`  Recipient Email : ${to}`);
-        for (const line of consoleLines) console.log(`  ${line}`);
-        console.log("=======================================================\n");
-        return { sent: true, mode: "console_fallback" };
-      }
-      throw new Error(`Failed to send email via SMTP: ${err?.message || err}`);
+      const body = await res.json();
+      detail = [body?.code, body?.message].filter(Boolean).join(": ");
+    } catch {
+      // Non-JSON body: the status is enough.
     }
+    const error = new Error(`Brevo API ${res.status}${detail ? ` (${detail})` : ""}`);
+    error.code = `BREVO_${res.status}`;
+    throw error;
   }
+}
 
-  // Fallback for Development Mode without live SMTP configured
+function printToConsole(title, to, consoleLines) {
   console.log("\n=======================================================");
-  console.log("             [PASSKRU EMAIL SERVICE]                   ");
+  console.log(`             ${title}`);
   console.log(`  Recipient Email : ${to}`);
   for (const line of consoleLines) console.log(`  ${line}`);
   console.log("=======================================================\n");
+}
 
+/**
+ * Sends one email. Transport, in order: Brevo HTTPS API (BREVO_API_KEY), then
+ * SMTP (SMTP_HOST/USER/PASS), else the console (development only — a missing
+ * mail config in production means users silently never get their codes).
+ * In development a failed send also falls back to the console so nobody is
+ * blocked; in production it throws and the caller answers with 503.
+ */
+async function deliver({ to, subject, html, consoleLines }) {
+  const from = process.env.EMAIL_FROM || process.env.SMTP_FROM || DEFAULT_FROM;
+  const useBrevo = Boolean(process.env.BREVO_API_KEY);
+  const transporter = useBrevo ? null : getTransporter();
+
+  if (useBrevo || transporter) {
+    const mode = useBrevo ? "brevo" : "smtp";
+    try {
+      if (useBrevo) await sendViaBrevo({ from, to, subject, html });
+      else await transporter.sendMail({ from, to, subject, html });
+
+      console.log(`[EMAIL_SERVICE] Email "${subject}" sent via ${mode} to: ${to}`);
+      return { sent: true, mode };
+    } catch (err) {
+      console.error(`[EMAIL_SERVICE] ${mode} send error:`, err?.code || "", err?.message || err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[EMAIL_SERVICE] Falling back to console output (development mode)...");
+        printToConsole("[PASSKRU EMAIL SERVICE - FALLBACK]", to, consoleLines);
+        return { sent: true, mode: "console_fallback" };
+      }
+      throw new Error(`Failed to send email via ${mode}: ${err?.message || err}`);
+    }
+  }
+
+  printToConsole("[PASSKRU EMAIL SERVICE]", to, consoleLines);
   return { sent: true, mode: "console_fallback" };
 }
 

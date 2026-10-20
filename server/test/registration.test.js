@@ -118,7 +118,8 @@ test("an expired pending signup can be restarted, and the daily code cap still a
 test("SMTP failures never leak server details", async () => {
   failSmtp = true;
   const r = await signup("smtp@example.test");
-  assert.equal(r.status, 500);
+  assert.equal(r.status, 503);
+  assert.equal(r.body.code, "EMAIL_SEND_FAILED", "client localises by code");
   assert.ok(!/smtp|535|internal/i.test(r.body.message), r.body.message);
   assert.equal(prisma.db.users.length, 0, "new account rolled back");
 });

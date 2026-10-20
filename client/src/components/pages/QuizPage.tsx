@@ -117,6 +117,66 @@ async function submitOrRecover(attemptId: number, payload: { questionId: number;
   }
 }
 
+/**
+ * In-progress answers are mirrored to localStorage so a crash, reload or closed
+ * tab doesn't lose them. Every open starts a new attempt on the server, so the
+ * quiz id (plus mock set for mock-exam papers) is the stable key; the attempt
+ * id lives in the entry and is only reused while that attempt is still open.
+ */
+interface SavedProgress {
+  attemptId: number;
+  answers: Record<number, number>;
+  timeLeft: number | null;
+  savedAt: number;
+}
+
+const PROGRESS_PREFIX = 'passkru_quiz_progress:';
+const quizProgressKey = (quizId: number) => `${PROGRESS_PREFIX}quiz:${quizId}`;
+const mockProgressKey = (setNum: number, quizId: number) => `${PROGRESS_PREFIX}mock:${setNum}:${quizId}`;
+
+function readProgress(key: string): SavedProgress | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.attemptId !== 'number' || typeof parsed.answers !== 'object' || !parsed.answers) return null;
+    return parsed as SavedProgress;
+  } catch {
+    return null;
+  }
+}
+
+function writeProgress(key: string, value: SavedProgress) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch { }
+}
+
+function clearProgress(key: string) {
+  try {
+    localStorage.removeItem(key);
+  } catch { }
+}
+
+/** The saved entry, if its attempt is still open on the server; a graded or unknown attempt is dropped. */
+async function findOpenAttempt(key: string): Promise<SavedProgress | null> {
+  const saved = readProgress(key);
+  if (!saved) return null;
+  try {
+    const res = await getAttempt(saved.attemptId);
+    if (res?.attempt && !res.attempt.endTime) return saved;
+  } catch (err: any) {
+    // Offline or server error: keep the entry for next time, but start fresh now.
+    if (err?.statusCode !== 404 && err?.statusCode !== 403) return null;
+  }
+  clearProgress(key);
+  return null;
+}
+
+type PendingResume =
+  | { kind: 'quiz'; saved: SavedProgress; fullTime: number }
+  | { kind: 'mock'; saved: Record<number, SavedProgress> };
+
 interface AttemptResult {
   attemptId: number;
   score: number;
@@ -252,6 +312,9 @@ export const QuizPage: React.FC = () => {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState<boolean>(false);
   const [showQuizSubmitConfirm, setShowQuizSubmitConfirm] = useState<boolean>(false);
   const [mockReviewSubjectFilter, setMockReviewSubjectFilter] = useState<string>('all');
+  // Saved answers from an unfinished attempt, waiting for the learner to resume or start over.
+  const [pendingResume, setPendingResume] = useState<PendingResume | null>(null);
+  const [resumeBusy, setResumeBusy] = useState(false);
 
   const toKhmerNumeral = (num: number | string) =>
     String(num).replace(/[0-9]/g, (d) => '០១២៣៤៥៦៧៨៩'[Number(d)]);
@@ -389,6 +452,7 @@ export const QuizPage: React.FC = () => {
       }
 
       const papers: MockSubjectPaper[] = [];
+      const savedPapers: Record<number, SavedProgress> = {};
 
       for (const item of subjectQueue) {
         try {
@@ -418,12 +482,18 @@ export const QuizPage: React.FC = () => {
           const fullQuiz = quizDetailRes.quiz;
           if (!fullQuiz || !fullQuiz.questions || fullQuiz.questions.length === 0) continue;
 
-          let attemptId: number | null = null;
-          try {
-            const attRes = await startAttempt({ attemptType: 'quiz', quizId: matchedQuiz.quizId });
-            attemptId = attRes.attempt.attemptId;
-          } catch (attErr) {
-            console.warn('Could not start attempt for quiz', matchedQuiz.quizId, attErr);
+          // Reuse this paper's attempt if a crash or reload left it open.
+          const saved = await findOpenAttempt(mockProgressKey(setNum, matchedQuiz.quizId));
+          let attemptId: number | null = saved?.attemptId ?? null;
+          if (saved) {
+            savedPapers[matchedQuiz.quizId] = saved;
+          } else {
+            try {
+              const attRes = await startAttempt({ attemptType: 'quiz', quizId: matchedQuiz.quizId });
+              attemptId = attRes.attempt.attemptId;
+            } catch (attErr) {
+              console.warn('Could not start attempt for quiz', matchedQuiz.quizId, attErr);
+            }
           }
 
           const meta = getSubjectMeta(fullQuiz.subjectName || item.name, targetExam);
@@ -465,7 +535,14 @@ export const QuizPage: React.FC = () => {
       setCurrentIndex(0);
       setMockResult(null);
       // Realistic official Cambodian teacher recruitment exam duration: 120 minutes (7,200 seconds)
-      setTimeLeft(120 * 60);
+      // A resumed exam keeps the time it had left at its last saved answer.
+      const savedTimes = Object.values(savedPapers)
+        .map((s) => s.timeLeft)
+        .filter((t): t is number => typeof t === 'number' && t > 0);
+      setTimeLeft(savedTimes.length > 0 ? Math.min(...savedTimes) : 120 * 60);
+      if (Object.values(savedPapers).some((s) => Object.keys(s.answers).length > 0)) {
+        setPendingResume({ kind: 'mock', saved: savedPapers });
+      }
       setStage('taking');
     } catch (err: any) {
       setError(err?.message || (lang === 'km' ? 'មិនអាចចាប់ផ្តើមការប្រឡងសាកល្បងបានទេ' : 'Failed to start mock exam'));
@@ -480,16 +557,25 @@ export const QuizPage: React.FC = () => {
     setError(null);
     setCurrentQuizKey(rawQuizId || String(quizId));
     try {
-      const [quizRes, attempt] = await Promise.all([
+      // Reuse the attempt left open by a crash or reload instead of starting another one.
+      const [quizRes, saved] = await Promise.all([
         getQuiz(quizId),
-        startAttempt({ attemptType: 'quiz', quizId }),
+        findOpenAttempt(quizProgressKey(quizId)),
       ]);
+      const fullTime = (quizRes.quiz.durationMinutes || 50) * 60;
       setQuiz({ ...quizRes.quiz, questions: quizRes.quiz?.questions || [] });
-      setAttemptId(attempt.attempt.attemptId);
       setAnswers({});
       setCurrentIndex(0);
       setResult(null);
-      setTimeLeft((quizRes.quiz.durationMinutes || 50) * 60);
+      if (saved) {
+        setAttemptId(saved.attemptId);
+        setTimeLeft(saved.timeLeft && saved.timeLeft > 0 ? saved.timeLeft : fullTime);
+        if (Object.keys(saved.answers).length > 0) setPendingResume({ kind: 'quiz', saved, fullTime });
+      } else {
+        const attempt = await startAttempt({ attemptType: 'quiz', quizId });
+        setAttemptId(attempt.attempt.attemptId);
+        setTimeLeft(fullTime);
+      }
       setStage('taking');
     } catch (err: any) {
       setError(err?.message || 'Failed to start quiz');
@@ -510,6 +596,7 @@ export const QuizPage: React.FC = () => {
         selectedOptionId: answers[q.questionId] ?? null,
       }));
       const result = await submitOrRecover(attemptId, payload);
+      clearProgress(quizProgressKey(quiz.quizId));
       setResult(result);
 
       // Save percentage to the subject & specific quiz card
@@ -552,6 +639,85 @@ export const QuizPage: React.FC = () => {
     return () => window.removeEventListener('beforeunload', warn);
   }, [stage, submitting]);
 
+  // Mirror every pick to localStorage. Skipped while the resume prompt is open,
+  // so the empty answer map can't overwrite the saved one before the learner chooses.
+  useEffect(() => {
+    if (stage !== 'taking' || pendingResume || !quiz || !attemptId) return;
+    writeProgress(quizProgressKey(quiz.quizId), { attemptId, answers, timeLeft, savedAt: Date.now() });
+    // timeLeft is read, not watched: saving once per pick is enough.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, pendingResume, quiz, attemptId, answers]);
+
+  useEffect(() => {
+    if (stage !== 'taking' || pendingResume || mockPapers.length === 0) return;
+    const setNum = activeMockSetNumber || 1;
+    for (const paper of mockPapers) {
+      if (!paper.attemptId) continue;
+      writeProgress(mockProgressKey(setNum, paper.quizId), {
+        attemptId: paper.attemptId,
+        answers: paper.answers,
+        timeLeft,
+        savedAt: Date.now(),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, pendingResume, mockPapers, activeMockSetNumber]);
+
+  const resumeSavedAnswers = () => {
+    if (!pendingResume) return;
+    // Only keep answers for questions the quiz still has, so the answered count stays honest.
+    const onlyCurrent = (answers: Record<number, number>, questions: { questionId: number }[]) =>
+      Object.fromEntries(Object.entries(answers).filter(([id]) => questions.some((q) => q.questionId === Number(id)))) as Record<number, number>;
+    if (pendingResume.kind === 'quiz') {
+      setAnswers(onlyCurrent(pendingResume.saved.answers, quiz?.questions || []));
+    } else {
+      const saved = pendingResume.saved;
+      setMockPapers((prev) =>
+        prev.map((p) => (saved[p.quizId] ? { ...p, answers: onlyCurrent(saved[p.quizId].answers, p.questions || []) } : p))
+      );
+    }
+    setPendingResume(null);
+  };
+
+  /** Drops the saved answers and opens a fresh attempt in place of each resumable one. */
+  const discardSavedAnswers = async () => {
+    if (!pendingResume || resumeBusy) return;
+    setResumeBusy(true);
+    setError(null);
+    try {
+      if (pendingResume.kind === 'quiz') {
+        if (!quiz) return;
+        clearProgress(quizProgressKey(quiz.quizId));
+        const attempt = await startAttempt({ attemptType: 'quiz', quizId: quiz.quizId });
+        setAttemptId(attempt.attempt.attemptId);
+        setAnswers({});
+        setTimeLeft(pendingResume.fullTime);
+      } else {
+        const setNum = activeMockSetNumber || 1;
+        const fresh: Record<number, number | null> = {};
+        for (const quizId of Object.keys(pendingResume.saved).map(Number)) {
+          clearProgress(mockProgressKey(setNum, quizId));
+          try {
+            const attRes = await startAttempt({ attemptType: 'quiz', quizId });
+            fresh[quizId] = attRes.attempt.attemptId;
+          } catch (attErr) {
+            // Submit opens one later for a paper without an attempt.
+            console.warn('Could not start attempt for quiz', quizId, attErr);
+            fresh[quizId] = null;
+          }
+        }
+        setMockPapers((prev) => prev.map((p) => (p.quizId in fresh ? { ...p, attemptId: fresh[p.quizId], answers: {} } : p)));
+        setTimeLeft(120 * 60);
+      }
+      setCurrentIndex(0);
+      setPendingResume(null);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to start quiz');
+    } finally {
+      setResumeBusy(false);
+    }
+  };
+
   const handleSubmitMockExam = async () => {
     if (submitting || mockPapers.length === 0) return;
     setSubmitting(true);
@@ -579,6 +745,7 @@ export const QuizPage: React.FC = () => {
           paper.attemptId = newAtt.attempt.attemptId;
           paperResult = await submitOrRecover(newAtt.attempt.attemptId, payload);
         }
+        clearProgress(mockProgressKey(activeMockSetNumber || 1, paper.quizId));
 
         totalCorrect += paperResult.correctCount;
         totalQuestions += paperResult.totalQuestions;
@@ -678,6 +845,7 @@ export const QuizPage: React.FC = () => {
     setActivePaperIndex(0);
     setMockResult(null);
     setShowSubmitConfirm(false);
+    setPendingResume(null);
   };
 
   // The practice page's quiz subject list, for a quiz that has neither a subject nor an origin page.
@@ -722,7 +890,8 @@ export const QuizPage: React.FC = () => {
 
   // Countdown Timer Effect for Mock Exam / Timed Quiz
   useEffect(() => {
-    if (stage !== 'taking' || timeLeft === null) return;
+    // The clock waits while the learner decides whether to resume.
+    if (stage !== 'taking' || timeLeft === null || pendingResume) return;
 
     if (timeLeft <= 0) {
       if (isMockExam && mockPapers.length > 0) {
@@ -739,7 +908,7 @@ export const QuizPage: React.FC = () => {
 
     return () => clearInterval(timerId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stage, timeLeft, isMockExam, mockPapers]);
+  }, [stage, timeLeft, isMockExam, mockPapers, pendingResume]);
 
   if (loading) {
     return (
@@ -2111,6 +2280,37 @@ export const QuizPage: React.FC = () => {
               setShowQuizSubmitConfirm(false);
               handleSubmit();
             }}
+          />
+        );
+      })()}
+
+      {/* Offer to pick up answers saved before a crash, reload or closed tab. */}
+      {pendingResume && (() => {
+        let answered = 0;
+        let total = 0;
+        if (pendingResume.kind === 'quiz') {
+          answered = Object.keys(pendingResume.saved.answers).length;
+          total = (quiz?.questions || []).length;
+        } else {
+          for (const paper of mockPapers) {
+            total += (paper.questions || []).length;
+            answered += Object.keys(pendingResume.saved[paper.quizId]?.answers || {}).length;
+          }
+        }
+        return (
+          <ConfirmDialog
+            open
+            title={lang === 'km' ? 'បន្តតេស្ត' : 'Continue test'}
+            message={
+              lang === 'km'
+                ? `ចម្លើយរបស់អ្នករក្សាទុករួចហើយ។ អ្នកបានឆ្លើយចំនួន ${toKhmerNumeral(answered)} ក្នុងចំណោម ${toKhmerNumeral(total)} សំណួរ។`
+                : `Your answers are saved. You answered ${answered} of ${total} questions. Continue where you left off, or start over?`
+            }
+            confirmLabel={lang === 'km' ? 'បន្ត' : 'Continue'}
+            cancelLabel={lang === 'km' ? 'ធ្វើម្តងទៀត' : 'Start over'}
+            busy={resumeBusy}
+            onConfirm={resumeSavedAnswers}
+            onCancel={discardSavedAnswers}
           />
         );
       })()}

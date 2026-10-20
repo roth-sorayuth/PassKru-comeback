@@ -61,7 +61,7 @@ cp adminDashboard/.env.example adminDashboard/.env
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | from team lead |
 | `GEMINI_API_KEY` | from team lead, or your own key (AI study plan) |
 | `GOOGLE_CLIENT_ID/SECRET` | optional — only needed to test Google sign-in |
-| `SMTP_*` | leave empty — OTP codes are then printed in the server terminal |
+| `BREVO_API_KEY`, `SMTP_*` | leave empty — OTP codes are then printed in the server terminal |
 
 **`client/.env`** and **`adminDashboard/.env`**: keep the `localhost` URLs from
 the example and fill in `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (the

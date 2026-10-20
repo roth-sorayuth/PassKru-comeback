@@ -75,6 +75,38 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Check for error query parameter from OAuth redirects
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get('error');
+    if (err) {
+      if (err === 'admin_use_password_login') {
+        setError(
+          lang === 'km'
+            ? 'គណនី Admin ត្រូវបានកំណត់ឱ្យចូលដោយប្រើអ៊ីមែល ពាក្យសម្ងាត់ និងលេខកូដ OTP។'
+            : 'Admin accounts must sign in using email, password, and OTP code.'
+        );
+      } else if (err === 'auth_failed') {
+        setError(
+          lang === 'km'
+            ? 'ការចូលប្រព័ន្ធតាមរយៈ Google បានបរាជ័យ សូមព្យាយាមម្តងទៀត។'
+            : 'Google authentication failed. Please try again.'
+        );
+      } else if (err === 'server_error') {
+        setError(
+          lang === 'km'
+            ? 'មានបញ្ហាម៉ាស៊ីនបម្រើ សូមព្យាយាមម្តងទៀត។'
+            : 'Server error. Please try again.'
+        );
+      } else {
+        setError(decodeURIComponent(err));
+      }
+      const cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, [lang]);
+
   // Resend cooldown timer
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -447,7 +479,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        <div className="w-full max-w-[420px] my-auto py-4 text-center">
+        <div className="w-full max-w-[420px] min-w-[280px] my-auto py-4 text-center">
           <div
             className="flex flex-col items-center cursor-pointer mb-5"
             onClick={() => setCurrentPage('landing')}

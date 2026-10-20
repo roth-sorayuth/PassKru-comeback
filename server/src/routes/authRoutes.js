@@ -85,12 +85,6 @@ router.get("/google/callback", (req, res, next) => {
       return res.redirect(`${targetUrl}/login?error=${encodeURIComponent(errorMessage)}`);
     }
 
-    // Admin sessions require the emailed sign-in code, which the Google flow
-    // does not collect, so admins must use password + OTP sign-in.
-    if (user.role === "admin") {
-      return res.redirect(`${targetUrl}/login?error=${encodeURIComponent("admin_use_password_login")}`);
-    }
-
     try {
       // No session yet: it is created when the frontend redeems this code, so
       // an abandoned redirect never leaves a live 7-day session behind.

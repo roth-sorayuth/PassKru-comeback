@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Loader2, Shield, LogOut } from 'lucide-react';
 import { uploadPaperToStorage, uploadAnnouncementToStorage, uploadMentorImageToStorage } from './lib/storage';
 import { api } from './lib/api';
+import { AdminLogin } from './components/auth/AdminLogin';
 
 /* Types */
 import {
@@ -959,27 +960,13 @@ export default function App() {
 
   /* Unauthenticated */
   if (!user && isAdmin === false) {
-    const googleAuthUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/google`;
     return (
-      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-6">
-        <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl p-8 shadow-sm text-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-[#eef4fc] border border-[#dbe6f5] flex items-center justify-center mx-auto shadow-xs">
-            <img src="/PassKru-logo.svg" alt="PassKru Logo" className="w-10 h-10 object-contain" />
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-2xl font-black text-[#0f3360]">PassKru Admin</h1>
-            <p className="text-xs text-slate-500">សូមចូលប្រើប្រាស់ដោយប្រើគណនីអ្នកគ្រប់គ្រងដែលមានការអនុញ្ញាតដើម្បីគ្រប់គ្រងការប្រឡង និងវិញ្ញាសា</p>
-          </div>
-          <div className="pt-2">
-            <a
-              href={googleAuthUrl}
-              className="inline-flex items-center justify-center gap-2 w-full py-3 bg-[#0a3263] hover:bg-[#0f3360] text-white font-bold text-sm rounded-xl shadow-md transition cursor-pointer"
-            >
-              ចូលប្រើប្រាស់ប្រព័ន្ធ Admin តាម Google
-            </a>
-          </div>
-        </div>
-      </div>
+      <AdminLogin
+        onSuccess={(admin) => {
+          setUser(admin as any);
+          setIsAdmin(true);
+        }}
+      />
     );
   }
 

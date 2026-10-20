@@ -574,7 +574,7 @@ export const getSubjectMeta = (subjectName: string, examTarget: ExamTarget): Sub
   }
   if (norm.includes('ជីវ') || norm.includes('bio')) {
     return {
-      nameKm: 'ជីវ:វិទ្យា',
+      nameKm: 'ជីវវិទ្យា',
       nameEn: 'Biology',
       category: 'Specialization',
       icon: Dna,

@@ -169,9 +169,9 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
     } catch (err: any) {
       console.error('Auth submit error:', err);
       if (err.name === 'AbortError') {
-        setError(lang === 'km' ? 'ការភ្ជាប់ទៅកាន់ម៉ាស៊ីនត្រូវបានផុតកំណត់ សូមព្យាយាមម្តងទៀត' : 'Request timed out. Please check your network connection and try again.');
+        setError(lang === 'km' ? 'ការភ្ជាប់ទៅកាន់ម៉ាស៊ីនត្រូវផុតកំណត់ សូមព្យាយាមម្តងទៀត' : 'Request timed out. Please check your network connection and try again.');
       } else {
-        setError(lang === 'km' ? 'មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើ' : 'Connection error. Please try again.');
+        setError(lang === 'km' ? 'មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីន' : 'Connection error. Please try again.');
       }
     } finally {
       setLoading(false);

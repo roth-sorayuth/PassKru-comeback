@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Loader2, Shield, LogOut } from 'lucide-react';
-import { uploadPaperToStorage, uploadAnnouncementToStorage, uploadMentorImageToStorage } from './lib/supabase';
+import { uploadPaperToStorage, uploadAnnouncementToStorage, uploadMentorImageToStorage } from './lib/storage';
 import { api } from './lib/api';
 
 /* Types */

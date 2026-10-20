@@ -1,69 +1,60 @@
-import jwt from "jsonwebtoken";
 import * as authService from "../services/authService.js";
+import { verifySessionToken, tokensFromRequest } from "../services/sessionService.js";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const MESSAGES = {
+  missing: "Missing authentication token",
+  expired: "Session expired. Please sign in again.",
+  invalid: "Auth failed",
+};
+
+/**
+ * Resolves the signed-in user from the session cookie, falling back to the
+ * Bearer header (browsers that block third-party cookies). A stale cookie
+ * doesn't hide a valid Bearer token. Returns { user } or { error }.
+ */
+async function resolveUser(req) {
+  const candidates = tokensFromRequest(req);
+  if (!candidates.length) return { error: "missing" };
+
+  let error = "invalid";
+  for (const token of candidates) {
+    const result = await verifySessionToken(token);
+    if (result.userId) {
+      const user = await authService.getUserById(result.userId);
+      if (!user) return { error: "invalid" };
+      return { user, sid: result.sid };
+    }
+    if (result.error === "expired") error = "expired";
+  }
+  return { error };
+}
 
 export const protect = async (req, res, next) => {
   try {
-    let token = req.cookies?.token;
-
-    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Missing authentication token",
-      });
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
-    const user = await authService.getUserById(decoded.userId);
-
+    const { user, sid, error } = await resolveUser(req);
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found",
-      });
+      return res.status(401).json({ success: false, message: MESSAGES[error] || MESSAGES.invalid });
     }
 
     req.user = user;
     req.auth = {
       userId: user.userId,
       dbUserId: user.userId,
+      sessionId: sid,
     };
 
     next();
   } catch (error) {
     console.error("[protect] Auth failed:", error?.message || error);
-    const isExpired = error?.name === "TokenExpiredError";
-    return res.status(401).json({
-      success: false,
-      message: isExpired ? "Session expired. Please sign in again." : "Auth failed",
-    });
+    return res.status(401).json({ success: false, message: MESSAGES.invalid });
   }
 };
 
 export const optionalProtect = async (req, res, next) => {
   try {
-    let token = req.cookies?.token;
-
-    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-
-    if (!token) {
-      req.user = null;
-      return next();
-    }
-
-    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
-    const user = await authService.getUserById(decoded.userId);
-
+    const { user, sid } = await resolveUser(req);
     req.user = user || null;
-    req.auth = user ? { userId: user.userId, dbUserId: user.userId } : null;
-
+    req.auth = user ? { userId: user.userId, dbUserId: user.userId, sessionId: sid } : null;
     next();
   } catch (error) {
     req.user = null;

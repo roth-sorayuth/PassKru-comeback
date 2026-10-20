@@ -27,8 +27,8 @@ export const getCategoryQuestions = async (req, res, next) => {
       targetExam,
       subjectName,
       selectedSubjects,
-      limit: limit ? parseInt(limit, 10) : 50,
-      offset: offset ? parseInt(offset, 10) : 0,
+      limit,
+      offset,
     });
     return res.status(200).json({ success: true, ...result });
   } catch (error) {

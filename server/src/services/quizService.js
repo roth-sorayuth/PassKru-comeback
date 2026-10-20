@@ -261,6 +261,8 @@ export const getQuizForTaking = async (quizId) => {
   };
 };
 
+const MAX_CATEGORY_QUESTIONS = 100;
+
 /**
  * Retrieve questions in quiz format defined by each category.
  * Only returns questions for the category and subject the user has chosen,
@@ -271,9 +273,13 @@ export const getCategoryQuestions = async ({
   targetExam,
   subjectName,
   selectedSubjects,
-  limit = 50,
-  offset = 0,
+  limit: limitRaw,
+  offset: offsetRaw,
 } = {}) => {
+  // Public endpoint: an uncapped limit would hand out the whole question bank
+  // in one request, and a non-numeric one used to reach Prisma as NaN (500).
+  const limit = Math.min(MAX_CATEGORY_QUESTIONS, Math.max(1, parseInt(limitRaw, 10) || 50));
+  const offset = Math.max(0, parseInt(offsetRaw, 10) || 0);
   const cat = normalizeCategory(targetExam || category);
   const examNameFilter =
     cat === 'pttc' ? 'elementary' : cat === 'rttc' ? 'secondary' : cat === 'nie' ? 'highschool' : cat;
@@ -316,8 +322,8 @@ export const getCategoryQuestions = async ({
     prisma.question.findMany({
       where,
       orderBy: { questionId: 'asc' },
-      skip: Number(offset),
-      take: Number(limit),
+      skip: offset,
+      take: limit,
       include: {
         topic: { select: { topicId: true, topicName: true, subjectId: true } },
         answerOptions: { orderBy: { optionId: 'asc' } },
@@ -329,7 +335,7 @@ export const getCategoryQuestions = async ({
     category: cat || 'all',
     total,
     count: questions.length,
-    questions: questions.map((q, idx) => toTakingQuestion(q, Number(offset) + idx + 1)),
+    questions: questions.map((q, idx) => toTakingQuestion(q, offset + idx + 1)),
   };
 };
 
@@ -479,6 +485,36 @@ export const removeQuiz = async (quizId) => {
 };
 
 /** Replaces a quiz's full question list, in the given order. */
+/**
+ * Normalises an admin-supplied question list: integer ids, duplicates dropped
+ * (first position wins), and every id must exist — an unknown id used to fail
+ * inside createMany as a foreign-key error (500).
+ */
+async function resolveQuestionIds(questionIds) {
+  if (questionIds == null) return [];
+  if (!Array.isArray(questionIds)) {
+    const error = new Error("questionIds must be an array");
+    error.statusCode = 400;
+    throw error;
+  }
+  const ids = [...new Set(questionIds.map((id) => Number(id)))];
+  if (ids.some((id) => !Number.isInteger(id) || id < 1)) {
+    const error = new Error("questionIds must contain positive integer ids");
+    error.statusCode = 400;
+    throw error;
+  }
+  if (ids.length) {
+    const found = await prisma.question.findMany({ where: { questionId: { in: ids } }, select: { questionId: true } });
+    if (found.length !== ids.length) {
+      const known = new Set(found.map((q) => q.questionId));
+      const error = new Error(`Unknown question id(s): ${ids.filter((id) => !known.has(id)).join(", ")}`);
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+  return ids;
+}
+
 export const setQuizQuestions = async (quizId, questionIds) => {
   const quizExists = await prisma.quiz.findUnique({ where: { quizId } });
   if (!quizExists) {
@@ -487,7 +523,7 @@ export const setQuizQuestions = async (quizId, questionIds) => {
     throw error;
   }
 
-  const ids = (questionIds || []).map((id) => Number(id));
+  const ids = await resolveQuestionIds(questionIds);
 
   await prisma.$transaction([
     prisma.quizQuestion.deleteMany({ where: { quizId } }),
@@ -591,6 +627,17 @@ export const removeMockExam = async (mockExamId) => {
   return true;
 };
 
+/** The section, if it exists and belongs to `mockExamId`; otherwise a 404. */
+async function findSectionOfMockExam(mockExamId, sectionId) {
+  const section = await prisma.mockExamSection.findUnique({ where: { sectionId } });
+  if (!section || section.mockExamId !== mockExamId) {
+    const error = new Error(`Mock exam section ${sectionId} not found in mock exam ${mockExamId}`);
+    error.statusCode = 404;
+    throw error;
+  }
+  return section;
+}
+
 export const addMockExamSection = async (mockExamId, data) => {
   const examExists = await prisma.mockExam.findUnique({ where: { mockExamId } });
   if (!examExists) {
@@ -616,13 +663,8 @@ export const addMockExamSection = async (mockExamId, data) => {
   });
 };
 
-export const updateMockExamSection = async (sectionId, data) => {
-  const sectionExists = await prisma.mockExamSection.findUnique({ where: { sectionId } });
-  if (!sectionExists) {
-    const error = new Error(`Mock exam section ${sectionId} not found`);
-    error.statusCode = 404;
-    throw error;
-  }
+export const updateMockExamSection = async (mockExamId, sectionId, data) => {
+  await findSectionOfMockExam(mockExamId, sectionId);
 
   const updateData = {};
   if (data.numberOfQuestions !== undefined) updateData.numberOfQuestions = Number(data.numberOfQuestions);
@@ -630,28 +672,18 @@ export const updateMockExamSection = async (sectionId, data) => {
   return await prisma.mockExamSection.update({ where: { sectionId }, data: updateData });
 };
 
-export const removeMockExamSection = async (sectionId) => {
-  const sectionExists = await prisma.mockExamSection.findUnique({ where: { sectionId } });
-  if (!sectionExists) {
-    const error = new Error(`Mock exam section ${sectionId} not found`);
-    error.statusCode = 404;
-    throw error;
-  }
+export const removeMockExamSection = async (mockExamId, sectionId) => {
+  await findSectionOfMockExam(mockExamId, sectionId);
 
   await prisma.mockExamSection.delete({ where: { sectionId } });
   return true;
 };
 
 /** Replaces a section's full question list, in the given order. */
-export const setMockExamSectionQuestions = async (sectionId, questionIds) => {
-  const sectionExists = await prisma.mockExamSection.findUnique({ where: { sectionId } });
-  if (!sectionExists) {
-    const error = new Error(`Mock exam section ${sectionId} not found`);
-    error.statusCode = 404;
-    throw error;
-  }
+export const setMockExamSectionQuestions = async (mockExamId, sectionId, questionIds) => {
+  await findSectionOfMockExam(mockExamId, sectionId);
 
-  const ids = (questionIds || []).map((id) => Number(id));
+  const ids = await resolveQuestionIds(questionIds);
 
   await prisma.$transaction([
     prisma.mockExamQuestion.deleteMany({ where: { sectionId } }),

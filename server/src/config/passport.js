@@ -35,6 +35,15 @@ passport.use(
 
           // 3. If found by email but google_id is null, backfill google_id and avatar_url
           if (user) {
+            // Only link when Google vouches for the address; otherwise anyone
+            // could take over an account by adding its email to a Google profile.
+            if (profile.emails?.[0]?.verified === false) {
+              return done(new Error("Your Google email address is not verified."), null);
+            }
+            // An account that was never email-verified may have had its password
+            // set by someone else (pre-registration with the victim's address).
+            // The real owner has now proven control of the email, so drop it.
+            const dropUnverifiedPassword = !user.isEmailVerified;
             user = await prisma.user.update({
               where: { userId: user.userId },
               data: {
@@ -43,6 +52,7 @@ passport.use(
                 isEmailVerified: true,
                 verificationOtp: null,
                 otpExpiresAt: null,
+                ...(dropUnverifiedPassword ? { passwordHash: "managed-by-google" } : {}),
               },
             });
           }

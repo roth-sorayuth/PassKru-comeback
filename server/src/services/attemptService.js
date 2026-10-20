@@ -104,21 +104,30 @@ export const submitAttempt = async (userId, attemptId, answers) => {
 
   const endTime = new Date();
   await prisma.$transaction(
-    [
-      prisma.attemptAnswer.deleteMany({ where: { attemptId: attempt.attemptId } }),
-      prisma.attemptAnswer.createMany({
+    async (tx) => {
+      // Closing the attempt is conditional on it still being open, so two
+      // concurrent submits can't both be graded and both move proficiency
+      // (the second waits on the row lock, then matches nothing).
+      const { count } = await tx.attempt.updateMany({
+        where: { attemptId: attempt.attemptId, endTime: null },
+        data: { score, endTime },
+      });
+      if (count !== 1) {
+        const error = new Error("This attempt has already been submitted");
+        error.statusCode = 400;
+        throw error;
+      }
+
+      await tx.attemptAnswer.deleteMany({ where: { attemptId: attempt.attemptId } });
+      await tx.attemptAnswer.createMany({
         data: gradedAnswers.map((a) => ({
           attemptId: attempt.attemptId,
           questionId: a.questionId,
           selectedOptionId: a.selectedOptionId,
           isCorrect: a.isCorrect,
         })),
-      }),
-      prisma.attempt.update({
-        where: { attemptId: attempt.attemptId },
-        data: { score, endTime },
-      }),
-    ],
+      });
+    },
     { timeout: 30000, maxWait: 10000 }
   );
 

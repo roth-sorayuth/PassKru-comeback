@@ -53,14 +53,14 @@ export async function createUserHandler(req, res) {
 export async function updateUserHandler(req, res) {
   try {
     const { id } = req.params;
-    const user = await userService.updateUser(id, req.body);
+    const user = await userService.updateUser(req.user.userId, id, req.body);
     res.json({
       success: true,
       message: "User updated successfully",
       user: toPublicUser(user),
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(error.statusCode || 400).json({
       success: false,
       message: error.message || "Failed to update user",
     });
@@ -70,13 +70,13 @@ export async function updateUserHandler(req, res) {
 export async function deleteUserHandler(req, res) {
   try {
     const { id } = req.params;
-    const result = await userService.deleteUser(id);
+    const result = await userService.deleteUser(req.user.userId, id);
     res.json({
       success: true,
       ...result,
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(error.statusCode || 400).json({
       success: false,
       message: error.message || "Failed to delete user",
     });

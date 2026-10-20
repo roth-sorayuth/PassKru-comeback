@@ -87,11 +87,12 @@ export const addSection = async (req, res, next) => {
 // PUT /api/mock-exams/:mockExamId/sections/:sectionId  { numberOfQuestions }
 export const updateSection = async (req, res, next) => {
   try {
+    const mockExamId = parseInt(req.params.mockExamId, 10);
     const sectionId = parseInt(req.params.sectionId, 10);
-    if (isNaN(sectionId)) {
-      return res.status(400).json({ success: false, message: "Invalid section ID" });
+    if (isNaN(mockExamId) || isNaN(sectionId)) {
+      return res.status(400).json({ success: false, message: "Invalid mock exam or section ID" });
     }
-    const section = await quizService.updateMockExamSection(sectionId, req.body);
+    const section = await quizService.updateMockExamSection(mockExamId, sectionId, req.body);
     return res.status(200).json({ success: true, message: "Section updated successfully", section });
   } catch (error) {
     next(error);
@@ -101,11 +102,12 @@ export const updateSection = async (req, res, next) => {
 // DELETE /api/mock-exams/:mockExamId/sections/:sectionId
 export const deleteSection = async (req, res, next) => {
   try {
+    const mockExamId = parseInt(req.params.mockExamId, 10);
     const sectionId = parseInt(req.params.sectionId, 10);
-    if (isNaN(sectionId)) {
-      return res.status(400).json({ success: false, message: "Invalid section ID" });
+    if (isNaN(mockExamId) || isNaN(sectionId)) {
+      return res.status(400).json({ success: false, message: "Invalid mock exam or section ID" });
     }
-    await quizService.removeMockExamSection(sectionId);
+    await quizService.removeMockExamSection(mockExamId, sectionId);
     return res.status(200).json({ success: true, message: "Section deleted successfully" });
   } catch (error) {
     next(error);
@@ -115,11 +117,12 @@ export const deleteSection = async (req, res, next) => {
 // PUT /api/mock-exams/:mockExamId/sections/:sectionId/questions  { questionIds: number[] }
 export const setSectionQuestions = async (req, res, next) => {
   try {
+    const mockExamId = parseInt(req.params.mockExamId, 10);
     const sectionId = parseInt(req.params.sectionId, 10);
-    if (isNaN(sectionId)) {
-      return res.status(400).json({ success: false, message: "Invalid section ID" });
+    if (isNaN(mockExamId) || isNaN(sectionId)) {
+      return res.status(400).json({ success: false, message: "Invalid mock exam or section ID" });
     }
-    const section = await quizService.setMockExamSectionQuestions(sectionId, req.body.questionIds);
+    const section = await quizService.setMockExamSectionQuestions(mockExamId, sectionId, req.body.questionIds);
     return res.status(200).json({ success: true, message: "Section questions updated successfully", section });
   } catch (error) {
     next(error);

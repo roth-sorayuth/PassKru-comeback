@@ -157,3 +157,50 @@ export async function sendAccountExistsEmail({ email }) {
     consoleLines: ["ACCOUNT EXISTS notice (register attempt on a verified email)"],
   });
 }
+
+const OTP_EMAIL_COPY = {
+  login: {
+    subjectKm: "លេខកូដចូលប្រព័ន្ធ (Sign-in Code)",
+    bodyKm: "សូមប្រើលេខកូដ (OTP) ខាងក្រោមដើម្បីបញ្ចប់ការចូលប្រើប្រាស់គណនី PassKru របស់អ្នក៖",
+    note: "SIGN-IN OTP",
+  },
+  reset: {
+    subjectKm: "លេខកូដកំណត់ពាក្យសម្ងាត់ឡើងវិញ (Password Reset Code)",
+    bodyKm: "យើងបានទទួលសំណើកំណត់ពាក្យសម្ងាត់ឡើងវិញ។ សូមប្រើលេខកូដ (OTP) ខាងក្រោម៖",
+    note: "PASSWORD RESET OTP",
+  },
+};
+
+/**
+ * Sends a 6-digit OTP for sign-in ("login") or password reset ("reset").
+ */
+export async function sendPurposeOtpEmail({ email, otp, firstName = "Candidate", purpose }) {
+  const copy = OTP_EMAIL_COPY[purpose];
+  if (!copy) throw new Error(`Unknown OTP purpose: ${purpose}`);
+
+  const htmlContent = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 520px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">
+      <div style="background-color: #133363; padding: 24px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800;">PASSKRU</h1>
+      </div>
+      <div style="padding: 32px 24px; color: #1e293b;">
+        <h2 style="font-size: 18px; font-weight: 700; margin-top: 0; color: #0f172a;">សួស្តី, ${escapeHtml(firstName)}</h2>
+        <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-bottom: 24px;">${copy.bodyKm}</p>
+        <div style="background-color: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+          <span style="font-family: monospace; font-size: 32px; font-weight: 900; letter-spacing: 8px; color: #133363;">${escapeHtml(otp)}</span>
+          <p style="font-size: 12px; color: #64748b; margin: 8px 0 0 0;">លេខកូដនេះមានសុពលភាពរយៈពេល ១០ នាទី</p>
+        </div>
+        <p style="font-size: 13px; line-height: 1.5; color: #64748b;">
+          ប្រសិនបើអ្នកមិនបានស្នើសុំទេ សូមរំលងអ៊ីមែលនេះ ហើយកុំចែករំលែកលេខកូដនេះជាមួយនរណាម្នាក់។ យើងនឹងមិនសួរលេខកូដនេះតាមទូរស័ព្ទ ឬសារឡើយ។
+        </p>
+      </div>
+    </div>
+  `;
+
+  return deliver({
+    to: email,
+    subject: `[PassKru] ${otp} - ${copy.subjectKm}`,
+    html: htmlContent,
+    consoleLines: [`Recipient Name  : ${firstName}`, `${copy.note}: >>> ${otp} <<<`, "Validity        : 10 Minutes"],
+  });
+}

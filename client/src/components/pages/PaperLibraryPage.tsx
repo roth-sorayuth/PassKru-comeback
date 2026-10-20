@@ -26,6 +26,7 @@ import {
 } from '../common/PageLayout';
 import { SEOHead } from '../common/SEOHead';
 import { getSubjectTheme, getSubjectIcon } from '../../utils/subjectIcons';
+import { canonicalSubjectName } from '../../utils/subjectNames';
 
 export interface PastPaper {
   paperId: number;
@@ -293,7 +294,9 @@ export const PaperLibraryPage: React.FC<PaperLibraryPageProps> = ({ mode, title 
     });
   }, [exams]);
 
-  // Subjects registered for the level
+  // Subjects registered for the level, merged by canonical name ("Math",
+  // "Mathematics" and "គណិតវិទ្យា" are one card). Subjects with no papers of
+  // this type are left out rather than shown as empty cards.
   const availableSubjects = useMemo(() => {
     const subjectsMap = new Map<string, number>();
     const targetLevel = filterExam ? formatExamLevelName(filterExam) : null;
@@ -307,12 +310,14 @@ export const PaperLibraryPage: React.FC<PaperLibraryPageProps> = ({ mode, title 
         formatExamLevelName(s.exam?.examType) === targetLevel
       ) {
         const count = s._count?.pastPapers ?? s.pastPaperCount ?? 0;
-        const current = subjectsMap.get(s.subjectName) || 0;
-        subjectsMap.set(s.subjectName, current + count);
+        const name = canonicalSubjectName(s.subjectName);
+        subjectsMap.set(name, (subjectsMap.get(name) || 0) + count);
       }
     });
 
-    return Array.from(subjectsMap.entries()).map(([name, count]) => ({ name, count }));
+    return Array.from(subjectsMap.entries())
+      .filter(([, count]) => count > 0)
+      .map(([name, count]) => ({ name, count }));
   }, [subjects, filterExam]);
 
   const q = query.trim().toLowerCase();
@@ -330,7 +335,7 @@ export const PaperLibraryPage: React.FC<PaperLibraryPageProps> = ({ mode, title 
   const papersInView = useMemo(() => {
     if (!selectedSubject) return [];
     return papers
-      .filter((p) => (p.subject?.subjectName || DEFAULT_SUBJECT_NAME).toLowerCase() === selectedSubject.toLowerCase())
+      .filter((p) => canonicalSubjectName(p.subject?.subjectName || DEFAULT_SUBJECT_NAME) === canonicalSubjectName(selectedSubject))
       .filter((p) => paperMatchesExam(p, filterExam))
       .filter((p) => !q || p.title.toLowerCase().includes(q) || String(p.year).includes(q) || toKhmerNum(p.year).includes(q))
       .sort((a, b) => (b.year || 0) - (a.year || 0));

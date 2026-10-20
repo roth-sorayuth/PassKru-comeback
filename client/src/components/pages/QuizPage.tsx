@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { getQuizzes, getQuiz } from '../../services/quizService';
-import { startAttempt, submitAttempt } from '../../services/attemptService';
+import { startAttempt, submitAttempt, getAttempt } from '../../services/attemptService';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { MathText } from '../ui/MathText';
 import {
   isSubjectInSelection,
@@ -79,6 +80,43 @@ interface GradedAnswer {
   explanation: string | null;
 }
 
+/**
+ * Rebuilds the submit response from GET /attempts/:id. Used when a submit
+ * reached the server but its response was lost (flaky mobile connection):
+ * the retry is refused as "already submitted", yet the graded attempt exists.
+ */
+function resultFromGradedAttempt(attempt: any): AttemptResult {
+  const answers: GradedAnswer[] = (attempt.answers || []).map((a: any) => ({
+    questionId: a.questionId,
+    selectedOptionId: a.selectedOptionId ?? null,
+    isCorrect: Boolean(a.isCorrect),
+    correctOptionId: (a.options || []).find((o: any) => o.isCorrect)?.optionId ?? null,
+    explanation: a.explanation ?? null,
+  }));
+  return {
+    attemptId: attempt.attemptId,
+    score: attempt.score ?? 0,
+    correctCount: answers.filter((a) => a.isCorrect).length,
+    totalQuestions: answers.length,
+    answers,
+    topicStats: [],
+  };
+}
+
+/** Submits an attempt; if it was already graded, returns the stored result instead of failing. */
+async function submitOrRecover(attemptId: number, payload: { questionId: number; selectedOptionId: number | null }[]): Promise<AttemptResult> {
+  try {
+    const res = await submitAttempt(attemptId, payload);
+    return res.result;
+  } catch (err: any) {
+    if (err?.statusCode === 400) {
+      const existing = await getAttempt(attemptId).catch(() => null);
+      if (existing?.attempt?.endTime) return resultFromGradedAttempt(existing.attempt);
+    }
+    throw err;
+  }
+}
+
 interface AttemptResult {
   attemptId: number;
   score: number;
@@ -151,7 +189,7 @@ export const formatSubjectName = (name: string | null | undefined, lang: string)
     return lang === 'km' ? 'គីមីវិទ្យា' : 'Chemistry';
   }
   if (lower.includes('bio') || lower.includes('ជីវ')) {
-    return lang === 'km' ? 'ជីវ:វិទ្យា' : 'Biology';
+    return lang === 'km' ? 'ជីវវិទ្យា' : 'Biology';
   }
   if (lower.includes('hist') || lower.includes('ប្រវត្តិ')) {
     return lang === 'km' ? 'ប្រវត្តិវិទ្យា' : 'History';
@@ -212,6 +250,7 @@ export const QuizPage: React.FC = () => {
   const [activePaperIndex, setActivePaperIndex] = useState<number>(0);
   const [mockResult, setMockResult] = useState<MockExamResult | null>(null);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState<boolean>(false);
+  const [showQuizSubmitConfirm, setShowQuizSubmitConfirm] = useState<boolean>(false);
   const [mockReviewSubjectFilter, setMockReviewSubjectFilter] = useState<string>('all');
 
   const toKhmerNumeral = (num: number | string) =>
@@ -470,8 +509,8 @@ export const QuizPage: React.FC = () => {
         questionId: q.questionId,
         selectedOptionId: answers[q.questionId] ?? null,
       }));
-      const res = await submitAttempt(attemptId, payload);
-      setResult(res.result);
+      const result = await submitOrRecover(attemptId, payload);
+      setResult(result);
 
       // Save percentage to the subject & specific quiz card
       saveSubjectScore({
@@ -482,16 +521,36 @@ export const QuizPage: React.FC = () => {
         targetExam: userProfile?.targetExam,
         category: isMockExam ? 'mock-exam' : 'quiz',
         round: isMockExam ? (activeMockExam?.round || 1) : undefined,
-        score: res.result.score,
+        score: result.score,
       });
 
       setStage('result');
     } catch (err: any) {
-      setError(err?.message || 'Failed to submit quiz');
+      // Answers stay in state, so the learner can simply tap submit again.
+      setError(err?.message || (lang === 'km' ? 'មិនអាចដាក់ស្នើចម្លើយបានទេ' : 'Failed to submit quiz'));
     } finally {
       setSubmitting(false);
     }
   };
+
+  /** Submit button: asks first when questions are still unanswered (one stray tap must not end the quiz). */
+  const requestSubmit = () => {
+    if (!quiz) return;
+    const unanswered = (quiz.questions || []).filter((q) => answers[q.questionId] == null).length;
+    if (unanswered > 0) setShowQuizSubmitConfirm(true);
+    else handleSubmit();
+  };
+
+  // Warn before closing or reloading the tab mid-quiz; unsent answers would be lost.
+  useEffect(() => {
+    if (stage !== 'taking' || submitting) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [stage, submitting]);
 
   const handleSubmitMockExam = async () => {
     if (submitting || mockPapers.length === 0) return;
@@ -513,12 +572,12 @@ export const QuizPage: React.FC = () => {
         }));
 
         if (paper.attemptId) {
-          const res = await submitAttempt(paper.attemptId, payload);
-          paperResult = res.result;
+          // A retry after a partial failure must not get stuck on papers that were already graded.
+          paperResult = await submitOrRecover(paper.attemptId, payload);
         } else {
           const newAtt = await startAttempt({ attemptType: 'quiz', quizId: paper.quizId });
-          const res = await submitAttempt(newAtt.attempt.attemptId, payload);
-          paperResult = res.result;
+          paper.attemptId = newAtt.attempt.attemptId;
+          paperResult = await submitOrRecover(newAtt.attempt.attemptId, payload);
         }
 
         totalCorrect += paperResult.correctCount;
@@ -1451,7 +1510,7 @@ export const QuizPage: React.FC = () => {
                     ) : (
                       <button
                         type="button"
-                        onClick={handleSubmit}
+                        onClick={requestSubmit}
                         disabled={submitting}
                         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-bold transition cursor-pointer"
                       >
@@ -1564,7 +1623,7 @@ export const QuizPage: React.FC = () => {
                           ) : (
                             <button
                               type="button"
-                              onClick={handleSubmit}
+                              onClick={requestSubmit}
                               disabled={submitting}
                               className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer"
                             >
@@ -2030,6 +2089,31 @@ export const QuizPage: React.FC = () => {
           </div>
         </>
       )}
+
+      {/* Confirm before submitting a quiz with unanswered questions (wording mirrors the mock-exam modal). */}
+      {quiz && (() => {
+        const total = (quiz.questions || []).length;
+        const answered = (quiz.questions || []).filter((q) => answers[q.questionId] != null).length;
+        return (
+          <ConfirmDialog
+            open={showQuizSubmitConfirm}
+            title={lang === 'km' ? 'ដាក់ស្នើចម្លើយ' : 'Submit answers?'}
+            message={
+              lang === 'km'
+                ? `អ្នកបានឆ្លើយចំនួន ${toKhmerNumeral(answered)} ក្នុងចំណោម ${toKhmerNumeral(total)} សំណួរ (នៅសល់ ${toKhmerNumeral(total - answered)} មិនទាន់ឆ្លើយ)។`
+                : `You answered ${answered} of ${total} questions (${total - answered} unanswered). Unanswered questions count as wrong.`
+            }
+            confirmLabel={lang === 'km' ? 'ដាក់ស្នើចម្លើយ' : 'Submit answers'}
+            cancelLabel={lang === 'km' ? 'ត្រឡប់ទៅពិនិត្យឡើងវិញ' : 'Back to review'}
+            busy={submitting}
+            onCancel={() => setShowQuizSubmitConfirm(false)}
+            onConfirm={() => {
+              setShowQuizSubmitConfirm(false);
+              handleSubmit();
+            }}
+          />
+        );
+      })()}
     </div>
   );
 };

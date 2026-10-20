@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# AI agent transcript dumps: never commit
+raw_user_payload_*.json

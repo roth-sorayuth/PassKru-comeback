@@ -4,22 +4,48 @@
     {
       "name": "client",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "client"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "client"
+      ],
       "port": 3000,
       "autoPort": false
     },
     {
       "name": "server",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "server"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "server"
+      ],
       "port": 5000,
       "autoPort": false
     },
     {
       "name": "adminDashboard",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--prefix", "adminDashboard"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "adminDashboard"
+      ],
       "port": 3001
+    },
+    {
+      "name": "game",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "game"
+      ],
+      "port": 3002
     }
   ]
 }

@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 /**
  * Turns stored Supabase Storage links into short-lived signed URLs.
  *
@@ -127,6 +129,105 @@ export async function signFileUrlsDeep(payload) {
     holder.fileUrl = signed[i].fileUrl;
   });
   return copy;
+}
+
+// ---------------------------------------------------------------------------
+// Uploads
+//
+// The admin dashboard used to upload straight to Storage with the anon key,
+// which only worked because the buckets let *anyone* write. Now the API (admin
+// only) hands out a one-time signed upload URL for a path it picks itself, so
+// the buckets can refuse anon writes entirely.
+// ---------------------------------------------------------------------------
+
+const MB = 1024 * 1024;
+const IMAGE_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" };
+
+/** What each upload kind may contain and where it lands. No SVG/HTML: they'd run script on the Storage origin. */
+export const UPLOAD_KINDS = {
+  paper: {
+    bucket: () => process.env.SUPABASE_PAPERS_BUCKET || "papers",
+    prefix: "past-papers",
+    types: { "application/pdf": "pdf" },
+    maxBytes: 50 * MB,
+  },
+  "announcement-doc": {
+    bucket: () => process.env.SUPABASE_ANNOUNCEMENT_BUCKET || "announcement",
+    prefix: "documents",
+    types: { "application/pdf": "pdf" },
+    maxBytes: 20 * MB,
+  },
+  "mentor-image": {
+    bucket: () => process.env.SUPABASE_ANNOUNCEMENT_BUCKET || "announcement",
+    prefix: "mentors",
+    types: IMAGE_TYPES,
+    maxBytes: 5 * MB,
+  },
+};
+
+function uploadError(message, statusCode = 400) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
+async function requestUploadSign({ url, key }, bucket, objectPath) {
+  const res = await fetch(`${url}/storage/v1/object/upload/sign/${encodeURIComponent(bucket)}/${objectPath}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, apikey: key, "Content-Type": "application/json" },
+    body: "{}",
+  });
+  const text = await res.text();
+  return { ok: res.ok, status: res.status, text };
+}
+
+/**
+ * Validates an upload request and returns a signed URL the browser can PUT the
+ * file to once, plus the public-style link to save in the database (papers are
+ * re-signed on every read, see withSignedUrls).
+ */
+export async function createSignedUpload({ kind, contentType, size } = {}) {
+  const cfg = config();
+  if (!cfg) throw uploadError("File storage is not configured on the server", 503);
+
+  const spec = Object.hasOwn(UPLOAD_KINDS, kind) ? UPLOAD_KINDS[kind] : null;
+  if (!spec) throw uploadError(`kind must be one of: ${Object.keys(UPLOAD_KINDS).join(", ")}`);
+
+  const ext = typeof contentType === "string" ? spec.types[contentType.toLowerCase()] : undefined;
+  if (!ext) throw uploadError(`File type not allowed. Allowed: ${Object.keys(spec.types).join(", ")}`);
+
+  const bytes = Number(size);
+  if (!Number.isInteger(bytes) || bytes <= 0) throw uploadError("size must be the file size in bytes");
+  if (bytes > spec.maxBytes) throw uploadError(`File is too large (max ${spec.maxBytes / MB} MB)`);
+
+  const objectPath = `${spec.prefix}/${Date.now()}-${randomUUID()}.${ext}`;
+
+  // Some projects created the announcement bucket as "Announcement".
+  const candidates = [spec.bucket()];
+  if (candidates[0] === "announcement") candidates.push("Announcement");
+
+  for (const bucket of candidates) {
+    const result = await requestUploadSign(cfg, bucket, objectPath);
+    if (result.ok) {
+      const { url: signedPath } = JSON.parse(result.text);
+      const token = new URL(`${cfg.url}/storage/v1${signedPath}`).searchParams.get("token");
+      if (!token) break;
+      return {
+        bucket,
+        path: objectPath,
+        contentType: contentType.toLowerCase(),
+        uploadUrl: `${cfg.url}/storage/v1/object/upload/sign/${encodeURIComponent(bucket)}/${objectPath}?token=${encodeURIComponent(token)}`,
+        publicUrl: `${cfg.url}/storage/v1/object/public/${encodeURIComponent(bucket)}/${objectPath}`,
+        fileSize: `${(bytes / MB).toFixed(2)} MB`,
+      };
+    }
+    const bucketMissing = /bucket not found/i.test(result.text);
+    if (!bucketMissing) {
+      console.error(`[storage] Upload sign failed for "${bucket}" (${result.status}):`, result.text);
+      break;
+    }
+  }
+  throw uploadError("Could not prepare the upload. Please try again.", 502);
 }
 
 /** Express middleware: sign fileUrls in every JSON response of a router. */

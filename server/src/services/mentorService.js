@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma.js";
+import { appTodayString } from "../utils/appDate.js";
 
 /**
  * Get all mentors with optional filtering and pagination
@@ -31,8 +32,10 @@ export const getAll = async (filters = {}) => {
     ];
   }
 
-  const page = parseInt(filters.page, 10) || 1;
-  const limit = parseInt(filters.limit, 10) || 50;
+  // Clamped: a negative page used to become a negative skip (500), and the
+  // list is public, so no unbounded page size either.
+  const page = Math.max(1, parseInt(filters.page, 10) || 1);
+  const limit = Math.min(200, Math.max(1, parseInt(filters.limit, 10) || 50));
   const skip = (page - 1) * limit;
 
   const [total, mentors] = await Promise.all([
@@ -64,22 +67,28 @@ export const getAll = async (filters = {}) => {
 /**
  * Get single mentor by ID
  * @param {number} id
+ * @param {{ asAdmin?: boolean }} [options] - Bookings (learners' ids and private
+ *   notes) and non-approved mentors are only returned to admins.
  */
-export const getById = async (id) => {
+export const getById = async (id, { asAdmin = false } = {}) => {
   const mentor = await prisma.mentor.findUnique({
     where: { mentorId: id },
     include: {
-      mentorBookings: {
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      },
+      ...(asAdmin
+        ? {
+            mentorBookings: {
+              orderBy: { createdAt: "desc" },
+              take: 10,
+            },
+          }
+        : {}),
       _count: {
         select: { mentorBookings: true },
       },
     },
   });
 
-  if (!mentor) {
+  if (!mentor || (!asAdmin && mentor.status !== "approved")) {
     const error = new Error(`Mentor with ID ${id} not found`);
     error.statusCode = 404;
     throw error;
@@ -213,9 +222,36 @@ const VALID_STATUSES = ["pending", "approved", "rejected", "suspended"];
  * mentor/admin can see and action, same as the rest of this app's simple
  * request-then-review patterns (e.g. mentor moderation itself).
  */
+function bookingError(message) {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+}
+
+function bookingText(value, field, maxLength) {
+  if (value == null || value === "") return null;
+  if (typeof value !== "string") throw bookingError(`${field} must be text`);
+  const text = value.trim();
+  if (text.length > maxLength) throw bookingError(`${field} must be at most ${maxLength} characters`);
+  return text || null;
+}
+
+/** "YYYY-MM-DD" (what the date picker sends), today or later in app time. */
+function parseSessionDate(value) {
+  if (value == null || value === "") return null;
+  const text = typeof value === "string" ? value.trim().slice(0, 10) : "";
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(text) ? new Date(`${text}T00:00:00Z`) : null;
+  if (!date || Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== text) {
+    throw bookingError("sessionDate must be a valid date (YYYY-MM-DD)");
+  }
+  if (text < appTodayString()) throw bookingError("sessionDate cannot be in the past");
+  return date;
+}
+
 export const createBooking = async (userId, mentorId, data) => {
   const mentor = await prisma.mentor.findUnique({ where: { mentorId } });
-  if (!mentor) {
+  // Mentors awaiting moderation, rejected or suspended don't take bookings.
+  if (!mentor || mentor.status !== "approved") {
     const error = new Error(`Mentor with ID ${mentorId} not found`);
     error.statusCode = 404;
     throw error;
@@ -225,9 +261,9 @@ export const createBooking = async (userId, mentorId, data) => {
     data: {
       userId,
       mentorId,
-      sessionDate: data.sessionDate ? new Date(data.sessionDate) : null,
-      timeSlot: data.timeSlot ? String(data.timeSlot).trim() : null,
-      note: data.note ? String(data.note).trim() : null,
+      sessionDate: parseSessionDate(data.sessionDate),
+      timeSlot: bookingText(data.timeSlot, "timeSlot", 50),
+      note: bookingText(data.note, "note", 1000),
       status: "pending",
     },
   });

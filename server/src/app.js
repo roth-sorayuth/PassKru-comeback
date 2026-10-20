@@ -115,7 +115,9 @@ app.use((err, req, res, next) => {
 
   const statusCode = err.statusCode || 500;
   // Unexpected (5xx) errors can carry database or code details; don't send those to clients in production.
-  const hideDetails = statusCode >= 500 && process.env.NODE_ENV === "production";
+  // `expose` marks messages written for the user (no internals), e.g. "File storage
+  // is not configured on the server", so admins see the real reason.
+  const hideDetails = statusCode >= 500 && process.env.NODE_ENV === "production" && !err.expose;
   const message = hideDetails ? "Internal Server Error" : err.message || "Internal Server Error";
 
   res.status(statusCode).json({

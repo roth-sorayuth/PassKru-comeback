@@ -185,3 +185,46 @@ test("a profile edit that doesn't touch role/email keeps sessions", async () => 
   }
   assert.equal((await me(token)).status, 200);
 });
+
+test("production shows the real reason when upload storage isn't configured", async () => {
+  const admin = prisma.addUser({ role: "admin" });
+  const token = await sessions.startSession(fakeRes(), admin);
+  const saved = { env: process.env.NODE_ENV, url: process.env.SUPABASE_URL, key: process.env.SUPABASE_SERVICE_ROLE_KEY };
+  process.env.NODE_ENV = "production";
+  delete process.env.SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const quiet = console.error;
+  console.error = () => {};
+  try {
+    const res = await post("/api/uploads/sign", { kind: "paper", contentType: "application/pdf", size: 1000 }, token);
+    assert.equal(res.status, 503);
+    assert.match((await res.json()).message, /not configured/);
+  } finally {
+    console.error = quiet;
+    process.env.NODE_ENV = saved.env;
+    if (saved.url) process.env.SUPABASE_URL = saved.url;
+    if (saved.key) process.env.SUPABASE_SERVICE_ROLE_KEY = saved.key;
+  }
+});
+
+test("other 5xx errors stay hidden in production", async () => {
+  const user = prisma.addUser();
+  const token = await sessions.startSession(fakeRes(), user);
+  const saved = process.env.NODE_ENV;
+  process.env.NODE_ENV = "production";
+  const orig = prisma.user.findUnique;
+  // Fails after auth (the middleware's lookup succeeds first), inside the route.
+  let calls = 0;
+  prisma.user.findUnique = async (args) => (++calls > 1 ? Promise.reject(new Error("db internals: secret detail")) : orig(args));
+  const quiet = console.error;
+  console.error = () => {};
+  try {
+    const res = await fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    assert.equal(res.status, 500);
+    assert.equal((await res.json()).message, "Internal Server Error");
+  } finally {
+    console.error = quiet;
+    prisma.user.findUnique = orig;
+    process.env.NODE_ENV = saved;
+  }
+});

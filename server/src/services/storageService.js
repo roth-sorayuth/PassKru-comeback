@@ -168,6 +168,8 @@ export const UPLOAD_KINDS = {
 function uploadError(message, statusCode = 400) {
   const error = new Error(message);
   error.statusCode = statusCode;
+  // Our own wording, safe to show even for 5xx (see the error handler in app.js).
+  error.expose = true;
   return error;
 }
 

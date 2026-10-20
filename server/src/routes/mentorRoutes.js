@@ -8,24 +8,25 @@ import {
   createBooking,
   updateMentorStatus,
 } from "../controllers/mentorController.js";
-import { protect, admin } from "../middlewares/authMiddleware.js";
+import { protect, optionalProtect, admin } from "../middlewares/authMiddleware.js";
+import { bookingLimiter } from "../middlewares/rateLimit.js";
 
 const router = Router();
 
-// GET is public so candidates & dashboard can list mentors (only approved
-// ones by default — see mentorService.getAll; admin dashboard passes
-// ?status=all or a specific status to see the moderation queue).
+// GET is public so candidates & dashboard can list mentors. Visitors only
+// ever see approved mentors; signed-in admins may pass ?status=all or a
+// specific status to see the moderation queue (optionalProtect tells them apart).
 router.route("/")
-  .get(getMentors)
+  .get(optionalProtect, getMentors)
   .post(protect, admin, createMentor);
 
 router.route("/:id")
-  .get(getMentorById)
+  .get(optionalProtect, getMentorById)
   .put(protect, admin, updateMentor)
   .delete(protect, admin, deleteMentor);
 
 // Candidate books their own session — protect only, no admin gate.
-router.post("/:id/bookings", protect, createBooking);
+router.post("/:id/bookings", protect, bookingLimiter, createBooking);
 
 router.patch("/:id/status", protect, admin, updateMentorStatus);
 

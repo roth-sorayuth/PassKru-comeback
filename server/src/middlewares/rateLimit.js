@@ -47,6 +47,16 @@ export const aiLimiter = rateLimit({
   message: { success: false, message: "Daily limit reached for AI generation. Please try again tomorrow." },
 });
 
+/** Per-user daily cap on mentor consultation requests (spam guard). Must run after `protect`. */
+export const bookingLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  keyGenerator: (req) => `booking|${req.user?.userId ?? ipKeyGenerator(req.ip)}`,
+  message: { success: false, message: "Daily limit reached for consultation requests. Please try again tomorrow." },
+});
+
 /** Per-account cap on OTP (re)sends, on top of the 4-per-day DB counter. */
 export const otpResendLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,

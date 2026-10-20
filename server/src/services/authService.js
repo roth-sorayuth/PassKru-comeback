@@ -161,6 +161,50 @@ function badRequest(message) {
   return error;
 }
 
+// Profile-field validators. Each throws a 400 instead of letting a bad value
+// reach Prisma, where NaN or an over-long string turned into a 500.
+function optionalText(value, field, maxLength) {
+  if (value === null || value === "") return null;
+  if (typeof value !== "string" && typeof value !== "number") throw badRequest(`${field} must be text`);
+  const text = String(value).trim();
+  if (text.length > maxLength) throw badRequest(`${field} must be at most ${maxLength} characters`);
+  return text || null;
+}
+
+function requiredText(value, field, maxLength) {
+  const text = optionalText(value, field, maxLength);
+  if (!text) throw badRequest(`${field} cannot be empty`);
+  return text;
+}
+
+/** Only https links: the avatar is rendered as an <img src>, so no javascript:/data: or plain http. */
+function httpsUrlOrNull(value, field, maxLength) {
+  const text = optionalText(value, field, maxLength);
+  if (!text) return null;
+  let url;
+  try {
+    url = new URL(text);
+  } catch {
+    throw badRequest(`${field} must be a valid URL`);
+  }
+  if (url.protocol !== "https:") throw badRequest(`${field} must be an https:// link`);
+  return url.toString();
+}
+
+function numberInRange(value, field, min, max = Number.MAX_SAFE_INTEGER) {
+  const n = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
+  if (typeof n !== "number" || !Number.isFinite(n) || n < min || n > max) {
+    throw badRequest(`${field} must be a number between ${min} and ${max}`);
+  }
+  return n;
+}
+
+function intInRange(value, field, min, max) {
+  const n = numberInRange(value, field, min, max);
+  if (!Number.isInteger(n)) throw badRequest(`${field} must be a whole number`);
+  return n;
+}
+
 /**
  * Self-service profile update. Deliberately whitelist-only — email/role/
  * clerkId/passwordHash stay off-limits here since identity and permissions
@@ -169,12 +213,12 @@ function badRequest(message) {
 export const updateOwnProfile = async (userId, fields = {}) => {
   const updateData = {};
 
-  if (fields.firstName !== undefined) updateData.firstName = String(fields.firstName).trim();
-  if (fields.lastName !== undefined) updateData.lastName = String(fields.lastName).trim();
-  if (fields.phoneNumber !== undefined) updateData.phoneNumber = fields.phoneNumber ? String(fields.phoneNumber).trim() : null;
-  if (fields.avatarUrl !== undefined) updateData.avatarUrl = fields.avatarUrl ? String(fields.avatarUrl).trim() : null;
+  if (fields.firstName !== undefined) updateData.firstName = requiredText(fields.firstName, "firstName", 75);
+  if (fields.lastName !== undefined) updateData.lastName = requiredText(fields.lastName, "lastName", 75);
+  if (fields.phoneNumber !== undefined) updateData.phoneNumber = optionalText(fields.phoneNumber, "phoneNumber", 30);
+  if (fields.avatarUrl !== undefined) updateData.avatarUrl = httpsUrlOrNull(fields.avatarUrl, "avatarUrl", 500);
   if (fields.targetExamId !== undefined) {
-    updateData.targetExamId = fields.targetExamId !== null ? Number(fields.targetExamId) : null;
+    updateData.targetExamId = fields.targetExamId !== null ? intInRange(fields.targetExamId, "targetExamId", 1) : null;
   }
 
   // Step 1 — exam track. targetExamCode is canonical; examCategory (a Khmer
@@ -217,7 +261,7 @@ export const updateOwnProfile = async (userId, fields = {}) => {
     updateData.targetSubjects = selection.keys;
     updateData.targetSubject = selection.keys[0] || null;
   } else if (fields.targetSubject !== undefined) {
-    updateData.targetSubject = fields.targetSubject ? String(fields.targetSubject).trim() : null;
+    updateData.targetSubject = optionalText(fields.targetSubject, "targetSubject", 150);
   }
 
   if (fields.knowledgeLevel !== undefined) {
@@ -228,9 +272,12 @@ export const updateOwnProfile = async (userId, fields = {}) => {
   }
 
   if (fields.availableStudyHours !== undefined) {
-    updateData.availableStudyHours = fields.availableStudyHours !== null ? Number(fields.availableStudyHours) : null;
+    updateData.availableStudyHours =
+      fields.availableStudyHours !== null ? numberInRange(fields.availableStudyHours, "availableStudyHours", 0, 168) : null;
   }
-  if (fields.dailyGoalMinutes !== undefined) updateData.dailyGoalMinutes = Number(fields.dailyGoalMinutes);
+  if (fields.dailyGoalMinutes !== undefined) {
+    updateData.dailyGoalMinutes = intInRange(fields.dailyGoalMinutes, "dailyGoalMinutes", 5, 600);
+  }
 
   await prisma.user.update({
     where: { userId: Number(userId) },

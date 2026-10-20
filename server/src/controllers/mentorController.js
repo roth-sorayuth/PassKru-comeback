@@ -4,12 +4,14 @@ import * as mentorService from "../services/mentorService.js";
 export const getMentors = async (req, res, next) => {
   try {
     const { search, subject, page, limit, status } = req.query;
+    const isAdmin = req.user?.role === "admin";
     const result = await mentorService.getAll({
       search,
       subject,
       page,
       limit,
-      status,
+      // Pending/rejected/suspended mentors are the moderation queue, not public.
+      status: isAdmin ? status : undefined,
     });
 
     return res.status(200).json({
@@ -34,7 +36,7 @@ export const getMentorById = async (req, res, next) => {
       });
     }
 
-    const mentor = await mentorService.getById(id);
+    const mentor = await mentorService.getById(id, { asAdmin: req.user?.role === "admin" });
 
     return res.status(200).json({
       success: true,

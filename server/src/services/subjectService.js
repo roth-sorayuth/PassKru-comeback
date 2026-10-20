@@ -209,6 +209,34 @@ export const remove = async (id) => {
     throw error;
   }
 
+  // Deleting a subject cascades in the database to its topics (and their
+  // questions), quizzes, past papers, flashcard decks and mock-exam sections.
+  // Rows that look empty in one screen can still hold content another screen
+  // uses (the Khmer-named rows hold every flashcard deck), so refuse while
+  // anything is attached instead of silently wiping it.
+  const [topics, quizzes, papers, decks, sections] = await Promise.all([
+    prisma.topic.count({ where: { subjectId: id } }),
+    prisma.quiz.count({ where: { subjectId: id } }),
+    prisma.pastPaper.count({ where: { subjectId: id } }),
+    prisma.flashcardDeck.count({ where: { subjectId: id } }),
+    prisma.mockExamSection.count({ where: { subjectId: id } }),
+  ]);
+  const attached = [
+    [topics, "topics"],
+    [quizzes, "quizzes"],
+    [papers, "past papers"],
+    [decks, "flashcard decks"],
+    [sections, "mock-exam sections"],
+  ].filter(([n]) => n > 0);
+  if (attached.length) {
+    const error = new Error(
+      `This subject still has ${attached.map(([n, label]) => `${n} ${label}`).join(", ")}. ` +
+        "Move or delete them first; deleting the subject would delete them too."
+    );
+    error.statusCode = 409;
+    throw error;
+  }
+
   await prisma.subject.delete({
     where: { subjectId: id },
   });

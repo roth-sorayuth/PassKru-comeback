@@ -9,6 +9,7 @@ import { getSubjects, ApiSubject } from '../../services/subjectService';
 import { getMockExams } from '../../services/mockExamService';
 import { getQuizzes } from '../../services/quizService';
 import { SEOHead } from '../common/SEOHead';
+import { canonicalSubjectName } from '../../utils/subjectNames';
 import {
   Check,
   HelpCircle,
@@ -861,7 +862,28 @@ export const PracticePage: React.FC = () => {
               difficulty: 'medium' as const,
             };
           });
-          setDbSubjects(mapped);
+          // The database can hold the same subject twice (e.g. General Knowledge is
+          // shared across levels and also exists under one), which showed as two cards.
+          // Quizzes and flashcards are found by subject name, so one card is enough.
+          const merged = new Map<string, SubjectItem>();
+          for (const item of mapped) {
+            const key = canonicalSubjectName(item.nameEn || item.nameKm) || item.id;
+            const existing = merged.get(key);
+            if (!existing) {
+              merged.set(key, item);
+              continue;
+            }
+            merged.set(key, {
+              ...existing,
+              quizCount: existing.quizCount + item.quizCount,
+              questionCount: existing.questionCount + item.questionCount,
+              // Cards are counted by subject name on the server, so each duplicate already has the full count.
+              flashcardCount: Math.max(existing.flashcardCount, item.flashcardCount),
+              topicsKm: Array.from(new Set([...existing.topicsKm, ...item.topicsKm])),
+              topicsEn: Array.from(new Set([...existing.topicsEn, ...item.topicsEn])),
+            });
+          }
+          setDbSubjects(Array.from(merged.values()));
         } else {
           setDbSubjects([]);
         }

@@ -30,6 +30,9 @@ app.disable("x-powered-by");
 // Security headers (API only serves JSON, so the CSP can be locked down).
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
+  // Every API response is per-user (sessions, tokens, signed file links):
+  // never let a browser, proxy or CDN keep a copy.
+  if (req.path.startsWith("/api/")) res.setHeader("Cache-Control", "no-store");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("Referrer-Policy", "no-referrer");
   res.setHeader("Cross-Origin-Resource-Policy", "same-site");

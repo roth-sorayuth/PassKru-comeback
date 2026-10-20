@@ -95,7 +95,7 @@ export const SUBJECT_CATALOG: Record<string, { km: string; en: string }> = {
   homeEconomics: { km: 'គេហវិទ្យា', en: 'Home Economics' },
   generalist: { km: 'គ្រប់មុខវិជ្ជា', en: 'All subjects' },
   generalCulture: { km: 'វប្បធម៌ទូទៅ', en: 'General Knowledge' },
-  pedagogy: { km: 'វប្បធម៌ទូទៅ', en: 'Pedagogy' },
+  pedagogy: { km: 'គរុកោសល្យ', en: 'Pedagogy' },
 };
 
 /** The paper every level sits alongside its own subjects (General Knowledge, English); never chosen, never saved. */

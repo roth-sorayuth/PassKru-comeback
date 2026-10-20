@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { prisma } from "../config/prisma.js";
 import * as authService from "../services/authService.js";
 import { sendVerificationOtpEmail, sendAccountExistsEmail, sendPurposeOtpEmail } from "../services/emailService.js";
 import { toPublicUser } from "../utils/publicUser.js";
+import { startSession, revokeAllSessions } from "../services/sessionService.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const MAX_OTP_PER_DAY = 4;
@@ -103,30 +103,23 @@ async function issuePurposeOtp(user, purpose) {
  * matched, so concurrent requests cannot both use it. `extraData` is applied in
  * the same update (e.g. the new password hash).
  */
-async function consumePurposeOtp(user, purpose, submitted, extraData = {}) {
+async function consumePurposeOtp(user, purpose, submitted, extraData = {}, db = prisma) {
   const code = OTP_PURPOSE[purpose];
   const stored = user?.verificationOtp;
   const expires = user?.otpExpiresAt ? new Date(user.otpExpiresAt).getTime() : 0;
   if (!user || !user.isEmailVerified || !stored || !stored.startsWith(code) || expires <= Date.now()) return false;
   if (!/^\d{6}$/.test(submitted) || !otpMatches(stored, otpTag(code, user.userId, submitted))) return false;
 
-  const { count } = await prisma.user.updateMany({
+  const { count } = await db.user.updateMany({
     where: { userId: user.userId, verificationOtp: stored },
     data: { ...extraData, verificationOtp: null, otpExpiresAt: null, otpLastSentAt: null },
   });
   return count === 1;
 }
 
-/** Sets the session cookie and sends the standard authenticated response. */
+/** Starts a server-side session (cookie + token) and sends the standard authenticated response. */
 async function sendSession(res, user, message) {
-  const token = jwt.sign({ userId: user.userId, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
-  const isProduction = process.env.NODE_ENV === "production";
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax", // "none" required for cross-origin (Vercel -> Railway)
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  const token = await startSession(res, user);
   const userWithExam = await authService.getUserWithExam(user.userId);
   return res.status(200).json({ success: true, message, token, user: userWithExam || toPublicUser(user) });
 }
@@ -167,6 +160,34 @@ function checkOtpDailyLimit(user) {
   };
 }
 
+// Signup verification codes use the same HMAC tag scheme as sign-in and reset
+// codes (purpose "V"), so a database leak never reveals a live code.
+const SIGNUP_OTP_PURPOSE = "V";
+
+/** Stores a fresh signup code for `userId` and returns it (the plain code goes only to the email). */
+async function issueSignupOtp(userId, otpCount) {
+  const otp = generate6DigitOtp();
+  await prisma.user.update({
+    where: { userId },
+    data: {
+      verificationOtp: otpTag(SIGNUP_OTP_PURPOSE, userId, otp),
+      otpExpiresAt: new Date(Date.now() + OTP_TTL_MS),
+      otpCount,
+      otpLastSentAt: new Date(),
+    },
+  });
+  return otp;
+}
+
+function signupOtpMatches(user, submitted) {
+  const stored = user?.verificationOtp;
+  if (!stored || !/^\d{6}$/.test(submitted)) return false;
+  // Codes issued before hashing were stored as the six digits themselves;
+  // they expire within 10 minutes of this shipping.
+  if (/^\d{6}$/.test(stored)) return otpMatches(stored, submitted);
+  return stored.startsWith(SIGNUP_OTP_PURPOSE) && otpMatches(stored, otpTag(SIGNUP_OTP_PURPOSE, user.userId, submitted));
+}
+
 // POST /api/auth/register
 export const register = async (req, res, next) => {
   try {
@@ -194,54 +215,60 @@ export const register = async (req, res, next) => {
       where: { email: normalizedEmail },
     });
 
-    if (existingUser && existingUser.isEmailVerified) {
-      return res.status(409).json({
-        success: false,
-        message: "An account with this email address already exists. Please sign in instead.",
-      });
+    // Hashed on every path, so a taken address answers in the same time as a free one.
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+    // Every outcome below except an email failure answers with the same 201,
+    // so this endpoint never reveals whether an address is registered.
+    if (existingUser?.isEmailVerified) {
+      // The real owner gets a heads-up instead of a code.
+      await sendWithTimeout(sendAccountExistsEmail({ email: normalizedEmail })).catch((err) =>
+        console.error("[AUTH_REGISTER] Account-exists email error/timeout:", err?.message || err)
+      );
+      return res.status(201).json(registerAccepted(normalizedEmail));
     }
 
-    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-    const otp = generate6DigitOtp();
-    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-    const now = new Date();
+    if (existingUser) {
+      // Pending signup. While its code is still live, a second registration
+      // must not replace its name, password or code (that let anyone hijack
+      // or keep resetting someone else's signup).
+      const codeLive = existingUser.otpExpiresAt && new Date(existingUser.otpExpiresAt).getTime() > Date.now();
+      const limitCheck = checkOtpDailyLimit(existingUser);
+      if (codeLive || !limitCheck.allowed) {
+        return res.status(201).json(registerAccepted(normalizedEmail));
+      }
 
-    let user;
-    let isNewUser = false;
-
-    if (existingUser && !existingUser.isEmailVerified) {
-      // Re-initialize registration details & OTP for unverified account
-      user = await prisma.user.update({
+      await prisma.user.update({
         where: { userId: existingUser.userId },
         data: {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           phoneNumber: phoneNumber ? phoneNumber.trim() : null,
           passwordHash,
-          verificationOtp: otp,
-          otpExpiresAt,
-          otpCount: 1,
-          otpLastSentAt: now,
         },
       });
-    } else {
-      isNewUser = true;
-      user = await prisma.user.create({
-        data: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: normalizedEmail,
-          phoneNumber: phoneNumber ? phoneNumber.trim() : null,
-          passwordHash,
-          role: "candidate",
-          isEmailVerified: false,
-          verificationOtp: otp,
-          otpExpiresAt,
-          otpCount: 1,
-          otpLastSentAt: now,
-        },
-      });
+      const otp = await issueSignupOtp(existingUser.userId, limitCheck.newCount);
+      try {
+        await sendOtpWithTimeout({ email: normalizedEmail, otp, firstName: firstName.trim() });
+      } catch (emailError) {
+        console.error("[AUTH_REGISTER] OTP Email error/timeout:", emailError?.message || emailError);
+        return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
+      }
+      return res.status(201).json(registerAccepted(normalizedEmail));
     }
+
+    const user = await prisma.user.create({
+      data: {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: normalizedEmail,
+        phoneNumber: phoneNumber ? phoneNumber.trim() : null,
+        passwordHash,
+        role: "candidate",
+        isEmailVerified: false,
+      },
+    });
+    const otp = await issueSignupOtp(user.userId, 1);
 
     try {
       await sendOtpWithTimeout({
@@ -251,14 +278,10 @@ export const register = async (req, res, next) => {
       });
     } catch (emailError) {
       console.error("[AUTH_REGISTER] OTP Email error/timeout:", emailError?.message || emailError);
-      // Rollback newly created user if email sending fails completely
-      if (isNewUser && user?.userId) {
-        await prisma.user.delete({ where: { userId: user.userId } }).catch(() => {});
-      }
-      return res.status(500).json({
-        success: false,
-        message: emailError?.message || REGISTER_EMAIL_FAILED,
-      });
+      // Roll back the new account so the address can register again.
+      await prisma.user.delete({ where: { userId: user.userId } }).catch(() => {});
+      // Generic text: raw SMTP errors can expose server details.
+      return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
     }
 
     return res.status(201).json(registerAccepted(normalizedEmail));
@@ -294,7 +317,7 @@ export const verifyOtp = async (req, res, next) => {
       !user.isEmailVerified &&
       user.verificationOtp &&
       otpExpiresTime > Date.now() &&
-      otpMatches(user.verificationOtp, submittedOtp);
+      signupOtpMatches(user, submittedOtp);
 
     if (!isValid) {
       return res.status(400).json({ success: false, message: INVALID_OTP });
@@ -316,20 +339,7 @@ export const verifyOtp = async (req, res, next) => {
       return res.status(400).json({ success: false, message: INVALID_OTP });
     }
 
-    const token = jwt.sign(
-      { userId: user.userId, email: user.email },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    const isProduction = process.env.NODE_ENV === "production";
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax", // "none" required for cross-origin (Vercel → Railway)
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
+    const token = await startSession(res, user);
     const userWithExam = await authService.getUserWithExam(user.userId);
 
     return res.status(200).json({
@@ -373,21 +383,8 @@ export const resendOtp = async (req, res, next) => {
       });
     }
 
-    const existingOtpExpires = user.otpExpiresAt ? new Date(user.otpExpiresAt).getTime() : 0;
-    const isExistingValid = Boolean(user.verificationOtp && existingOtpExpires > Date.now());
-
-    const newOtp = isExistingValid ? user.verificationOtp : generate6DigitOtp();
-    const otpExpiresAt = isExistingValid ? user.otpExpiresAt : new Date(Date.now() + 10 * 60 * 1000);
-
-    await prisma.user.update({
-      where: { userId: user.userId },
-      data: {
-        verificationOtp: newOtp,
-        otpExpiresAt,
-        otpCount: limitCheck.newCount,
-        otpLastSentAt: limitCheck.now,
-      },
-    });
+    // Codes are stored hashed, so a resend always issues a new one (the old one stops working).
+    const newOtp = await issueSignupOtp(user.userId, limitCheck.newCount);
 
     try {
       await sendOtpWithTimeout({
@@ -399,7 +396,7 @@ export const resendOtp = async (req, res, next) => {
       console.error("[AUTH_RESEND] OTP Email error/timeout:", emailErr?.message || emailErr);
       return res.status(500).json({
         success: false,
-        message: emailErr?.message || "Failed to send verification code email. Please try again in a moment.",
+        message: "Failed to send verification code email. Please try again in a moment.",
       });
     }
 
@@ -449,21 +446,7 @@ export const login = async (req, res, next) => {
         });
       }
 
-      const existingOtpExpires = user.otpExpiresAt ? new Date(user.otpExpiresAt).getTime() : 0;
-      const isExistingValid = Boolean(user.verificationOtp && existingOtpExpires > Date.now());
-
-      const otp = isExistingValid ? user.verificationOtp : generate6DigitOtp();
-      const otpExpiresAt = isExistingValid ? user.otpExpiresAt : new Date(Date.now() + 10 * 60 * 1000);
-
-      await prisma.user.update({
-        where: { userId: user.userId },
-        data: {
-          verificationOtp: otp,
-          otpExpiresAt,
-          otpCount: limitCheck.newCount,
-          otpLastSentAt: limitCheck.now,
-        },
-      });
+      const otp = await issueSignupOtp(user.userId, limitCheck.newCount);
 
       try {
         await sendOtpWithTimeout({
@@ -582,7 +565,15 @@ export const resetPassword = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
     const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-    if (!(await consumePurposeOtp(user, "reset", otp.trim(), { passwordHash }))) {
+    // A reset usually means the old password may be known to someone else, so
+    // every existing session ends with it. One transaction: the new password,
+    // the used code and the revocation all commit, or none do.
+    const reset = await prisma.$transaction(async (tx) => {
+      if (!(await consumePurposeOtp(user, "reset", otp.trim(), { passwordHash }, tx))) return false;
+      await revokeAllSessions(user.userId, tx);
+      return true;
+    });
+    if (!reset) {
       return res.status(400).json({ success: false, message: INVALID_OTP });
     }
 

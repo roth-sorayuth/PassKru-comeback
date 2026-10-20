@@ -47,6 +47,19 @@ export const aiLimiter = rateLimit({
   message: { success: false, message: "Daily limit reached for AI generation. Please try again tomorrow." },
 });
 
+/**
+ * Google sign-in code exchange. The code itself is a signed single-use token,
+ * so this only stops one IP hammering the endpoint (there is no email to key on).
+ */
+export const exchangeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  keyGenerator: (req) => `exchange|${ipKeyGenerator(req.ip)}`,
+  message: TOO_MANY,
+});
+
 /** Per-user daily cap on mentor consultation requests (spam guard). Must run after `protect`. */
 export const bookingLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000,

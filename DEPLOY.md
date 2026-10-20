@@ -108,7 +108,15 @@ Set/update these on the Railway service, then redeploy:
 | `SUPABASE_URL` | `https://<project>.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | service role key (server only) |
 | `GOOGLE_CALLBACK_URL` | `https://<service>.up.railway.app/api/auth/google/callback` |
+| `BREVO_API_KEY`, `EMAIL_FROM` | email over HTTPS (see below); `EMAIL_FROM` must be a sender verified in Brevo |
 | `SMTP_*`, `GEMINI_*`, `DATABASE_URL`, `DIRECT_URL` | as before (rotate after an incident) |
+
+> **Email on Railway:** Railway blocks outbound SMTP (ports 25/465/587) below the
+> Pro plan, which shows up as "Failed to send verification code email" on sign-up.
+> Use Brevo's HTTPS API instead: create a free Brevo account, verify your sender
+> address or domain, create an API key, then set `BREVO_API_KEY` and `EMAIL_FROM`
+> on the API service. No SMTP settings are needed. Check the logs for
+> `sent via brevo` after the first sign-up.
 
 Any browser origin not in `FRONTEND_URL`/`CORS_ORIGINS` gets **403** on
 POST/PUT/PATCH/DELETE (CSRF guard) — if the admin or client suddenly can't

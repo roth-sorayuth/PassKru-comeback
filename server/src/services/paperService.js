@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma.js";
+import { mapSubjectName } from "./quizService.js";
 
 export const getAll = async (filters = {}) => {
   const where = {};
@@ -10,11 +11,12 @@ export const getAll = async (filters = {}) => {
   if (filters.subjectId) {
     where.subjectId = parseInt(filters.subjectId, 10);
   } else if (filters.subjectName) {
-    where.subject = {
-      subjectName: {
-        equals: filters.subjectName,
-        mode: "insensitive",
-      },
+    // The same subject exists under several rows ("Math", "Mathematics",
+    // "គណិតវិទ្យា"), so match every subject whose canonical name is the same.
+    const canonical = mapSubjectName(filters.subjectName);
+    const subjects = await prisma.subject.findMany({ select: { subjectId: true, subjectName: true } });
+    where.subjectId = {
+      in: subjects.filter((s) => mapSubjectName(s.subjectName) === canonical).map((s) => s.subjectId),
     };
   }
   

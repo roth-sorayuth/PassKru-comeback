@@ -4,6 +4,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useAuthContext } from '../../context/AuthContext';
 import { ArrowLeft, Mail, Lock, User, Phone, AlertCircle, CheckCircle2, Loader2, ShieldCheck, RefreshCw } from 'lucide-react';
 import { LoginButton } from '../auth/LoginButton';
+import { suggestEmail } from '../../utils/emailSuggest';
 
 const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
@@ -29,6 +30,16 @@ const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeoutM
   }
 };
 
+/** Server errors that carry a `code` get a proper Khmer message; others show the server text. */
+const localiseAuthError = (data: any, lang: string): string | null => {
+  if (data?.code === 'EMAIL_SEND_FAILED') {
+    return lang === 'km'
+      ? 'មិនអាចផ្ញើអ៊ីមែលលេខកូដបាននៅពេលនេះទេ។ សូមព្យាយាមម្តងទៀតក្នុងពេលបន្តិចទៀត។'
+      : "We couldn't send the email right now. Please try again in a few minutes.";
+  }
+  return data?.message || null;
+};
+
 export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
   initialMode = 'login',
 }) => {
@@ -40,6 +51,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const suggestedEmail = suggestEmail(email);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -154,7 +166,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
       }
 
       if (!res.ok || !data.success) {
-        setError(data.message || (lang === 'km' ? 'បរាជ័យក្នុងការចូលប្រើប្រាស់' : 'Authentication failed.'));
+        setError(localiseAuthError(data, lang) || (lang === 'km' ? 'បរាជ័យក្នុងការចូលប្រើប្រាស់' : 'Authentication failed.'));
         setLoading(false);
         return;
       }
@@ -281,7 +293,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        setError(data.message || (lang === 'km' ? 'បរាជ័យក្នុងការផ្ញើសារថ្មី' : 'Failed to resend code.'));
+        setError(localiseAuthError(data, lang) || (lang === 'km' ? 'បរាជ័យក្នុងការផ្ញើសារថ្មី' : 'Failed to resend code.'));
       } else {
         setSuccess(lang === 'km' ? 'លេខកូដថ្មីត្រូវបានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក!' : 'A new code has been sent to your email!');
         setResendCooldown(60);
@@ -821,6 +833,17 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
                       className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#133363]/20 focus:border-[#133363]"
                     />
                   </div>
+                  {suggestedEmail && (
+                    <button
+                      type="button"
+                      onClick={() => setEmail(suggestedEmail)}
+                      className="mt-1.5 text-xs text-amber-700 hover:text-amber-800 text-left cursor-pointer"
+                    >
+                      {lang === 'km' ? 'តើអ្នកចង់សរសេរ ' : 'Did you mean '}
+                      <span className="font-bold underline">{suggestedEmail}</span>
+                      {lang === 'km' ? ' មែនទេ?' : '?'}
+                    </button>
+                  )}
                 </div>
 
                 <div>

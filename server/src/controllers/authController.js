@@ -16,8 +16,11 @@ const BCRYPT_ROUNDS = 12;
 const INVALID_CREDENTIALS = "Invalid email or password.";
 const INVALID_OTP = "Invalid or expired verification code. Please check and try again.";
 const RESEND_ACCEPTED = "If this account is awaiting verification, a new code has been sent to your email.";
+// Sending failed on our side (SMTP down, blocked or slow), so the message
+// must not blame the user's address. `code` lets the client show it in Khmer.
+const EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED";
 const REGISTER_EMAIL_FAILED =
-  "Failed to send verification code email within time limit. Please check your email address and try again.";
+  "We couldn't send the verification email right now. Please try again in a few minutes.";
 
 const registerAccepted = (email) => ({
   success: true,
@@ -252,7 +255,7 @@ export const register = async (req, res, next) => {
         await sendOtpWithTimeout({ email: normalizedEmail, otp, firstName: firstName.trim() });
       } catch (emailError) {
         console.error("[AUTH_REGISTER] OTP Email error/timeout:", emailError?.message || emailError);
-        return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
+        return res.status(503).json({ success: false, code: EMAIL_SEND_FAILED, message: REGISTER_EMAIL_FAILED });
       }
       return res.status(201).json(registerAccepted(normalizedEmail));
     }
@@ -281,7 +284,7 @@ export const register = async (req, res, next) => {
       // Roll back the new account so the address can register again.
       await prisma.user.delete({ where: { userId: user.userId } }).catch(() => {});
       // Generic text: raw SMTP errors can expose server details.
-      return res.status(500).json({ success: false, message: REGISTER_EMAIL_FAILED });
+      return res.status(503).json({ success: false, code: EMAIL_SEND_FAILED, message: REGISTER_EMAIL_FAILED });
     }
 
     return res.status(201).json(registerAccepted(normalizedEmail));
@@ -394,8 +397,9 @@ export const resendOtp = async (req, res, next) => {
       });
     } catch (emailErr) {
       console.error("[AUTH_RESEND] OTP Email error/timeout:", emailErr?.message || emailErr);
-      return res.status(500).json({
+      return res.status(503).json({
         success: false,
+        code: EMAIL_SEND_FAILED,
         message: "Failed to send verification code email. Please try again in a moment.",
       });
     }
@@ -479,8 +483,9 @@ export const login = async (req, res, next) => {
         }
       } catch (emailErr) {
         console.error("[AUTH_LOGIN_2FA] Email error/timeout:", emailErr?.message || emailErr);
-        return res.status(500).json({
+        return res.status(503).json({
           success: false,
+          code: EMAIL_SEND_FAILED,
           message: "Failed to send the sign-in code. Please try again in a moment.",
         });
       }

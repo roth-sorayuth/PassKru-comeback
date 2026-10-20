@@ -20,11 +20,18 @@ function getTransporter() {
   if (host && user && pass) {
     if (!cachedTransporter) {
       const isGmail = host.includes("gmail") || user.endsWith("@gmail.com");
+      // Give up before the callers' 12s limit (sendWithTimeout), so a blocked
+      // or slow SMTP connection fails here with a real error: logged with its
+      // code (ETIMEDOUT, ECONNECTION...) and, in development, falling back to
+      // printing the code in the console. Some hosts (e.g. Railway below Pro)
+      // block outbound SMTP entirely, which looks exactly like a timeout.
+      const timeouts = { connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 10000 };
       cachedTransporter = nodemailer.createTransport(
         isGmail
           ? {
               service: "gmail",
               auth: { user, pass },
+              ...timeouts,
             }
           : {
               host,
@@ -32,9 +39,7 @@ function getTransporter() {
               secure: port === 465,
               family: 4,
               auth: { user, pass },
-              connectionTimeout: 10000,
-              greetingTimeout: 10000,
-              socketTimeout: 15000,
+              ...timeouts,
             }
       );
     }
@@ -59,7 +64,7 @@ async function deliver({ to, subject, html, consoleLines }) {
       console.log(`[EMAIL_SERVICE] Email "${subject}" sent via SMTP to: ${to}`);
       return { sent: true, mode: "smtp" };
     } catch (err) {
-      console.error("[EMAIL_SERVICE] SMTP send error:", err?.message || err);
+      console.error("[EMAIL_SERVICE] SMTP send error:", err?.code || "", err?.message || err);
       // In local development, fallback to console log so developers are never blocked
       if (process.env.NODE_ENV !== "production") {
         console.warn("[EMAIL_SERVICE] Falling back to console output (development mode)...");

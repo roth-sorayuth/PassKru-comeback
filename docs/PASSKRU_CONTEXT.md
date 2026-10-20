@@ -109,6 +109,19 @@ Waiting on the owner:
 - Move the API to a same-site subdomain, then drop the localStorage token fallback.
 - Switch the CSP from Report-Only to enforcing once the console shows no violations.
 
+Release checklist before production (agreed with the reviewer):
+- Smoke-test auth on production: login with code, logout, password reset, Google sign-in,
+  and confirm an admin demotion takes effect immediately.
+- Confirm one candidate can't see another's attempts, study plans or private papers.
+- On a real phone: register and verify, placement test, generate a plan, submit a quiz
+  (including after switching mobile data off and on), open a past paper; check Khmer text.
+- Confirm Postgres backups are on and a restore has been tested somewhere isolated,
+  including the private `papers` Storage files.
+- Deploying the session change signs every user out once (old tokens have no session id).
+
+Follow-up worth doing: save quiz answers locally per attempt so a crash or closed tab
+can resume instead of losing progress (the app now only warns before leaving).
+
 ## 6. Rules for anyone (human or AI) working on the code
 
 - **Never run anything that changes the database**: no `prisma db push`, `migrate`,

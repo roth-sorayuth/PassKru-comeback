@@ -127,7 +127,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
         setSuccess(
           mode === 'register'
             ? (lang === 'km' ? 'សូមពិនិត្យអ៊ីមែលរបស់អ្នក' : 'Check your email inbox')
-            : (lang === 'km' ? 'លេខកូដផ្ទៀងផ្ទាត់បានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក!' : 'Verification code sent to your email!')
+            : (lang === 'km' ? 'លេខកូដផ្ទៀងផ្ទាត់បានផ្ញើទៅអ៊ីមែលរបស់អ្នក!' : 'Verification code sent to your email!')
         );
         setLoading(false);
         return;
@@ -149,7 +149,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'register' }> = ({
     } catch (err: any) {
       console.error('Auth submit error:', err);
       if (err.name === 'AbortError') {
-        setError(lang === 'km' ? 'ការភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើត្រូវបានផុតកំណត់ សូមព្យាយាមម្តងទៀត' : 'Request timed out. Please check your network connection and try again.');
+        setError(lang === 'km' ? 'ការភ្ជាប់ទៅកាន់ម៉ាស៊ីនត្រូវបានផុតកំណត់ សូមព្យាយាមម្តងទៀត' : 'Request timed out. Please check your network connection and try again.');
       } else {
         setError(lang === 'km' ? 'មានបញ្ហាតភ្ជាប់ទៅកាន់ម៉ាស៊ីនបម្រើ' : 'Connection error. Please try again.');
       }

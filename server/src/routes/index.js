@@ -20,6 +20,7 @@ import mentorRoutes from "./mentorRoutes.js";
 import flashcardRoutes from "./flashcardRoutes.js";
 import weaknessRoutes from "./weaknessRoutes.js";
 import questionRoutes from "./questionRoutes.js";
+import uploadRoutes from "./uploadRoutes.js";
 
 const router = Router();
 
@@ -40,6 +41,7 @@ router.use("/mentors", mentorRoutes);
 router.use("/flashcards", flashcardRoutes);
 router.use("/weakness", weaknessRoutes);
 router.use("/questions", questionRoutes);
+router.use("/uploads", uploadRoutes);
 
 // Protected: sync/create user in Supabase + return current user. Registered
 // before the admin-only /users router below so /users/me is never swallowed
